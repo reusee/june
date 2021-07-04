@@ -1,0 +1,13 @@
+// Copyright 2021 The June Authors. All rights reserved.
+// Use of this source code is governed by Apache License
+// that can be found in the LICENSE file.
+
+package lingqa
+
+//TODO pr.Consume call with root context
+
+//TODO MarshalSB without calling ctx.Marshal
+
+//TODO UnmarshalSB without calling ctx.Unmarshal
+
+type Def struct{}

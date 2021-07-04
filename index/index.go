@@ -1,0 +1,44 @@
+// Copyright 2021 The June Authors. All rights reserved.
+// Use of this source code is governed by Apache License
+// that can be found in the LICENSE file.
+
+package index
+
+import (
+	"io"
+)
+
+type IndexManager interface {
+	Name() string
+	IndexFor(StoreID) (Index, error)
+	Sync() error
+	Close() error
+}
+
+type SaveOption interface {
+	IsSaveOption()
+}
+
+func (_ TapEntry) IsSaveOption() {}
+
+type Index interface {
+	Name() string
+	Iter(
+		lower *Entry, // inclusive in any order
+		upper *Entry, // exclusive in any order
+		order Order,
+	) (Src, io.Closer, error)
+	Save(entry Entry, options ...SaveOption) error
+	Delete(entry Entry) error
+}
+
+type Order uint8
+
+const (
+	Asc Order = iota
+	Desc
+)
+
+func (_ Order) IsSelectOption() {}
+
+func (_ Order) IsIterOption() {}

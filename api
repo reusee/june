@@ -1,0 +1,277 @@
+*entity._EntityLocks
+	*entity._EntityLocks
+
+*vars.VarsStore
+	*vars.VarsStore
+
+clock.Now
+	func() time.Time
+
+config.GetConfig
+	func(target interface{}) error
+
+config.UserConfig
+	[]byte
+
+entity.CheckRef
+	func(options ...entity.CheckRefOption) error
+
+entity.CleanIndex
+	func(options ...entity.CleanIndexOption) error
+
+entity.Delete
+	func(key key.Key) (err error)
+
+entity.DeleteIndex
+	func(predict func(sb.Stream) (*index.Entry, error), options ...entity.DeleteIndexOption) error
+
+entity.DeleteSummary
+	func(summary *entity.Summary, summaryKey key.Key) (err error)
+
+entity.Fetch
+	func(key interface{}, targets ...interface{}) error
+
+entity.GC
+	func(roots []key.Key, options ...entity.GCOption) error
+
+entity.HashIndexSet
+	func(set entity.IndexSet) (key.Hash, error)
+
+entity.IndexGC
+	func(options ...entity.IndexGCOption) error
+
+entity.NewName
+	func(prefix string) entity.Name
+
+entity.OnSummaryIndexAdd
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexAdd
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexAdd
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexAdd
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexAdd
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexDelete
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexDelete
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexDelete
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexDelete
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.OnSummaryIndexDelete
+	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+
+entity.Push
+	func(to store.Store, toIndex index.IndexManager, keys []key.Key, options ...entity.PushOption) error
+
+entity.RebuildIndex
+	func(options ...entity.IndexOption) (n int64, err error)
+
+entity.Resave
+	func(objs []interface{}, options ...entity.ResaveOption) error
+
+entity.Save
+	func(ns key.Namespace, value interface{}, options ...entity.SaveOption) (summary *entity.Summary, err error)
+	save entity
+
+entity.SaveEntity
+	func(value interface{}, options ...entity.SaveOption) (summary *entity.Summary, err error)
+
+entity.SaveSummary
+	func(summary *entity.Summary, isLatest bool, options ...entity.SaveSummaryOption) error
+
+entity.UpdateIndex
+	func(options ...entity.IndexOption) (n int64, err error)
+
+file.Build
+	func(root *filebase.File, cont pp.Sink, options ...file.BuildOption) pp.Sink
+
+file.BuildWithTx
+	func(interface{})
+
+file.Equal
+	func(a pp.Src, b pp.Src, fn func(interface{}, interface{}, string)) (bool, error)
+
+file.Ignore
+	func(path string, fileLike file.FileLike) bool
+
+file.IterDiskFile
+	func(path string, cont pp.Src, options ...file.IterDiskFileOption) pp.Src
+
+file.IterFile
+	func(file *filebase.File, cont pp.Src) pp.Src
+
+file.IterKey
+	func(key key.Key, cont pp.Src) pp.Src
+
+file.IterVirtual
+	func(file file.Virtual, cont pp.Src, options ...file.IterVirtualOption) pp.Src
+
+file.PackThreshold
+	int
+
+file.Reverse
+	func(pp.Src, pp.Src) pp.Src
+
+file.SmallFileThreshold
+	int64
+
+file.Unzip
+	func(src pp.Src, fn func(file.ZipItem) interface{}, cont pp.Src) pp.Src
+
+file.Update
+	func(path string, from pp.Src, fromTime time.Time, src pp.Src, watcher *fsys.Watcher, options ...file.UpdateOption) pp.Src
+
+file.Walk
+	func(fn func(string, file.FileLike) error) pp.Sink
+
+file.Zip
+	func(a pp.Src, b pp.Src, cont pp.Src, options ...file.ZipOption) pp.Src
+
+filebase.ChunkThreshold
+	int64
+
+filebase.FindFileInSubs
+	func(subs filebase.Subs, parts []string) (*filebase.File, error)
+
+filebase.IterSubs
+	func(subs filebase.Subs, cont pp.Src) pp.Src
+
+filebase.MaxChunkSize
+	int64
+
+filebase.NewContentReader
+	func(keys []key.Key, lengths []int64) *filebase.ContentReader
+
+filebase.NewFileFS
+	func(file *filebase.File) (fs.FS, error)
+
+filebase.ToContents
+	func(r io.Reader, size int64) (keys []key.Key, lengths []int64, err error)
+
+filebase.ToContentsWithTx
+	func(fn interface{})
+
+filebase.WriteContents
+	func(keys []key.Key, w io.Writer) (err error)
+
+flush.Flush
+	func() error
+
+fsys.EnsureDir
+	func(path string) error
+
+fsys.IsRestrictedPath
+	func(string) (bool, error)
+
+fsys.SetRestrictedPath
+	func(string) error
+
+fsys.ShuffleDir
+	func(string) (op string, path1 string, path2 string, err error)
+
+fsys.Watch
+	func(path string, options ...fsys.WatchOption) (watcher *fsys.Watcher, err error)
+
+index.Index
+	interface{Delete(entry index.Entry) error; Iter(lower *index.Entry, upper *index.Entry, order index.Order) (pp.Src, io.Closer, error); Name() string; Save(entry index.Entry, options ...index.SaveOption) error}
+
+index.SelectIndex
+	func(args ...index.SelectOption) error
+
+index.TestIndex
+	func(withIndexManager func(func(index.IndexManager)), t *testing.T)
+	test Index implementation
+
+key.NewHashState
+	func() hash.Hash
+
+naming.MachineName
+	string
+
+qa.CheckFunc
+	func() []error
+
+store.ID
+	string
+
+store.NewMemCache
+	func(maxKeys int, maxSize int) (*store.MemCache, error)
+
+store.Scrub
+	func(store store.Store, options ...store.ScrubOption) error
+
+store.TestStore
+	func(withStore func(fn func(store.Store), provides ...interface{}), t *testing.T)
+	test Store implementation
+
+storedisk.New
+	func(string, ...storedisk.NewOption) (*storedisk.Store, error)
+
+storekv.New
+	func(kv storekv.KV, prefix string, options ...storekv.NewOption) (*storekv.Store, error)
+
+storekv.TestKV
+	func(t *testing.T, with func(fn func(kv storekv.KV, prefix string)))
+
+storemem.New
+	func() *storemem.Store
+
+storenssharded.New
+	func(shards map[key.Namespace]store.Store, def store.Store) (*storenssharded.Store, error)
+
+storeonedrive.New
+	func(client *http.Client, drivePath string, dir string) (*storeonedrive.Store, error)
+
+storepebble.CacheSize
+	int64
+
+storepebble.New
+	func(fs vfs.FS, dir string) (*storepebble.Store, error)
+	create new pebble store
+
+storepebble.NewBatch
+	func(store *storepebble.Store) (*storepebble.Batch, error)
+
+stores3.New
+	func(endpoint string, key string, secret string, useSSL bool, bucket string, options ...stores3.NewOption) (*stores3.KV, error)
+
+stores3.Timeout
+	int64
+
+storestacked.New
+	func(store.Store, store.Store, storestacked.ReadPolicy, storestacked.WritePolicy) (*storestacked.Store, error)
+
+storetap.New
+	func(upstream store.Store, funcs storetap.Funcs) *storetap.Store
+
+sys.Parallel
+	int
+
+sys.Testing
+	bool
+
+vars.Get
+	func(key string, target interface{}) error
+
+vars.Set
+	func(key string, value interface{}) error
+
+virtualfs.NewProjectedFS
+	func(rootFS fs.FS, destDir string) (close func(), err error)
+
+virtualfs.TestFS
+	func(t *testing.T, with func(rootFS fs.FS, dir string, fn func()))
+

@@ -1,0 +1,5 @@
+/gen-*.exe
+/profile.block
+/profile.heap
+/profile.allocs
+/cover
