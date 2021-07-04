@@ -7,8 +7,8 @@ package entity
 import (
 	"reflect"
 
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/naming"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/naming"
 )
 
 type idxType func(

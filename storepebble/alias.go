@@ -10,10 +10,10 @@ import (
 
 	"github.com/cockroachdb/pebble/vfs"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/codec"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/codec"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/store"
 )
 
 type (

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
 

@@ -9,9 +9,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/opts"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/opts"
+	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )

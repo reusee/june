@@ -5,8 +5,8 @@
 package file
 
 import (
-	"github.com/reusee/ling/v2/config"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/config"
+	"github.com/reusee/june/sys"
 )
 
 func (_ Def) Configs(

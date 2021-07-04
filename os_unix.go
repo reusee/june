@@ -5,7 +5,7 @@
 //go:build unix
 // +build unix
 
-package ling
+package june
 
 import (
 	"syscall"

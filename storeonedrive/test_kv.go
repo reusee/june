@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/storekv"
 	"github.com/reusee/sb"
 	"golang.org/x/oauth2"
 )
@@ -49,7 +49,7 @@ func TestKV(
 		configDir, err := os.UserConfigDir()
 		ce(err)
 		content, err := os.ReadFile(
-			filepath.Join(configDir, "ling-test-onedrive.token"),
+			filepath.Join(configDir, "test-onedrive.token"),
 		)
 		ce(err)
 		ce(sb.Copy(

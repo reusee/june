@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 )
 

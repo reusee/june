@@ -12,10 +12,10 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/store"
-	"github.com/reusee/ling/v2/storemem"
-	"github.com/reusee/ling/v2/storetap"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/store"
+	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/storetap"
 	"github.com/reusee/pp"
 	"github.com/reusee/sb"
 )

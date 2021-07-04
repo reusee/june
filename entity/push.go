@@ -11,9 +11,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/opts"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/opts"
+	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/fsys"
+	"github.com/reusee/june/fsys"
 )
 
 type DiskFile struct {

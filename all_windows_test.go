@@ -5,10 +5,10 @@
 //go:build !step1 || !step2 || windows
 // +build !step1 !step2 windows
 
-package ling
+package june
 
 import (
-	"github.com/reusee/ling/v2/virtualfs"
+	"github.com/reusee/june/virtualfs"
 
 	"testing"
 )

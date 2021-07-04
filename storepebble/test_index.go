@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/index"
+	"github.com/reusee/june/index"
 )
 
 func TestIndex(

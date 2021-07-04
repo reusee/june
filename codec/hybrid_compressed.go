@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/reusee/ling/v2/opts"
+	"github.com/reusee/june/opts"
 	"github.com/reusee/sb"
 )
 

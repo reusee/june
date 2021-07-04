@@ -4,7 +4,7 @@
 
 package file
 
-import "github.com/reusee/ling/v2/filebase"
+import "github.com/reusee/june/filebase"
 
 type (
 	File = filebase.File

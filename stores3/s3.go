@@ -12,7 +12,7 @@ import (
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
 )
 

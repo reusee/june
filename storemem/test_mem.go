@@ -7,8 +7,8 @@ package storemem
 import (
 	"testing"
 
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/storekv"
 )
 
 func TestStore(

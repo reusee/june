@@ -7,9 +7,9 @@ package tx
 import (
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/store"
-	"github.com/reusee/ling/v2/storekv"
-	"github.com/reusee/ling/v2/storepebble"
+	"github.com/reusee/june/store"
+	"github.com/reusee/june/storekv"
+	"github.com/reusee/june/storepebble"
 )
 
 type KVToStore func(kv storekv.KV) (store.Store, error)

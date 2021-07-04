@@ -15,7 +15,7 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/fsys"
+	"github.com/reusee/june/fsys"
 )
 
 type IterDiskFile func(

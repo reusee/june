@@ -8,8 +8,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/key"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/key"
 	"github.com/reusee/pp"
 )
 

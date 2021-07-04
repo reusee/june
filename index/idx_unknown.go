@@ -7,7 +7,7 @@ package index
 import (
 	"reflect"
 
-	"github.com/reusee/ling/v2/naming"
+	"github.com/reusee/june/naming"
 )
 
 type idxUnknown string

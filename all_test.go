@@ -2,32 +2,29 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-//go:build !step1 || !step2
-// +build !step1 !step2
-
-package ling
+package june
 
 import (
-	"github.com/reusee/ling/v2/codec"
-	"github.com/reusee/ling/v2/config"
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/file"
-	"github.com/reusee/ling/v2/filebase"
-	"github.com/reusee/ling/v2/fsys"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/naming"
-	"github.com/reusee/ling/v2/storedisk"
-	"github.com/reusee/ling/v2/storemem"
-	"github.com/reusee/ling/v2/storenssharded"
-	"github.com/reusee/ling/v2/storeonedrive"
-	"github.com/reusee/ling/v2/storepebble"
-	"github.com/reusee/ling/v2/stores3"
-	"github.com/reusee/ling/v2/storestacked"
-	"github.com/reusee/ling/v2/storetap"
-	"github.com/reusee/ling/v2/sys"
-	"github.com/reusee/ling/v2/tx"
-	"github.com/reusee/ling/v2/vars"
+	"github.com/reusee/june/codec"
+	"github.com/reusee/june/config"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/file"
+	"github.com/reusee/june/filebase"
+	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/naming"
+	"github.com/reusee/june/storedisk"
+	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/storenssharded"
+	"github.com/reusee/june/storeonedrive"
+	"github.com/reusee/june/storepebble"
+	"github.com/reusee/june/stores3"
+	"github.com/reusee/june/storestacked"
+	"github.com/reusee/june/storetap"
+	"github.com/reusee/june/sys"
+	"github.com/reusee/june/tx"
+	"github.com/reusee/june/vars"
 
 	"testing"
 )

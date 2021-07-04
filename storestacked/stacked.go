@@ -9,7 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/store"
 )
 
 type Store struct {

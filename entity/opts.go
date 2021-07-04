@@ -7,7 +7,7 @@ package entity
 import (
 	"sync"
 
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/store"
 )
 
 // OnMark is called when key is marked, may call more than once for the same key

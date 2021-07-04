@@ -11,7 +11,7 @@ import (
 
 	"github.com/cockroachdb/pebble"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/storekv"
 	"github.com/reusee/sb"
 )
 

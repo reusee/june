@@ -12,7 +12,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/oauth"
+	"github.com/reusee/june/oauth"
 	"github.com/reusee/sb"
 	"golang.org/x/oauth2"
 	"os"
@@ -53,7 +53,7 @@ func main() {
 	configDir, err := os.UserConfigDir()
 	ce(err)
 	ce(os.WriteFile(
-		filepath.Join(configDir, "ling-test-onedrive.token"),
+		filepath.Join(configDir, "test-onedrive.token"),
 		buf.Bytes(),
 		0644,
 	))

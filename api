@@ -269,9 +269,6 @@ vars.Get
 vars.Set
 	func(key string, value interface{}) error
 
-virtualfs.NewProjectedFS
-	func(rootFS fs.FS, destDir string) (close func(), err error)
-
 virtualfs.TestFS
 	func(t *testing.T, with func(rootFS fs.FS, dir string, fn func()))
 

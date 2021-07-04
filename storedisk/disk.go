@@ -13,9 +13,9 @@ import (
 	"sync/atomic"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/fsys"
-	"github.com/reusee/ling/v2/naming"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/naming"
+	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 )
 

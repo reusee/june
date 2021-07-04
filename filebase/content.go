@@ -10,7 +10,7 @@ import (
 
 	"github.com/reusee/e4"
 	"github.com/reusee/fastcdc-go"
-	"github.com/reusee/ling/v2/entity"
+	"github.com/reusee/june/entity"
 	"github.com/reusee/sb"
 )
 

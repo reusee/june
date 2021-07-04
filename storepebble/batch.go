@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
 )
 

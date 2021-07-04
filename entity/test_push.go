@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/storekv"
-	"github.com/reusee/ling/v2/storemem"
+	"github.com/reusee/june/storekv"
+	"github.com/reusee/june/storemem"
 )
 
 func TestPush(

@@ -17,8 +17,8 @@ import (
 
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/vfs"
-	"github.com/reusee/ling/v2/fsys"
-	"github.com/reusee/ling/v2/naming"
+	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/naming"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )

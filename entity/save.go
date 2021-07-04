@@ -11,10 +11,10 @@ import (
 	"sort"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/naming"
-	"github.com/reusee/ling/v2/opts"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/naming"
+	"github.com/reusee/june/opts"
+	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
 

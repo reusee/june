@@ -2,14 +2,14 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-package ling
+package june
 
 import (
 	"fmt"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
 )
 
 type (

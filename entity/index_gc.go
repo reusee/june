@@ -8,10 +8,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/reusee/ling/v2/codec"
-	"github.com/reusee/ling/v2/storekv"
-	"github.com/reusee/ling/v2/storemem"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/codec"
+	"github.com/reusee/june/storekv"
+	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )

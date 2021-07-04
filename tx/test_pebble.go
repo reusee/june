@@ -11,12 +11,12 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/filebase"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/store"
-	"github.com/reusee/ling/v2/storekv"
-	"github.com/reusee/ling/v2/storepebble"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/filebase"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
+	"github.com/reusee/june/storekv"
+	"github.com/reusee/june/storepebble"
 )
 
 func TestPebbleTx(

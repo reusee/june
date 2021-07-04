@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/reusee/ling/v2/opts"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/opts"
+	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
 

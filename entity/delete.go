@@ -7,7 +7,7 @@ package entity
 import (
 	"fmt"
 
-	"github.com/reusee/ling/v2/index"
+	"github.com/reusee/june/index"
 )
 
 /*

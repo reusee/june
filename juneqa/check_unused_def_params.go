@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-package lingqa
+package juneqa
 
 import (
 	"fmt"

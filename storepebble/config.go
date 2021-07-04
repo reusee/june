@@ -5,7 +5,7 @@
 package storepebble
 
 import (
-	"github.com/reusee/ling/v2/config"
+	"github.com/reusee/june/config"
 )
 
 type CacheSize int64

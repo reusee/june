@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 
 	"github.com/google/btree"
-	"github.com/reusee/ling/v2/index"
+	"github.com/reusee/june/index"
 	"github.com/reusee/pp"
 	"github.com/reusee/sb"
 )

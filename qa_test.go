@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-package ling
+package june
 
 import (
 	"runtime"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4qa"
-	"github.com/reusee/ling/v2/lingqa"
+	"github.com/reusee/june/juneqa"
 	"github.com/reusee/pa"
 	"github.com/reusee/qa"
 )
@@ -24,8 +24,8 @@ func TestQA(t *testing.T) {
 
 	// qa
 	defs := dscope.Methods(new(qa.Def))
-	// lingqa
-	defs = append(defs, dscope.Methods(new(lingqa.Def))...)
+	// juneqa
+	defs = append(defs, dscope.Methods(new(juneqa.Def))...)
 	// e4qa
 	defs = append(defs, dscope.Methods(new(e4qa.Def))...)
 	// pa

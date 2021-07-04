@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/storekv"
 )
 
 var _ storekv.KV = new(Store)

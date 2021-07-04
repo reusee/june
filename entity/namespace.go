@@ -5,7 +5,7 @@
 package entity
 
 import (
-	"github.com/reusee/ling/v2/key"
+	"github.com/reusee/june/key"
 )
 
 var NSEntity = key.Namespace{'c', '-', 'e', 'n', 't', 'i', 't', 'y'}

@@ -9,9 +9,9 @@ import (
 	"fmt"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/codec"
-	"github.com/reusee/ling/v2/fsys"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/codec"
+	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/store"
 )
 
 type (

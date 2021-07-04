@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/reusee/ling/v2/naming"
+	"github.com/reusee/june/naming"
 	"github.com/reusee/sb"
 )
 

@@ -10,10 +10,10 @@ import (
 	"reflect"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/opts"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/opts"
+	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
 

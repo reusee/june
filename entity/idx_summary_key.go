@@ -5,7 +5,7 @@
 package entity
 
 import (
-	"github.com/reusee/ling/v2/index"
+	"github.com/reusee/june/index"
 )
 
 type idxSummaryKey struct {

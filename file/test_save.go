@@ -16,10 +16,10 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/fsys"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
 	"github.com/reusee/pp"
 )
 

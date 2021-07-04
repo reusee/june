@@ -10,7 +10,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/reusee/ling/v2/key"
+	"github.com/reusee/june/key"
 	"github.com/reusee/sb"
 )
 

@@ -6,6 +6,6 @@ package naming
 
 const (
 	DefaultDomain      = "github.com/"
-	DefaultPath        = DefaultDomain + "reusee/ling/v2/"
+	DefaultPath        = DefaultDomain + "reusee/june/"
 	DefaultMachineName = "default"
 )

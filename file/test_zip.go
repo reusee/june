@@ -6,6 +6,7 @@ package file
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
 )
 
@@ -1281,194 +1283,209 @@ func TestZipFile(
 	build Build,
 	iterKey IterKey,
 	iterFile IterFile,
+	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	dir := "testdata/zip"
+	dir := t.TempDir()
+	for i := 0; i < 64; i++ {
+		_, _, _, err := shuffleDir(dir)
+		ce(err)
 
-	// zip(disk ,disk) : disk
-	zipped := zip(
-		iterDisk(dir, nil),
-		iterDisk(dir, nil),
-		nil,
-	)
-	left := unzip(
-		zipped,
-		func(item ZipItem) any {
-			return item.A
-		},
-		nil,
-	)
-	ok, err := equal(
-		left,
-		iterDisk(dir, nil),
-		func(a, b any, reason string) {
-			pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
-		},
-	)
-	ce(err)
-	if !ok {
-		t.Fatal()
-	}
-
-	// zip(build(disk), disk) : disk
-	file := new(File)
-	err = Copy(
-		iterDisk(dir, nil),
-		build(file, nil),
-	)
-	ce(err)
-	file = file.Subs[0].File
-	zipped = zip(
-		iterFile(file, nil),
-		iterDisk(dir, nil),
-		nil,
-	)
-	left = unzip(
-		zipped,
-		func(item ZipItem) any {
-			return item.A
-		},
-		nil,
-	)
-	ok, err = equal(
-		left,
-		iterDisk(dir, nil),
-		func(a, b any, reason string) {
-			pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
-		},
-	)
-	ce(err)
-	if !ok {
-		t.Fatal()
-	}
-
-	// tap(zip(disk, disk))
-	zipped = zip(
-		iterDisk(dir, nil),
-		iterDisk(dir, nil),
-		nil,
-	)
-	left = unzip(
-		zipped,
-		func(item ZipItem) any {
-			return item.A
-		},
-		nil,
-	)
-	n := 0
-	err = Copy(
-		left,
-		pp.Tap(func(v any) (err error) {
-			defer he(&err)
-			n++
-			if info, ok := v.(FileInfo); ok {
-				p := filepath.Join(filepath.Dir(dir), info.Path)
-				_, err := os.Stat(p)
-				ce(err)
+		numFiles := 0
+		ce(filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
 			}
+			numFiles++
 			return nil
-		}),
-	)
-	ce(err)
-	if n != 158 {
-		// files in testdata/zip
-		t.Fatalf("got %d", n)
-	}
+		}))
 
-	// collect(zip(disk, disk))
-	zipped = zip(
-		iterDisk(dir, nil),
-		iterDisk(dir, nil),
-		nil,
-	)
-	left = unzip(
-		zipped,
-		func(item ZipItem) any {
-			return item.A
-		},
-		nil,
-	)
-	var values pp.Values
-	err = Copy(
-		left,
-		pp.CollectValues(&values),
-	)
-	ce(err)
-	if len(values) != 158 {
-		t.Fatal()
-	}
+		// zip(disk ,disk) : disk
+		zipped := zip(
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
+			nil,
+		)
+		left := unzip(
+			zipped,
+			func(item ZipItem) any {
+				return item.A
+			},
+			nil,
+		)
+		ok, err := equal(
+			left,
+			iterDisk(dir, nil),
+			func(a, b any, reason string) {
+				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
+			},
+		)
+		ce(err)
+		if !ok {
+			t.Fatal()
+		}
 
-	// build(collect(zip(disk, disk)))
-	root := new(File)
-	err = Copy(
-		values.Iter(nil),
-		build(root, nil),
-	)
-	ce(err)
-	root = root.Subs[0].File
-	ok, err = equal(
-		iterFile(root, nil),
-		iterDisk(dir, nil),
-		func(a, b any, reason string) {
-			pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
-		},
-	)
-	ce(err)
-	if !ok {
-		t.Fatal()
-	}
+		// zip(build(disk), disk) : disk
+		file := new(File)
+		err = Copy(
+			iterDisk(dir, nil),
+			build(file, nil),
+		)
+		ce(err)
+		file = file.Subs[0].File
+		zipped = zip(
+			iterFile(file, nil),
+			iterDisk(dir, nil),
+			nil,
+		)
+		left = unzip(
+			zipped,
+			func(item ZipItem) any {
+				return item.A
+			},
+			nil,
+		)
+		ok, err = equal(
+			left,
+			iterDisk(dir, nil),
+			func(a, b any, reason string) {
+				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
+			},
+		)
+		ce(err)
+		if !ok {
+			t.Fatal()
+		}
 
-	// build(collect(zip(disk, disk))) : disk
-	file = new(File)
-	err = Copy(
-		values.Iter(nil),
-		build(file, nil),
-	)
-	ce(err)
-	file = file.Subs[0].File
-	ok, err = equal(
-		iterFile(file, nil),
-		iterDisk(dir, nil),
-		func(a, b any, reason string) {
-			pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
-		},
-	)
-	ce(err)
-	if !ok {
-		t.Fatal()
-	}
+		// tap(zip(disk, disk))
+		zipped = zip(
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
+			nil,
+		)
+		left = unzip(
+			zipped,
+			func(item ZipItem) any {
+				return item.A
+			},
+			nil,
+		)
+		n := 0
+		err = Copy(
+			left,
+			pp.Tap(func(v any) (err error) {
+				defer he(&err)
+				n++
+				if info, ok := v.(FileInfo); ok {
+					p := filepath.Join(filepath.Dir(dir), info.Path)
+					_, err := os.Stat(p)
+					ce(err)
+				}
+				return nil
+			}),
+		)
+		ce(err)
+		if n != numFiles {
+			// files in testdata/zip
+			t.Fatalf("expecting %d, got %d", numFiles, n)
+		}
 
-	// build(zip(disk, disk) : disk
-	zipped = zip(
-		iterDisk(dir, nil),
-		iterDisk(dir, nil),
-		nil,
-	)
-	left = unzip(
-		zipped,
-		func(item ZipItem) any {
-			return item.A
-		},
-		nil,
-	)
-	file = new(File)
-	err = Copy(
-		left,
-		build(file, nil),
-	)
-	ce(err)
-	file = file.Subs[0].File
-	ok, err = equal(
-		iterFile(file, nil),
-		iterDisk(dir, nil),
-		func(a, b any, reason string) {
-			pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
-		},
-	)
-	ce(err)
-	if !ok {
-		t.Fatal()
+		// collect(zip(disk, disk))
+		zipped = zip(
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
+			nil,
+		)
+		left = unzip(
+			zipped,
+			func(item ZipItem) any {
+				return item.A
+			},
+			nil,
+		)
+		var values pp.Values
+		err = Copy(
+			left,
+			pp.CollectValues(&values),
+		)
+		ce(err)
+		if len(values) != numFiles {
+			t.Fatal()
+		}
+
+		// build(collect(zip(disk, disk)))
+		root := new(File)
+		err = Copy(
+			values.Iter(nil),
+			build(root, nil),
+		)
+		ce(err)
+		root = root.Subs[0].File
+		ok, err = equal(
+			iterFile(root, nil),
+			iterDisk(dir, nil),
+			func(a, b any, reason string) {
+				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
+			},
+		)
+		ce(err)
+		if !ok {
+			t.Fatal()
+		}
+
+		// build(collect(zip(disk, disk))) : disk
+		file = new(File)
+		err = Copy(
+			values.Iter(nil),
+			build(file, nil),
+		)
+		ce(err)
+		file = file.Subs[0].File
+		ok, err = equal(
+			iterFile(file, nil),
+			iterDisk(dir, nil),
+			func(a, b any, reason string) {
+				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
+			},
+		)
+		ce(err)
+		if !ok {
+			t.Fatal()
+		}
+
+		// build(zip(disk, disk) : disk
+		zipped = zip(
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
+			nil,
+		)
+		left = unzip(
+			zipped,
+			func(item ZipItem) any {
+				return item.A
+			},
+			nil,
+		)
+		file = new(File)
+		err = Copy(
+			left,
+			build(file, nil),
+		)
+		ce(err)
+		file = file.Subs[0].File
+		ok, err = equal(
+			iterFile(file, nil),
+			iterDisk(dir, nil),
+			func(a, b any, reason string) {
+				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
+			},
+		)
+		ce(err)
+		if !ok {
+			t.Fatal()
+		}
+
 	}
 
 }

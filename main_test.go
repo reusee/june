@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-package ling
+package june
 
 import (
 	"context"
@@ -18,14 +18,14 @@ import (
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/store"
-	"github.com/reusee/ling/v2/storedisk"
-	"github.com/reusee/ling/v2/storekv"
-	"github.com/reusee/ling/v2/storemem"
-	"github.com/reusee/ling/v2/storepebble"
-	"github.com/reusee/ling/v2/sys"
-	"github.com/reusee/ling/v2/vars"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
+	"github.com/reusee/june/storedisk"
+	"github.com/reusee/june/storekv"
+	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/storepebble"
+	"github.com/reusee/june/sys"
+	"github.com/reusee/june/vars"
 	"github.com/reusee/pr"
 )
 

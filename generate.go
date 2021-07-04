@@ -2,7 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-package ling
+package june
 
 //go:generate go build  -o gen-api.exe generate/api.go
 //go:generate ./gen-api.exe

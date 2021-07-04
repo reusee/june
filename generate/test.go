@@ -128,7 +128,7 @@ func main() {
 		buf := new(bytes.Buffer)
 		_, err = buf.WriteString(`// +build !step1 !step2 ` + OS + `
 
-		package ling
+		package june
 
 		import (
 			` + func() string {

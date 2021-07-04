@@ -4,7 +4,7 @@
 
 package opts
 
-import "github.com/reusee/ling/v2/key"
+import "github.com/reusee/june/key"
 
 type (
 	any = interface{}

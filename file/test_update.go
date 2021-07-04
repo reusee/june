@@ -12,15 +12,15 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/clock"
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/fsys"
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/store"
-	"github.com/reusee/ling/v2/storekv"
-	"github.com/reusee/ling/v2/storemem"
-	"github.com/reusee/ling/v2/storepebble"
-	"github.com/reusee/ling/v2/tx"
+	"github.com/reusee/june/clock"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
+	"github.com/reusee/june/storekv"
+	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/storepebble"
+	"github.com/reusee/june/tx"
 )
 
 func TestUpdate(

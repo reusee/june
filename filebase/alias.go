@@ -10,7 +10,7 @@ import (
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/key"
+	"github.com/reusee/june/key"
 )
 
 type (

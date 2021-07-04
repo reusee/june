@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/sys"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 )
 

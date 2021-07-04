@@ -11,9 +11,9 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/entity"
-	"github.com/reusee/ling/v2/file"
-	"github.com/reusee/ling/v2/filebase"
+	"github.com/reusee/june/entity"
+	"github.com/reusee/june/file"
+	"github.com/reusee/june/filebase"
 	"github.com/reusee/pp"
 )
 

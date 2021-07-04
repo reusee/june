@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/entity"
+	"github.com/reusee/june/entity"
 )
 
 type IterFile func(file *File, cont Src) Src

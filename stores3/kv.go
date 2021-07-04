@@ -11,7 +11,7 @@ import (
 
 	"github.com/minio/minio-go/v7"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/storekv"
+	"github.com/reusee/june/storekv"
 )
 
 func (k *KV) KeyExists(key string) (_ bool, err error) {

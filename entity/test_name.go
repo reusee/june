@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/reusee/ling/v2/clock"
-	"github.com/reusee/ling/v2/naming"
+	"github.com/reusee/june/clock"
+	"github.com/reusee/june/naming"
 )
 
 func TestNewName(

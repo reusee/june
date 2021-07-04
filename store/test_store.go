@@ -15,9 +15,9 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/codec"
-	"github.com/reusee/ling/v2/key"
-	"github.com/reusee/ling/v2/opts"
+	"github.com/reusee/june/codec"
+	"github.com/reusee/june/key"
+	"github.com/reusee/june/opts"
 	"github.com/reusee/sb"
 )
 

@@ -5,8 +5,8 @@
 package flush
 
 import (
-	"github.com/reusee/ling/v2/index"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
 )
 
 type Flush func() error

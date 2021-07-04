@@ -10,7 +10,7 @@ import (
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4"
-	"github.com/reusee/ling/v2/store"
+	"github.com/reusee/june/store"
 )
 
 type TestKV func(
