@@ -14,6 +14,7 @@ import (
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/file"
 	"github.com/reusee/june/filebase"
+	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
 )
 
@@ -34,6 +35,7 @@ func (_ Def) TesetFS(
 	save entity.SaveEntity,
 	iterFile file.IterFile,
 	newFileFS filebase.NewFileFS,
+	shuffleDir fsys.ShuffleDir,
 ) TestFS {
 
 	return func(
@@ -46,9 +48,20 @@ func (_ Def) TesetFS(
 	) {
 		defer he(nil, e4.TestingFatal(t))
 
+		dataDir := t.TempDir()
+		for i := 0; i < 64; i++ {
+			shuffleDir(dataDir)
+		}
+		dataDirName := filepath.Base(dataDir)
+		var numFiles int
+		ce(filepath.WalkDir(dataDir, func(_ string, _ fs.DirEntry, err error) error {
+			numFiles++
+			return err
+		}))
+
 		root := new(filebase.File)
 		ce(pp.Copy(
-			iterDisk("testdata", nil),
+			iterDisk(dataDir, nil),
 			build(root, nil),
 		))
 		file1 := root.Subs[0].File
@@ -73,23 +86,20 @@ func (_ Def) TesetFS(
 				t.Fatal()
 			}
 
-			_, err = os.Stat(filepath.Join(dir, "testdata"))
-			ce(err)
+			ce(filepath.WalkDir(dataDir, func(path string, entry fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				rel, err := filepath.Rel(dataDir, path)
+				ce(err)
+				rel = filepath.Join(dataDirName, rel)
+				_, err = os.Stat(filepath.Join(dir, rel))
+				ce(err)
+				return nil
+			}))
 
-			_, err = os.Stat(filepath.Join(dir, "testdata", "zip"))
-			ce(err)
-
-			stat, err := os.Stat(filepath.Join(dir, "testdata", "zip", "all_test"))
-			ce(err)
-			if stat.IsDir() {
-				t.Fatal()
-			}
-
-			//pt("%s\n", dir)
-			//select {}
-
-			var numFile int
-			ce(filepath.Walk(filepath.Join(dir, "testdata"), func(
+			var n int
+			ce(filepath.Walk(dir, func(
 				path string,
 				info os.FileInfo,
 				err error,
@@ -97,15 +107,15 @@ func (_ Def) TesetFS(
 				if err != nil {
 					t.Fatal(err)
 				}
-				numFile++
+				n++
 				return nil
 			}))
-			if numFile != 160 {
-				t.Fatalf("got %d\n", numFile)
+			if n != numFiles+1 {
+				t.Fatalf("expected %d, got %d\n", numFiles, n)
 			}
 
 			var numFile2 int
-			ce(filepath.WalkDir(filepath.Join(dir, "testdata"), func(
+			ce(filepath.WalkDir(dir, func(
 				path string,
 				entry fs.DirEntry,
 				err error,
@@ -116,13 +126,13 @@ func (_ Def) TesetFS(
 				numFile2++
 				return nil
 			}))
-			if numFile2 != 160 {
+			if numFile2 != numFiles+1 {
 				t.Fatal()
 			}
 
 			iter := zip(
-				iterDisk(filepath.Join(dir, "testdata"), nil),
-				iterDisk("testdata", nil),
+				iterDisk(filepath.Join(dir, dataDirName), nil),
+				iterDisk(dataDir, nil),
 				nil,
 			)
 			for {
@@ -140,8 +150,8 @@ func (_ Def) TesetFS(
 			}
 
 			ok, err := equal(
-				iterDisk(filepath.Join(dir, "testdata"), nil),
-				iterDisk("testdata", nil),
+				iterDisk(filepath.Join(dir, dataDirName), nil),
+				iterDisk(dataDir, nil),
 				func(a, b any, reason string) {
 					pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 				},
@@ -153,7 +163,7 @@ func (_ Def) TesetFS(
 
 			var root2 filebase.File
 			ce(pp.Copy(
-				iterDisk(filepath.Join(dir, "testdata"), nil),
+				iterDisk(filepath.Join(dir, dataDirName), nil),
 				build(&root2, nil),
 			))
 			file2 := root2.Subs[0].File
@@ -174,25 +184,6 @@ func (_ Def) TesetFS(
 				}
 				t.Fatal()
 			}
-
-			//fi, err := os.CreateTemp(dir, "")
-			//ce(err)
-			//ce(fi.Close())
-
-			//file, err := os.OpenFile(
-			//	filepath.Join(dir, "testdata", ".gitignore"),
-			//	os.O_RDWR,
-			//	0,
-			//)
-			//ce(err)
-			//_, err = file.Write([]byte("foo"))
-			//ce(err)
-			//ce(file.Close())
-
-			//err = os.RemoveAll(filepath.Join(dir, "testdata"))
-			//if !is(err, os.ErrPermission) {
-			//	t.Fatalf("got %v", err)
-			//}
 
 		})
 

@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	ce, he = e4.Check, e4.Handle
+	ce, he = e4.CheckWithStacktrace, e4.Handle
 	as     = errors.As
 	pt     = fmt.Printf
 	is     = errors.Is
