@@ -35,15 +35,20 @@ func TestFileFS(
 	var expectes []string
 	var numFiles int
 	ce(filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		numFiles++
 		rel, err := filepath.Rel(dir, path)
-		ce(err)
+		if err != nil {
+			return err
+		}
 		if rel == "." {
 			return nil
 		}
 		rel = strings.ReplaceAll(rel, string([]rune{os.PathSeparator}), "/")
 		expectes = append(expectes, rel)
-		return err
+		return nil
 	}))
 
 	var root File
