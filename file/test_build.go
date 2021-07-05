@@ -77,7 +77,6 @@ func TestBuild(
 
 		// disk file
 		var numFile int64
-		var numRead int64
 		ce(pp.Copy(
 			iterDisk(dir, nil),
 			build(
@@ -85,15 +84,9 @@ func TestBuild(
 				TapBuildFile(func(info FileInfo, file *File) {
 					atomic.AddInt64(&numFile, 1)
 				}),
-				TapReadFile(func(info FileInfo) {
-					atomic.AddInt64(&numRead, 1)
-				}),
 			),
 		))
 		if numFile == 0 {
-			t.Fatal()
-		}
-		if numRead == 0 {
 			t.Fatal()
 		}
 
