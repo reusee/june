@@ -216,7 +216,7 @@ var memIndexManager = func(
 }
 
 var storeDefs = []any{
-	// disk pebble
+	// mem pebble
 	0: func(
 		t *testing.T,
 		newPebble storepebble.New,
@@ -224,8 +224,7 @@ var storeDefs = []any{
 		wt *pr.WaitTree,
 	) store.Store {
 		defer he(nil, e4.TestingFatal(t))
-		dir := t.TempDir()
-		peb, err := newPebble(nil, dir)
+		peb, err := newPebble(storepebble.NewMemFS(), "peb")
 		ce(err)
 		done := wt.Add()
 		go func() {
@@ -263,37 +262,8 @@ var storeDefs = []any{
 	// mem
 	2: memStore,
 
-	// disk with cache
-	3: func(
-		t *testing.T,
-		newDiskStore storedisk.New,
-		newKV storekv.New,
-		newMemCache store.NewMemCache,
-		wt *pr.WaitTree,
-	) store.Store {
-		defer he(nil, e4.TestingFatal(t))
-		dir := t.TempDir()
-		s, err := newDiskStore(dir)
-		ce(err)
-		done := wt.Add()
-		go func() {
-			defer done()
-			<-wt.Ctx.Done()
-			ce(s.Close())
-		}()
-		cache, err := newMemCache(1024, 2048)
-		ce(err)
-		kv, err := newKV(
-			s,
-			"foo",
-			storekv.WithCache(cache),
-		)
-		ce(err)
-		return kv
-	},
-
 	// pebble batch
-	4: func(
+	3: func(
 		t *testing.T,
 		newPebble storepebble.New,
 		wt *pr.WaitTree,
