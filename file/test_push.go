@@ -9,6 +9,7 @@ import (
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/entity"
+	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
@@ -26,12 +27,19 @@ func TestPushFile(
 	indexManager index.IndexManager,
 	scope Scope,
 	iterFile IterFile,
+	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
+	dir := t.TempDir()
+	for i := 0; i < 64; i++ {
+		_, _, _, err := shuffleDir(dir)
+		ce(err)
+	}
+
 	file := new(File)
 	ce(pp.Copy(
-		iterDisk("testdata", nil),
+		iterDisk(dir, nil),
 		build(file, nil),
 	))
 	summary, err := save(file)

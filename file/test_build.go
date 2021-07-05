@@ -9,12 +9,14 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
 )
 
 func TestBuild(
 	t *testing.T,
 	scope Scope,
+	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
@@ -66,11 +68,18 @@ func TestBuild(
 			t.Fatal()
 		}
 
+		// prepare disk file
+		dir := t.TempDir()
+		for i := 0; i < 64; i++ {
+			_, _, _, err := shuffleDir(dir)
+			ce(err)
+		}
+
 		// disk file
 		var numFile int64
 		var numRead int64
 		ce(pp.Copy(
-			iterDisk("testdata", nil),
+			iterDisk(dir, nil),
 			build(
 				&root, nil,
 				TapBuildFile(func(info FileInfo, file *File) {
@@ -90,7 +99,7 @@ func TestBuild(
 
 		// compare
 		ok, err := equal(
-			iterDisk("testdata", nil),
+			iterDisk(dir, nil),
 			iterFile(root.Subs[0].File, nil),
 			nil,
 		)
