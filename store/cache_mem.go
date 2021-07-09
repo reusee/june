@@ -6,7 +6,6 @@ package store
 
 import (
 	"bytes"
-	"fmt"
 
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/reusee/e4"
@@ -56,39 +55,39 @@ func (m *MemCache) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 	return nil
 }
 
-func (m *MemCache) CachePut(key Key, tokens sb.Tokens) error {
+func (m *MemCache) CachePut(
+	key Key,
+	tokens sb.Tokens,
+	options ...CachePutOption,
+) error {
 	if key.Valid() {
 		if m.cache.Contains(key) {
 			return nil
 		}
 	}
 
+	var encodedLen *int
+	for _, option := range options {
+		switch option := option.(type) {
+		case EncodedLen:
+			l := int(option)
+			encodedLen = &l
+		}
+	}
+
 	if m.maxSize > 0 {
-		size := 0
-		for _, token := range tokens {
-			size++
-			if token.Value != nil {
-				switch v := token.Value.(type) {
-				case bool, int8, uint8:
-					size++
-				case int16, uint16:
-					size += 2
-				case int32, uint32, float32:
-					size += 4
-				case int, uint, int64, uint64, float64:
-					size += 8
-				case string:
-					size += 16 + len(v)
-				case []byte:
-					size += 24 + len(v)
-				default:
-					panic(fmt.Errorf("%T not handled", v))
-				}
-			}
-			if size > m.maxSize {
-				// ignore
-				return nil
-			}
+		var size int
+		if encodedLen != nil {
+			size = *encodedLen
+		} else {
+			ce(sb.Copy(
+				tokens.Iter(),
+				sb.EncodedLen(&size, nil),
+			))
+		}
+		if size > m.maxSize {
+			// ignore
+			return nil
 		}
 	}
 

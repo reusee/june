@@ -285,7 +285,7 @@ func (s *Store) Write(
 
 	// put cache
 	if s.cache != nil && len(tokens) > 0 {
-		err := s.cache.CachePut(res.Key, tokens)
+		err := s.cache.CachePut(res.Key, tokens, store.EncodedLen(encodedLen))
 		ce(err)
 	}
 

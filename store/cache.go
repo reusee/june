@@ -12,5 +12,13 @@ type Cache interface {
 	CacheGet(Key, func(sb.Stream) error) error
 
 	// CachePut must save tokens as encoded form
-	CachePut(Key, sb.Tokens) error
+	CachePut(Key, sb.Tokens, ...CachePutOption) error
 }
+
+type CachePutOption interface {
+	IsCachePutOption()
+}
+
+type EncodedLen int
+
+func (_ EncodedLen) IsCachePutOption() {}

@@ -6,6 +6,7 @@ package storekv
 
 import (
 	"github.com/reusee/e4"
+	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
 
@@ -23,7 +24,7 @@ func (s *Store) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 	return nil
 }
 
-func (s *Store) CachePut(_ Key, _ sb.Tokens) error {
+func (s *Store) CachePut(key Key, tokes sb.Tokens, options ...store.CachePutOption) error {
 	// ignore
 	return nil
 }
