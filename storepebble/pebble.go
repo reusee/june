@@ -69,7 +69,7 @@ func (_ Def) New(
 			Comparer:                    pebbleComparer,
 			MaxOpenFiles:                maxOpenFiles,
 			MemTableSize:                32 * 1024 * 1024,
-			MemTableStopWritesThreshold: 3,
+			MemTableStopWritesThreshold: 2,
 			Logger:                      new(Logger),
 			//EventListener: pebble.EventListener{
 			//	CompactionBegin: func(info pebble.CompactionInfo) {
