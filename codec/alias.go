@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 	we = e4.Wrap
 

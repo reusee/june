@@ -177,13 +177,50 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 		defer he(&err)
 		var tokens sb.Tokens
 		var sum []byte
-		if err := sb.Copy(
-			s.codec.Decode(sb.Decode(r)),
-			sb.CollectTokens(&tokens),
-			sb.Hash(s.newHashState, &sum, nil),
-		); err != nil {
-			return err
+
+		if len(s.offloads) > 0 {
+			// offload
+			if err := sb.Copy(
+				sb.Deref(
+					s.codec.Decode(sb.Decode(r)),
+					func(value []byte) (sb.Stream, error) {
+						if !bytes.Equal(value, []byte("offloaded")) {
+							return nil, nil
+						}
+						for _, offload := range s.offloads {
+							offloadStore := offload(key, -1)
+							var offloadTokens sb.Tokens
+							err := offloadStore.Read(key, func(s sb.Stream) error {
+								return sb.Copy(
+									s,
+									sb.CollectTokens(&offloadTokens),
+								)
+							})
+							if is(err, ErrKeyNotFound) {
+								continue
+							}
+							ce(err)
+							return offloadTokens.Iter(), nil
+						}
+						return nil, nil
+					},
+				),
+				sb.CollectTokens(&tokens),
+				sb.Hash(s.newHashState, &sum, nil),
+			); err != nil {
+				return err
+			}
+
+		} else {
+			if err := sb.Copy(
+				s.codec.Decode(sb.Decode(r)),
+				sb.CollectTokens(&tokens),
+				sb.Hash(s.newHashState, &sum, nil),
+			); err != nil {
+				return err
+			}
 		}
+
 		if !bytes.Equal(key.Hash[:], sum) {
 			return we(ErrKeyNotMatch, e4.With(key))
 		}
@@ -230,10 +267,12 @@ func (s *Store) Write(
 
 	var hash []byte
 	var tokens sb.Tokens
+	var encodedLen int
 	if err = sb.Copy(
 		stream,
 		sb.Hash(s.newHashState, &hash, nil),
 		sb.CollectTokens(&tokens),
+		sb.EncodedLen(&encodedLen, nil),
 	); err != nil {
 		return
 	}
@@ -258,6 +297,24 @@ func (s *Store) Write(
 		return
 	}
 
+	// offload
+	offloaded := false
+	if len(s.offloads) > 0 {
+		for _, offload := range s.offloads {
+			offloadStore := offload(res.Key, encodedLen)
+			if offloadStore == nil {
+				continue
+			}
+			offloaded = true
+			result, e := offloadStore.Write(ns, tokens.Iter(), options...)
+			ce(e)
+			if result.Key != res.Key {
+				err = we(ErrKeyNotMatch)
+				return
+			}
+		}
+	}
+
 	v, put := bytesBufferPool.Get()
 	buf := v.(*bytes.Buffer)
 	defer func() {
@@ -275,13 +332,27 @@ func (s *Store) Write(
 			sb.Encode(buf),
 		)
 	}
+
+	var src sb.Stream
+	if offloaded {
+		src = sb.Tokens{
+			{
+				Kind:  sb.KindRef,
+				Value: []byte("offloaded"),
+			},
+		}.Iter()
+	} else {
+		src = tokens.Iter()
+	}
+
 	if err = sb.Copy(
-		tokens.Iter(),
+		src,
 		sink,
 	); err != nil {
 		return
 	}
 	res.BytesWritten += int64(buf.Len())
+
 	err = s.kv.KeyPut(path, buf)
 	ce(err)
 

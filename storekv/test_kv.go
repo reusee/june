@@ -31,7 +31,26 @@ func (_ Def) TestKV(
 		),
 	) {
 		defer he(nil, e4.TestingFatal(t))
+
 		withStore := func(storeFunc func(store.Store), provides ...any) {
+			with(func(kv KV, prefix string) {
+				scope.Sub(provides...).Call(func(
+					newStore New,
+					codec Codec,
+				) {
+					store, err := newStore(
+						kv, prefix,
+						WithCodec(codec),
+					)
+					ce(err)
+					storeFunc(store)
+				})
+			})
+		}
+		testStore(withStore, t)
+
+		// cache
+		withStore = func(storeFunc func(store.Store), provides ...any) {
 			with(func(kv KV, prefix string) {
 				scope.Sub(provides...).Call(func(
 					newStore New,
@@ -40,9 +59,43 @@ func (_ Def) TestKV(
 				) {
 					cache, err := newMemCache(1024, 8192)
 					ce(err)
-					store, err := newStore(kv, prefix, WithCodec(codec), WithCache(cache))
+					store, err := newStore(
+						kv, prefix,
+						WithCodec(codec),
+						WithCache(cache),
+					)
 					ce(err)
 					storeFunc(store)
+				})
+			})
+		}
+		testStore(withStore, t)
+
+		// offload
+		withStore = func(storeFunc func(store.Store), provides ...any) {
+			with(func(offloadKV KV, prefix string) {
+				scope.Call(func(
+					newStore New,
+				) {
+					offloadStore, err := newStore(offloadKV, "offload")
+					ce(err)
+					with(func(kv KV, prefix string) {
+						scope.Sub(provides...).Call(func(
+							newStore New,
+							codec Codec,
+						) {
+							store, err := newStore(
+								kv,
+								prefix,
+								WithCodec(codec),
+								WithOffload(func(key Key, l int) store.Store {
+									return offloadStore
+								}),
+							)
+							ce(err)
+							storeFunc(store)
+						})
+					})
 				})
 			})
 		}

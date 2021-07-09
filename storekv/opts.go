@@ -4,6 +4,8 @@
 
 package storekv
 
+import "github.com/reusee/june/store"
+
 type withCodec struct {
 	Codec Codec
 }
@@ -35,3 +37,10 @@ func (_ WithoutRead) IsNewOption() {}
 type WithoutWrite struct{}
 
 func (_ WithoutWrite) IsNewOption() {}
+
+type WithOffload func(
+	key Key,
+	length int,
+) store.Store
+
+func (_ WithOffload) IsNewOption() {}

@@ -28,7 +28,7 @@ require (
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
 	github.com/reusee/pr v0.0.0-20210516083936-327176ab5209
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
-	github.com/reusee/sb v0.0.0-20210624154515-b77d987545e5
+	github.com/reusee/sb v0.0.0-20210709041158-85c00714bf27
 	github.com/reusee/starlarkutil v0.0.0-20210318165519-05bcd557628b
 	github.com/rs/xid v1.3.0 // indirect
 	go.starlark.net v0.0.0-20210602144842-1cdb82c9e17a

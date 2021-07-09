@@ -50,6 +50,7 @@ type Store struct {
 	readDisabled  bool
 	writeDisabled bool
 	parallel      int
+	offloads      []WithOffload
 }
 
 var _ store.Store = new(Store)
@@ -84,6 +85,7 @@ func (_ Def) New(
 		var cache Cache
 		writeDisabled := false
 		readDisabled := false
+		var offloads []WithOffload
 
 		for _, option := range options {
 			switch option := option.(type) {
@@ -95,6 +97,8 @@ func (_ Def) New(
 				writeDisabled = true
 			case WithoutRead:
 				readDisabled = true
+			case WithOffload:
+				offloads = append(offloads, option)
 			default:
 				panic(fmt.Errorf("not handled option: %T", option))
 			}
@@ -115,6 +119,7 @@ func (_ Def) New(
 			writeDisabled: writeDisabled,
 			readDisabled:  readDisabled,
 			parallel:      int(parallel),
+			offloads:      offloads,
 		}
 
 		return store, nil
