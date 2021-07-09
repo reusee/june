@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/cockroachdb/errors v1.8.5 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20210701144746-0aa9fa9f3e8a
+	github.com/cockroachdb/pebble v0.0.0-20210708204644-a2a79f3d6223
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/klauspost/compress v1.13.1
-	github.com/klauspost/cpuid/v2 v2.0.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.8 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.12
 	github.com/minio/sha256-simd v1.0.0 // indirect
@@ -28,12 +28,12 @@ require (
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
 	github.com/reusee/pr v0.0.0-20210516083936-327176ab5209
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
-	github.com/reusee/sb v0.0.0-20210709041158-85c00714bf27
+	github.com/reusee/sb v0.0.0-20210709051922-381af69d8bcf
 	github.com/reusee/starlarkutil v0.0.0-20210318165519-05bcd557628b
 	github.com/rs/xid v1.3.0 // indirect
 	go.starlark.net v0.0.0-20210602144842-1cdb82c9e17a
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/exp v0.0.0-20210625193404-fa9d1d177d71 // indirect
+	golang.org/x/exp v0.0.0-20210708220649-8d2525e7e0e6 // indirect
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	golang.org/x/tools v0.1.3
