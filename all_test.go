@@ -2,6 +2,8 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
+// +build !step1 !step2
+
 package june
 
 import (

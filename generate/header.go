@@ -46,6 +46,9 @@ func main() {
 
 		skip := 0
 		for i, line := range lines {
+			if bytes.Contains(line, []byte("+build")) {
+				break
+			}
 			if bytes.HasPrefix(line, []byte("//")) {
 				skip = i + 1
 			} else {
