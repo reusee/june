@@ -189,6 +189,9 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 						}
 						for _, offload := range s.offloads {
 							offloadStore := offload(key, -1)
+							if offloadStore == nil {
+								continue
+							}
 							var offloadTokens sb.Tokens
 							err := offloadStore.Read(key, func(s sb.Stream) error {
 								return sb.Copy(
