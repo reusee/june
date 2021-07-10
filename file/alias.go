@@ -35,7 +35,7 @@ type (
 var (
 	pt = fmt.Printf
 	is = errors.Is
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 
 	Copy = pp.Copy

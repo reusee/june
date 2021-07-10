@@ -22,9 +22,9 @@ type (
 var (
 	is = errors.Is
 	pt = fmt.Printf
-	we = e4.Wrap
+	we = e4.WrapWithStacktrace
 	he = e4.Handle
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 
 	Break = store.Break
 

@@ -23,6 +23,6 @@ type (
 var (
 	pt = fmt.Printf
 	sp = fmt.Sprintf
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 )

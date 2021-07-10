@@ -31,7 +31,7 @@ func TestStore(
 			newStore New,
 		) {
 			upstream, err := newKV(newMem(), "foo")
-			e4.Check(err)
+			ce(err)
 			store := newStore(upstream, Funcs{})
 			fn(store)
 		})

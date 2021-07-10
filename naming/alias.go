@@ -7,5 +7,5 @@ package naming
 import "github.com/reusee/e4"
 
 var (
-	ce, he = e4.Check, e4.Handle
+	ce, he = e4.CheckWithStacktrace, e4.Handle
 )

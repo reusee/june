@@ -4,6 +4,12 @@
 
 package storetap
 
+import "github.com/reusee/e4"
+
 type (
 	any = interface{}
+)
+
+var (
+	ce = e4.CheckWithStacktrace
 )

@@ -31,8 +31,8 @@ type (
 var (
 	is = errors.Is
 	pt = fmt.Printf
-	we = e4.Wrap
-	ce = e4.Check
+	we = e4.WrapWithStacktrace
+	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 
 	Break = store.Break

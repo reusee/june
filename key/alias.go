@@ -7,7 +7,7 @@ package key
 import "github.com/reusee/e4"
 
 var (
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 	he = e4.Handle
-	we = e4.Wrap
+	we = e4.WrapWithStacktrace
 )

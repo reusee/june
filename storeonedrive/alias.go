@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	we = e4.Wrap
-	ce = e4.Check
+	we = e4.WrapWithStacktrace
+	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 	pt = fmt.Printf
 	as = errors.As

@@ -13,7 +13,7 @@ import (
 var (
 	ce = e4.CheckWithStacktrace
 	he = e4.Handle
-	we = e4.Wrap
+	we = e4.WrapWithStacktrace
 
 	pt = fmt.Printf
 )

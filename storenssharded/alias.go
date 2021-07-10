@@ -25,5 +25,5 @@ var (
 	is = errors.Is
 	pt = fmt.Printf
 	he = e4.Handle
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 )

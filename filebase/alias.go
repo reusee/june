@@ -22,8 +22,8 @@ type (
 )
 
 var (
-	ce, he = e4.Check, e4.Handle
-	we     = e4.Wrap
+	ce, he = e4.CheckWithStacktrace, e4.Handle
+	we     = e4.WrapWithStacktrace
 	is     = errors.Is
 	pt     = fmt.Printf
 )

@@ -61,6 +61,6 @@ func main() {
 }
 
 var (
-	ce = e4.Check
+	ce = e4.CheckWithStacktrace
 	pt = fmt.Printf
 )

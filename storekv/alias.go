@@ -35,7 +35,7 @@ var (
 	pt = fmt.Printf
 	ce = e4.CheckWithStacktrace
 	he = e4.Handle
-	we = e4.Wrap
+	we = e4.WrapWithStacktrace
 
 	Break = store.Break
 

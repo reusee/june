@@ -22,7 +22,7 @@ import (
 
 var (
 	pt     = fmt.Printf
-	ce, he = e4.Check, e4.Handle
+	ce, he = e4.CheckWithStacktrace, e4.Handle
 )
 
 func main() {
