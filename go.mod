@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/cockroachdb/errors v1.8.5 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20210708204644-a2a79f3d6223
+	github.com/cockroachdb/pebble v0.0.0-20210709205950-ea60b4722cca
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -33,7 +33,7 @@ require (
 	github.com/rs/xid v1.3.0 // indirect
 	go.starlark.net v0.0.0-20210602144842-1cdb82c9e17a
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/exp v0.0.0-20210708220649-8d2525e7e0e6 // indirect
+	golang.org/x/exp v0.0.0-20210709195130-ecdcf02a369a // indirect
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	golang.org/x/tools v0.1.3
