@@ -20,13 +20,13 @@ require (
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.3
 	github.com/reusee/dscope v0.0.0-20210624154226-c7a9659995e1
-	github.com/reusee/e4 v0.0.0-20210710034820-e3788cff4eaf
+	github.com/reusee/e4 v0.0.0-20210710045002-e0d2a4069a09
 	github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
-	github.com/reusee/pr v0.0.0-20210516083936-327176ab5209
+	github.com/reusee/pr v0.0.0-20210710045508-c894fb1b7198
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
 	github.com/reusee/sb v0.0.0-20210709051922-381af69d8bcf
 	github.com/reusee/starlarkutil v0.0.0-20210318165519-05bcd557628b
