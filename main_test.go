@@ -109,7 +109,7 @@ func runTest(
 	// run
 	if len(specs) == 1 {
 		spec := specs[0]
-		waitTree := pr.NewWaitTree(nil, nil)
+		waitTree := pr.NewWaitTree(nil)
 		spec.Defs = append(spec.Defs,
 			func() *testing.T {
 				return t
@@ -137,7 +137,7 @@ func runTest(
 				strings.Join(spec.Desc, ":"),
 				func(t *testing.T) {
 					t.Parallel()
-					waitTree := pr.NewWaitTree(nil, nil)
+					waitTree := pr.NewWaitTree(nil)
 					spec.Defs = append(spec.Defs,
 						func() *testing.T {
 							return t
@@ -177,12 +177,6 @@ var indexManagerDefs = []any{
 		defer he(nil, e4.TestingFatal(t))
 		peb, err := newPebble(storepebble.NewMemFS(), "foo")
 		ce(err)
-		done := wt.Add()
-		go func() {
-			defer done()
-			<-wt.Ctx.Done()
-			ce(peb.Close())
-		}()
 		return peb
 	},
 
@@ -198,13 +192,6 @@ var indexManagerDefs = []any{
 		ce(err)
 		batch, err := newBatch(peb)
 		ce(err)
-		done := wt.Add()
-		go func() {
-			defer done()
-			<-wt.Ctx.Done()
-			ce(batch.Close())
-			ce(peb.Close())
-		}()
 		return batch
 	},
 }
@@ -226,12 +213,6 @@ var storeDefs = []any{
 		defer he(nil, e4.TestingFatal(t))
 		peb, err := newPebble(storepebble.NewMemFS(), "peb")
 		ce(err)
-		done := wt.Add()
-		go func() {
-			defer done()
-			<-wt.Ctx.Done()
-			ce(peb.Close())
-		}()
 		s, err := newKV(peb, "foo")
 		ce(err)
 		return s
@@ -248,12 +229,6 @@ var storeDefs = []any{
 		dir := t.TempDir()
 		s, err := newDiskStore(dir)
 		ce(err)
-		done := wt.Add()
-		go func() {
-			defer done()
-			<-wt.Ctx.Done()
-			ce(s.Close())
-		}()
 		kv, err := newKV(s, "foo")
 		ce(err)
 		return kv
@@ -277,14 +252,6 @@ var storeDefs = []any{
 		ce(err)
 		kv, err := newKV(batch, "foo")
 		ce(err)
-		done := wt.Add()
-		go func() {
-			defer done()
-			<-wt.Ctx.Done()
-			ce(kv.Close())
-			ce(batch.Close())
-			ce(peb.Close())
-		}()
 		return kv
 	},
 }

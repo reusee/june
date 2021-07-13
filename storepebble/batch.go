@@ -52,8 +52,10 @@ func (_ Def) NewBatch(
 			store: store,
 			batch: batch,
 		}
-		b.WaitTree = pr.NewWaitTree(rootWaitTree, func() {
-			ce(b.Close())
+		b.WaitTree = pr.NewWaitTree(rootWaitTree)
+		b.WaitTree.Go(func() {
+			<-b.WaitTree.Ctx.Done()
+			ce(batch.Close())
 		})
 		return b, nil
 	}
@@ -65,18 +67,6 @@ func (b *Batch) Name() string {
 
 func (b *Batch) StoreID() string {
 	return b.store.StoreID()
-}
-
-func (b *Batch) Close() (err error) {
-	b.Lock()
-	defer b.Unlock()
-	b.closeOnce.Do(func() {
-		b.Cancel()
-		b.Wait()
-		err = b.batch.Close()
-		b.Done()
-	})
-	return
 }
 
 func (b *Batch) Sync() error {
@@ -92,17 +82,12 @@ func (b *Batch) Commit() (err error) {
 	defer he(&err)
 	b.Lock()
 	defer b.Unlock()
-	b.closeOnce.Do(func() {
-		b.Wait()
-		b.Cancel()
-		ce(b.batch.Commit(writeOptions))
-		b.Done()
-	})
+	ce(b.batch.Commit(writeOptions))
 	return
 }
 
 func (b *Batch) Abort() error {
-	return b.Close()
+	return b.batch.Close()
 }
 
 var _ storekv.KV = new(Batch)

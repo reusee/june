@@ -6,21 +6,20 @@ package storestacked
 
 import (
 	"fmt"
-	"sync"
 	"sync/atomic"
 
 	"github.com/reusee/june/store"
+	"github.com/reusee/pr"
 )
 
 type Store struct {
+	*pr.WaitTree
 	name        string
 	Upstream    store.Store
 	Backing     store.Store
 	id          StoreID
 	ReadPolicy  ReadPolicy
 	WritePolicy WritePolicy
-	closed      chan struct{}
-	closeOnce   sync.Once
 }
 
 type WritePolicy uint8
@@ -45,7 +44,9 @@ type New func(
 	WritePolicy,
 ) (*Store, error)
 
-func (_ Def) New() New {
+func (_ Def) New(
+	parentWt *pr.WaitTree,
+) New {
 	return func(
 		upstream store.Store,
 		backing store.Store,
@@ -53,11 +54,16 @@ func (_ Def) New() New {
 		writePolicy WritePolicy,
 	) (_ *Store, err error) {
 		defer he(&err)
+
 		id1, err := upstream.ID()
 		ce(err)
 		id2, err := backing.ID()
 		ce(err)
+
+		wt := pr.NewWaitTree(parentWt)
+
 		return &Store{
+			WaitTree: wt,
 			name: fmt.Sprintf("stacked%d(%s, %s)",
 				atomic.AddInt64(&serial, 1),
 				upstream.Name(),
@@ -68,7 +74,6 @@ func (_ Def) New() New {
 			Backing:     backing,
 			ReadPolicy:  readPolicy,
 			WritePolicy: writePolicy,
-			closed:      make(chan struct{}),
 		}, nil
 	}
 }

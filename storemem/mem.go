@@ -10,25 +10,28 @@ import (
 	"sync/atomic"
 
 	"github.com/google/btree"
+	"github.com/reusee/pr"
 )
 
 type Store struct {
+	*pr.WaitTree
 	name   string
 	index  *btree.BTree
 	values sync.Map
 	sync.RWMutex
-	closed    chan struct{}
-	closeOnce sync.Once
 }
 
 type New func() *Store
 
-func (_ Def) New() New {
+func (_ Def) New(
+	parentWt *pr.WaitTree,
+) New {
 	return func() *Store {
+		wt := pr.NewWaitTree(parentWt)
 		return &Store{
-			name:   fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),
-			index:  btree.New(2),
-			closed: make(chan struct{}),
+			WaitTree: wt,
+			name:     fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),
+			index:    btree.New(2),
 		}
 	}
 }
@@ -41,11 +44,4 @@ func (s *Store) Name() string {
 
 func (s *Store) StoreID() string {
 	return s.name
-}
-
-func (s *Store) Close() error {
-	s.closeOnce.Do(func() {
-		close(s.closed)
-	})
-	return nil
 }

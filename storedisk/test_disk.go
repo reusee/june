@@ -23,7 +23,6 @@ func TestStore(
 		ce(err)
 		s, err := newStore(dir)
 		ce(err)
-		defer s.Close()
 		fn(s, "foo")
 	}
 	test(t, with)
@@ -40,7 +39,6 @@ func TestStoreSoftDelete(
 		ce(err)
 		s, err := newStore(dir, SoftDelete(true))
 		ce(err)
-		defer s.Close()
 		fn(s, "foo")
 	}
 	test(t, with)

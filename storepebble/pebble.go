@@ -99,8 +99,11 @@ func (_ Def) New(
 			DB: db,
 		}
 
-		s.WaitTree = pr.NewWaitTree(rootWaitTree, func() {
-			ce(s.Close())
+		s.WaitTree = pr.NewWaitTree(rootWaitTree)
+		s.WaitTree.Go(func() {
+			<-s.WaitTree.Ctx.Done()
+			ce(s.DB.Flush())
+			ce(s.DB.Close())
 		})
 
 		return s, nil
@@ -160,23 +163,6 @@ func catchErr(errp *error, errs ...error) {
 		}
 	}
 	panic(p)
-}
-
-func (s *Store) Close() (err error) {
-	defer he(&err)
-	s.closeOnce.Do(func() {
-		// cancel context
-		s.Cancel()
-		// wait
-		s.Wait()
-		// flush
-		ce(s.DB.Flush())
-		// close
-		ce(s.DB.Close())
-		// done
-		s.Done()
-	})
-	return
 }
 
 func (s *Store) Sync() (err error) {

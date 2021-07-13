@@ -45,7 +45,6 @@ func TestKV(
 			config.TestBucket,
 		)
 		ce(err)
-		defer kv.Close()
 		fn(kv, strconv.FormatInt(rand.Int63(), 10))
 	}
 	testKV(t, with)

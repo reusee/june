@@ -92,9 +92,7 @@ func (_ Def) New(
 			secret:   secret,
 		}
 
-		kv.WaitTree = pr.NewWaitTree(rootWaitTree, func() {
-			ce(kv.Close())
-		})
+		kv.WaitTree = pr.NewWaitTree(rootWaitTree)
 
 		return kv, nil
 	}
@@ -108,13 +106,4 @@ func (k *KV) Name() string {
 
 func (k *KV) StoreID() string {
 	return k.storeID
-}
-
-func (k *KV) Close() error {
-	k.closeOnce.Do(func() {
-		k.Cancel()
-		k.Wait()
-		k.Done()
-	})
-	return nil
 }

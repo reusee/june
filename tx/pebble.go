@@ -30,7 +30,6 @@ func UsePebbleTx(
 
 		batch, err := newBatch(peb)
 		ce(err)
-		defer batch.Close()
 		defer he(&err, func(err error) error {
 			if e := batch.Abort(); e != nil {
 				return e4.MakeErr(e, err)

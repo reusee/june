@@ -23,10 +23,6 @@ func (s *Store) ID() (StoreID, error) {
 	return s.getID()
 }
 
-func (s *Store) Close() error {
-	return s.kv.Close()
-}
-
 func (s *Store) Exists(key Key) (bool, error) {
 	path := s.keyToPath(key)
 	return s.kv.KeyExists(path)

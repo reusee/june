@@ -43,7 +43,7 @@ func (s *Store) pathToKey(path string) string {
 
 func (s *Store) KeyExists(key string) (ok bool, err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -61,7 +61,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 
 func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -81,7 +81,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 
 func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -133,7 +133,7 @@ func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 
 func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -215,7 +215,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 func (s *Store) KeyDelete(keys ...string) (err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -241,7 +241,7 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 
 func (s *Store) Sync() error {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}

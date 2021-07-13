@@ -25,7 +25,6 @@ func TestKV(
 		ce(err)
 		s, err := newStore(nil, dir)
 		ce(err)
-		defer s.Close()
 		fn(s, "foo")
 	}
 	test(t, with)

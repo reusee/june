@@ -30,8 +30,6 @@ type Store struct {
 	syncPending int32
 	softDelete  SoftDelete
 	noSync      bool
-	closed      chan struct{}
-	closeOnce   sync.Once
 }
 
 type NewOption interface {
@@ -73,7 +71,7 @@ func (_ Def) New(
 		ce(err)
 		err = setRestrictedPath(dir)
 		ce(err)
-		wt := pr.NewWaitTree(rootWaitTree, nil)
+		wt := pr.NewWaitTree(rootWaitTree)
 		store := &Store{
 			name: fmt.Sprintf("disk%d(%s)",
 				atomic.AddInt64(&serial, 1),
@@ -87,7 +85,6 @@ func (_ Def) New(
 			dir:       dir,
 			ensureDir: ensureDir,
 			noSync:    noSync,
-			closed:    make(chan struct{}),
 		}
 		for _, option := range options {
 			switch option := option.(type) {
@@ -109,14 +106,4 @@ func (s *Store) Name() string {
 
 func (s *Store) StoreID() string {
 	return s.storeID
-}
-
-func (s *Store) Close() error {
-	s.closeOnce.Do(func() {
-		s.Cancel()
-		close(s.closed)
-		s.Wait()
-		s.Done()
-	})
-	return nil
 }

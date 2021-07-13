@@ -5,7 +5,6 @@
 package storenssharded
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -89,29 +88,6 @@ var _ store.Store = new(Store)
 
 func (s *Store) Name() string {
 	return s.name
-}
-
-func (s *Store) Close() error {
-	var errs []error
-	for _, s := range s.shards {
-		if err := s.Close(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if err := s.defaultStore.Close(); err != nil {
-		errs = append(errs, err)
-	}
-	if len(errs) > 0 {
-		var b strings.Builder
-		for i, err := range errs {
-			if i > 0 {
-				b.WriteString("\n")
-			}
-			b.WriteString(err.Error())
-		}
-		return errors.New(b.String())
-	}
-	return nil
 }
 
 func (s *Store) ID() (StoreID, error) {

@@ -27,10 +27,8 @@ func TestBatchKV(
 		ce(err)
 		s, err := newStore(nil, dir)
 		ce(err)
-		defer s.Close()
 		batch, err := newBatch(s)
 		ce(err)
-		defer batch.Close()
 		fn(batch, "foo")
 	}
 	test(t, with)
@@ -47,10 +45,8 @@ func TestBatchIndex(
 	ce(err)
 	s, err := newStore(nil, dir)
 	ce(err)
-	defer s.Close()
 	batch, err := newBatch(s)
 	ce(err)
-	defer batch.Close()
 	with := func(fn func(index.IndexManager)) {
 		fn(batch)
 	}

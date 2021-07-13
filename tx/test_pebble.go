@@ -30,11 +30,9 @@ func TestPebbleTx(
 	dir := t.TempDir()
 	peb, err := newPeb(nil, dir)
 	ce(err)
-	defer peb.Close()
 
 	kv, err := newKV(peb, "foo")
 	ce(err)
-	defer kv.Close()
 
 	scope.Sub(
 		func() KVToStore {
@@ -247,7 +245,6 @@ func TestPebbleTxEntityDelete(
 	dir := t.TempDir()
 	peb, err := newPeb(nil, dir)
 	ce(err)
-	defer peb.Close()
 
 	scope.Sub(
 		func() KVToStore {

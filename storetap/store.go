@@ -20,8 +20,7 @@ type Store struct {
 }
 
 type Funcs struct {
-	ID    func(store.ID, error)
-	Close func(error)
+	ID func(store.ID, error)
 
 	Sync func(error)
 
@@ -92,15 +91,6 @@ func (s *Store) ID() (id store.ID, err error) {
 		}
 	}()
 	return s.upstream.ID()
-}
-
-func (s *Store) Close() (err error) {
-	defer func() {
-		if s.funcs.Close != nil {
-			s.funcs.Close(err)
-		}
-	}()
-	return s.upstream.Close()
 }
 
 func (s *Store) Sync() (err error) {

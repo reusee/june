@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/pr"
 )
 
 type New func(
@@ -27,7 +28,7 @@ type New func(
 ) (*Store, error)
 
 type Store struct {
-	ctx       context.Context
+	*pr.WaitTree
 	name      string
 	storeID   string
 	dirOK     sync.Map
@@ -35,12 +36,10 @@ type Store struct {
 	drivePath string
 	dir       string
 	idByPath  sync.Map
-	closed    chan struct{}
-	closeOnce sync.Once
 }
 
 func (_ Def) New(
-	ctx context.Context,
+	parentWt *pr.WaitTree,
 ) New {
 	return func(
 		client *http.Client,
@@ -51,7 +50,10 @@ func (_ Def) New(
 		err error,
 	) {
 
+		wt := pr.NewWaitTree(parentWt)
+
 		return &Store{
+			WaitTree: wt,
 			name: fmt.Sprintf("onedrive%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				dir,
@@ -60,11 +62,9 @@ func (_ Def) New(
 				drivePath,
 				dir,
 			),
-			ctx:       ctx,
 			client:    client,
 			drivePath: path.Clean(drivePath),
 			dir:       dir,
-			closed:    make(chan struct{}),
 		}, nil
 	}
 }
@@ -77,13 +77,6 @@ func (s *Store) Name() string {
 
 func (s *Store) StoreID() string {
 	return s.storeID
-}
-
-func (s *Store) Close() error {
-	s.closeOnce.Do(func() {
-		close(s.closed)
-	})
-	return nil
 }
 
 var ErrNotFound = errors.New("not found")
@@ -99,7 +92,7 @@ func (s *Store) req(
 	target any,
 ) (err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -147,7 +140,7 @@ func (s *Store) request(
 	contentType string,
 ) (_ *http.Response, err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return nil, ErrClosed
 	default:
 	}

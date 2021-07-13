@@ -12,7 +12,6 @@ type IndexManager interface {
 	Name() string
 	IndexFor(StoreID) (Index, error)
 	Sync() error
-	Close() error
 }
 
 type SaveOption interface {

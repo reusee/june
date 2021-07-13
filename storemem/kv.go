@@ -17,7 +17,7 @@ var _ storekv.KV = new(Store)
 
 func (s *Store) KeyExists(key string) (bool, error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -27,7 +27,7 @@ func (s *Store) KeyExists(key string) (bool, error) {
 
 func (s *Store) KeyGet(key string, fn func(r io.Reader) error) (err error) {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -47,7 +47,7 @@ func (s *Store) KeyGet(key string, fn func(r io.Reader) error) (err error) {
 
 func (s *Store) KeyIter(prefix string, fn func(key string) error) error {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -70,7 +70,7 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) error {
 
 func (s *Store) KeyPut(key string, r io.Reader) error {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -85,7 +85,7 @@ func (s *Store) KeyPut(key string, r io.Reader) error {
 
 func (s *Store) KeyDelete(keys ...string) error {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -97,7 +97,7 @@ func (s *Store) KeyDelete(keys ...string) error {
 
 func (s *Store) Sync() error {
 	select {
-	case <-s.closed:
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}

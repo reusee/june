@@ -26,7 +26,6 @@ func TestMixedIndex(
 		dir := t.TempDir()
 		s, err := newStore(nil, dir)
 		ce(err)
-		defer s.Close()
 
 		buf := new(bytes.Buffer)
 		if err := sb.Copy(
@@ -58,7 +57,6 @@ func TestMixedKV(
 		ce(err)
 		s, err := newStore(nil, dir)
 		ce(err)
-		defer s.Close()
 
 		entry := index.NewEntry(TestingIndex, 42)
 

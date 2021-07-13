@@ -309,19 +309,6 @@ func (_ Def) TestStore(
 				}
 			})
 
-			t.Run("close", func(t *testing.T) {
-				ce(store.Close())
-				// should allow multiple close
-				ce(store.Close())
-				ce(store.Close())
-				_, err := store.Write(
-					ns, sb.Marshal(42),
-				)
-				if !is(err, ErrClosed) {
-					t.Fatal()
-				}
-			})
-
 		}
 
 		withStore(

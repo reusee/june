@@ -50,7 +50,6 @@ func TestWatch(
 		TrackFiles(true),
 	)
 	ce(err)
-	defer w.Close()
 	<-initOK
 	<-w.Ready
 

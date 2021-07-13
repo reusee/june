@@ -22,7 +22,6 @@ func TestIndex(
 
 	s, err := newStore(nil, dir)
 	ce(err)
-	defer s.Close()
 	with := func(fn func(index.IndexManager)) {
 		fn(s)
 	}

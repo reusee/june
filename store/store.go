@@ -24,7 +24,6 @@ type ID string
 type Store interface {
 	ID() (ID, error)
 	Name() string
-	Close() error
 
 	Sync() error
 

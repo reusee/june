@@ -5,7 +5,6 @@
 package fsys
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +17,7 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/pr"
 )
 
 type WatchOption interface {
@@ -34,11 +34,9 @@ type Watch func(
 
 type Watcher struct {
 	sync.RWMutex
+	*pr.WaitTree
 	path         string
 	pathParts    []string
-	closeOnce    sync.Once
-	closing      chan struct{}
-	closed       chan struct{}
 	root         *Node
 	tapUpdate    TapUpdatePaths
 	singleDevice bool
@@ -49,7 +47,7 @@ type Watcher struct {
 }
 
 func (_ Def) Watch(
-	rootCtx context.Context,
+	parentWt *pr.WaitTree,
 ) (
 	watch Watch,
 ) {
@@ -94,18 +92,15 @@ func (_ Def) Watch(
 			}
 		}
 
-		closing := make(chan struct{})
-		closed := make(chan struct{})
 		root := new(Node)
 		do := make(chan func())
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		wt := pr.NewWaitTree(parentWt)
 
 		watcher := &Watcher{
+			WaitTree:     wt,
 			path:         path,
 			pathParts:    strings.Split(path, PathSeparator),
-			closing:      closing,
-			closed:       closed,
 			root:         root,
 			singleDevice: singleDevice,
 			device:       device,
@@ -114,7 +109,7 @@ func (_ Def) Watch(
 		}
 
 		add, err := sysWatcher(
-			ctx,
+			wt.Ctx,
 			path,
 			watcher,
 			tapUpdate,
@@ -125,9 +120,6 @@ func (_ Def) Watch(
 
 		// loop
 		go func() {
-			defer func() {
-				close(closed)
-			}()
 
 			for {
 				select {
@@ -135,8 +127,7 @@ func (_ Def) Watch(
 				case fn := <-do:
 					fn()
 
-				case <-closing:
-					cancel()
+				case <-wt.Ctx.Done():
 					return
 
 				}
@@ -157,14 +148,6 @@ func (_ Def) Watch(
 	}
 
 	return
-}
-
-func (f *Watcher) Close() error {
-	f.closeOnce.Do(func() {
-		close(f.closing)
-		<-f.closed
-	})
-	return nil
 }
 
 func (w *Watcher) PathNotChanged(

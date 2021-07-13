@@ -34,7 +34,6 @@ func TestUpdate(
 
 	store, err := newKV(newMem(), "test")
 	ce(err)
-	defer store.Close()
 
 	scope.Sub(func() Store {
 		return store
@@ -52,7 +51,6 @@ func TestUpdate(
 		dir := t.TempDir()
 		watcher, err := watch(dir)
 		ce(err)
-		defer watcher.Close()
 
 		// build
 		t0 := getTime()
@@ -174,13 +172,9 @@ func TestFileWithTx(
 	defer he(nil, e4.TestingFatal(t))
 
 	dir := t.TempDir()
-	watcher, err := watch(dir)
-	ce(err)
-	defer watcher.Close()
 
 	peb, err := newPeb(storepebble.NewMemFS(), "")
 	ce(err)
-	defer peb.Close()
 
 	scope.Sub(
 		func() tx.KVToStore {
