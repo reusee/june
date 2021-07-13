@@ -136,7 +136,7 @@ func (_ Def) Set(
 			return err
 		}
 		if err := store.db.Set([]byte(key), buf.Bytes(), &pebble.WriteOptions{
-			Sync: true,
+			Sync: false,
 		}); err != nil {
 			return err
 		}
