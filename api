@@ -167,9 +167,6 @@ filebase.ToContentsWithTx
 filebase.WriteContents
 	func(keys []key.Key, w io.Writer) (err error)
 
-flush.Flush
-	func() error
-
 fsys.EnsureDir
 	func(path string) error
 

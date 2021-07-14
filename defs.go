@@ -11,7 +11,6 @@ import (
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/file"
 	"github.com/reusee/june/filebase"
-	"github.com/reusee/june/flush"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/key"
@@ -38,7 +37,6 @@ var Defs = dscope.Methods(
 	entity.Def{},
 	file.Def{},
 	filebase.Def{},
-	flush.Def{},
 	fsys.Def{},
 	index.Def{},
 	key.Def{},
