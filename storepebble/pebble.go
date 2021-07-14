@@ -46,7 +46,7 @@ func (_ Def) New(
 	ensureDir fsys.EnsureDir,
 	cacheSize CacheSize,
 	setRestrictedPath fsys.SetRestrictedPath,
-	rootWaitTree *pr.WaitTree,
+	parentWt *pr.WaitTree,
 	machine naming.MachineName,
 ) New {
 	return func(
@@ -99,9 +99,10 @@ func (_ Def) New(
 			DB: db,
 		}
 
-		s.WaitTree = pr.NewWaitTree(rootWaitTree)
-		s.WaitTree.Go(func() {
-			<-s.WaitTree.Ctx.Done()
+		s.WaitTree = pr.NewWaitTree(parentWt)
+		parentWt.Go(func() {
+			<-parentWt.Ctx.Done()
+			s.WaitTree.Wait()
 			ce(s.DB.Flush())
 			ce(s.DB.Close())
 		})

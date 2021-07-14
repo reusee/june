@@ -50,10 +50,8 @@ func (_ Def) New(
 		err error,
 	) {
 
-		wt := pr.NewWaitTree(parentWt)
-
 		return &Store{
-			WaitTree: wt,
+			WaitTree: parentWt,
 			name: fmt.Sprintf("onedrive%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				dir,

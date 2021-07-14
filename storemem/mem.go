@@ -27,9 +27,8 @@ func (_ Def) New(
 	parentWt *pr.WaitTree,
 ) New {
 	return func() *Store {
-		wt := pr.NewWaitTree(parentWt)
 		return &Store{
-			WaitTree: wt,
+			WaitTree: parentWt,
 			name:     fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),
 			index:    btree.New(2),
 		}

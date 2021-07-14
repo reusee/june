@@ -50,7 +50,7 @@ type NewOption interface {
 
 func (_ Def) New(
 	timeout Timeout,
-	rootWaitTree *pr.WaitTree,
+	parentWt *pr.WaitTree,
 ) New {
 	return func(
 		endpoint string,
@@ -75,6 +75,7 @@ func (_ Def) New(
 		ce(err)
 
 		kv := &KV{
+			WaitTree: parentWt,
 			name: fmt.Sprintf("s3%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				bucket,
@@ -91,8 +92,6 @@ func (_ Def) New(
 			key:      key,
 			secret:   secret,
 		}
-
-		kv.WaitTree = pr.NewWaitTree(rootWaitTree)
 
 		return kv, nil
 	}

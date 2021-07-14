@@ -95,10 +95,8 @@ func (_ Def) Watch(
 		root := new(Node)
 		do := make(chan func())
 
-		wt := pr.NewWaitTree(parentWt)
-
 		watcher := &Watcher{
-			WaitTree:     wt,
+			WaitTree:     parentWt,
 			path:         path,
 			pathParts:    strings.Split(path, PathSeparator),
 			root:         root,
@@ -109,7 +107,7 @@ func (_ Def) Watch(
 		}
 
 		add, err := sysWatcher(
-			wt.Ctx,
+			parentWt.Ctx,
 			path,
 			watcher,
 			tapUpdate,
@@ -127,7 +125,7 @@ func (_ Def) Watch(
 				case fn := <-do:
 					fn()
 
-				case <-wt.Ctx.Done():
+				case <-parentWt.Ctx.Done():
 					return
 
 				}

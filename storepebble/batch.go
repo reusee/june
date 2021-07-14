@@ -37,7 +37,7 @@ type NewBatch func(
 ) (*Batch, error)
 
 func (_ Def) NewBatch(
-	rootWaitTree *pr.WaitTree,
+	parentWaitTree *pr.WaitTree,
 ) NewBatch {
 	return func(
 		store *Store,
@@ -52,9 +52,10 @@ func (_ Def) NewBatch(
 			store: store,
 			batch: batch,
 		}
-		b.WaitTree = pr.NewWaitTree(rootWaitTree)
-		b.WaitTree.Go(func() {
-			<-b.WaitTree.Ctx.Done()
+		b.WaitTree = pr.NewWaitTree(parentWaitTree)
+		parentWaitTree.Go(func() {
+			<-parentWaitTree.Ctx.Done()
+			b.WaitTree.Wait()
 			ce(batch.Close())
 		})
 		return b, nil

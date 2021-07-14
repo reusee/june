@@ -55,7 +55,7 @@ func (_ Def) New(
 	ensureDir fsys.EnsureDir,
 	setRestrictedPath fsys.SetRestrictedPath,
 	isTesting sys.Testing,
-	rootWaitTree *pr.WaitTree,
+	parentWt *pr.WaitTree,
 	machine naming.MachineName,
 ) New {
 
@@ -71,8 +71,8 @@ func (_ Def) New(
 		ce(err)
 		err = setRestrictedPath(dir)
 		ce(err)
-		wt := pr.NewWaitTree(rootWaitTree)
 		store := &Store{
+			WaitTree: parentWt,
 			name: fmt.Sprintf("disk%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				filepath.Base(dir),
@@ -81,7 +81,6 @@ func (_ Def) New(
 				machine,
 				dir,
 			),
-			WaitTree:  wt,
 			dir:       dir,
 			ensureDir: ensureDir,
 			noSync:    noSync,

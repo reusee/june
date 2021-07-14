@@ -60,10 +60,8 @@ func (_ Def) New(
 		id2, err := backing.ID()
 		ce(err)
 
-		wt := pr.NewWaitTree(parentWt)
-
 		return &Store{
-			WaitTree: wt,
+			WaitTree: parentWt,
 			name: fmt.Sprintf("stacked%d(%s, %s)",
 				atomic.AddInt64(&serial, 1),
 				upstream.Name(),
