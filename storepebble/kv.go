@@ -111,7 +111,6 @@ func (s *Store) keyPut(
 		ce(err)
 	}
 	ce(set(bsKey, bs, writeOptions))
-	s.sync()
 	return nil
 }
 
@@ -226,6 +225,5 @@ func (s *Store) keyDelete(
 		)
 	}
 
-	s.sync()
 	return nil
 }

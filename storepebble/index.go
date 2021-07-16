@@ -50,8 +50,7 @@ func (s *Store) IndexFor(id StoreID) (index.Index, error) {
 		withRLock: func(fn func()) {
 			fn()
 		},
-		sync: s.sync,
-		id:   id,
+		id: id,
 	}, nil
 }
 
@@ -67,7 +66,6 @@ type Index struct {
 	newIter func(*pebble.IterOptions) *pebble.Iterator
 
 	withRLock func(func())
-	sync      func()
 	id        StoreID
 }
 
@@ -128,7 +126,6 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 	if err = i.set(bs, []byte{}, writeOptions); err != nil {
 		return err
 	}
-	i.sync()
 
 	for _, tap := range tapEntry {
 		tap(entry)
@@ -165,7 +162,6 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	if err = i.delete(buf.Bytes(), writeOptions); err != nil {
 		return err
 	}
-	i.sync()
 	return nil
 }
 

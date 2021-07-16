@@ -252,7 +252,6 @@ func (b *Batch) IndexFor(id StoreID) (index.Index, error) {
 			defer b.l.RUnlock()
 			fn()
 		},
-		sync: func() {},
-		id:   id,
+		id: id,
 	}, nil
 }

@@ -8,12 +8,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
-	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/vfs"
@@ -25,15 +22,9 @@ import (
 
 type Store struct {
 	*pr.WaitTree
-
 	name    string
 	storeID string
-
-	DB *pebble.DB
-
-	syncPending int32
-
-	closeOnce sync.Once
+	DB      *pebble.DB
 }
 
 // create new pebble store
@@ -167,65 +158,7 @@ func catchErr(errp *error, errs ...error) {
 }
 
 func (s *Store) Sync() (err error) {
-	defer he(&err)
-	defer catchErr(&err, pebble.ErrClosed)
-	defer s.Add()()
-	err = s.DB.Flush()
-	ce(err)
 	return nil
-}
-
-func (s *Store) sync() {
-	defer s.Add()()
-
-	if !atomic.CompareAndSwapInt32(&s.syncPending, 0, 1) {
-		return
-	}
-
-	done := s.Add()
-	timer := time.AfterFunc(time.Second*10, func() {
-		defer done()
-		defer atomic.StoreInt32(&s.syncPending, 0)
-		defer catchErr(nil, pebble.ErrClosed)
-		func() {
-
-			defer func() {
-				p := recover()
-				if p == nil {
-					return
-				}
-				if e, ok := p.(error); ok {
-					if errors.As(e, new(*os.PathError)) {
-						// skip file not found error
-					} else if errors.Is(e, os.ErrClosed) {
-						// skip file already closed error
-					} else {
-						panic(p)
-					}
-				} else {
-					panic(p)
-				}
-			}()
-
-			ce(s.DB.Flush())
-
-		}()
-	})
-
-	go func() {
-		select {
-		case <-s.Ctx.Done():
-			// cancel timer
-			if !timer.Stop() {
-				// func started
-			} else {
-				// func not start
-				done()
-			}
-		case <-timer.C:
-		}
-	}()
-
 }
 
 var writeOptions = &pebble.WriteOptions{
