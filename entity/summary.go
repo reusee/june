@@ -163,20 +163,19 @@ func (_ Def) SummaryIndexFuncs(
 		err error,
 	) {
 		defer he(&err)
-		topKey := summary.Key
-		ce(summary.iterAll(func(path []Key, summary Summary) (err error) {
+		ce(summary.iterAll(func(path []Key, subSummary Summary) (err error) {
 			defer he(&err)
-			if summary.Indexes == nil {
+			if subSummary.Indexes == nil {
 				return
 			}
-			for _, idx := range *summary.Indexes {
+			for _, idx := range *subSummary.Indexes {
 				key := path[len(path)-1]
 				entry := idx.Clone()
 				entry.Key = &key
 				entries = append(entries, entry)
 				if len(path) > 1 {
 					entries = append(entries,
-						NewEntry(IdxEmbeddedBy, key, topKey),
+						NewEntry(IdxEmbeddedBy, key, summary.Key),
 					)
 				}
 			}
@@ -193,18 +192,17 @@ func (_ Def) SummaryIndexFuncs(
 		err error,
 	) {
 		defer he(&err)
-		topKey := summary.Key
-		ce(summary.iterAll(func(path []Key, summary Summary) (err error) {
+		ce(summary.iterAll(func(path []Key, subSummary Summary) (err error) {
 			defer he(&err)
-			if summary.Indexes == nil {
+			if subSummary.Indexes == nil {
 				return
 			}
-			for _, idx := range *summary.Indexes {
+			for _, idx := range *subSummary.Indexes {
 				key := path[len(path)-1]
 				if len(path) > 1 {
 					// embedded
 					entries = append(entries,
-						NewEntry(IdxEmbeddedBy, key, topKey),
+						NewEntry(IdxEmbeddedBy, key, summary.Key),
 					)
 					//  check ref
 					var n int
