@@ -220,23 +220,16 @@ func Iter(
 
 		// prefix
 		if match != nil {
-			tupleLen := len(match.Tuple) + 1
 			lower = &Entry{
-				Type: match.Type,
+				Type:  match.Type,
+				Tuple: append(match.Tuple[:0:0], match.Tuple...),
 			}
+			lower.Tuple = append(lower.Tuple, sb.Min)
 			upper = &Entry{
-				Type: match.Type,
+				Type:  match.Type,
+				Tuple: append(match.Tuple[:0:0], match.Tuple...),
 			}
-			for _, elem := range match.Tuple {
-				lower.Tuple = append(lower.Tuple, elem)
-				upper.Tuple = append(upper.Tuple, elem)
-			}
-			for i := len(lower.Tuple); i < tupleLen; i++ {
-				lower.Tuple = append(lower.Tuple, sb.Min)
-			}
-			for i := len(upper.Tuple); i < tupleLen; i++ {
-				upper.Tuple = append(upper.Tuple, sb.Max)
-			}
+			upper.Tuple = append(upper.Tuple, sb.Max)
 		}
 
 		// exact
