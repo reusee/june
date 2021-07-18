@@ -61,8 +61,20 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 		}),
 	)
 	ce(err)
+	preTokens, err := sb.TokensFromStream(
+		sb.Marshal(StoreIndex{
+			ID: i.id,
+			Value: sb.Marshal(index.PreEntry{
+				Key:   *entry.Key,
+				Type:  entry.Type,
+				Tuple: entry.Tuple,
+			}),
+		}),
+	)
+	ce(err)
 	i.store.Lock()
 	i.store.index.ReplaceOrInsert(Item{tokens})
+	i.store.index.ReplaceOrInsert(Item{preTokens})
 	i.store.Unlock()
 
 	for _, tap := range tapEntry {
@@ -81,8 +93,20 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 		}),
 	)
 	ce(err)
+	preTokens, err := sb.TokensFromStream(
+		sb.Marshal(index.StoreIndex{
+			ID: i.id,
+			Value: sb.Marshal(index.PreEntry{
+				Key:   *entry.Key,
+				Type:  entry.Type,
+				Tuple: entry.Tuple,
+			}),
+		}),
+	)
+	ce(err)
 	i.store.Lock()
 	i.store.index.Delete(Item{tokens})
+	i.store.index.Delete(Item{preTokens})
 	i.store.Unlock()
 	return nil
 }

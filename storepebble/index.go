@@ -98,33 +98,42 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 		}
 	}
 
-	buf := indexBufPool.Get().(*bytes.Buffer)
-	defer func() {
-		buf.Reset()
-		indexBufPool.Put(buf)
-	}()
-	if err := sb.Copy(
-		sb.Marshal(sb.Tuple{
-			Idx,
-			StoreIndex{
-				ID:    i.id,
-				Value: sb.Marshal(entry),
-			},
-		}),
-		sb.Encode(buf),
-	); err != nil {
-		return err
-	}
-	bs := buf.Bytes()
-	yes, err := i.exists(bs)
-	if err != nil {
-		return err
-	}
-	if yes {
-		return nil
-	}
-	if err = i.set(bs, []byte{}, writeOptions); err != nil {
-		return err
+	for _, obj := range []any{
+		entry,
+		index.PreEntry{
+			Key:   *entry.Key,
+			Type:  entry.Type,
+			Tuple: entry.Tuple,
+		},
+	} {
+		buf := indexBufPool.Get().(*bytes.Buffer)
+		defer func() {
+			buf.Reset()
+			indexBufPool.Put(buf)
+		}()
+		if err := sb.Copy(
+			sb.Marshal(sb.Tuple{
+				Idx,
+				StoreIndex{
+					ID:    i.id,
+					Value: sb.Marshal(obj),
+				},
+			}),
+			sb.Encode(buf),
+		); err != nil {
+			return err
+		}
+		bs := buf.Bytes()
+		yes, err := i.exists(bs)
+		if err != nil {
+			return err
+		}
+		if yes {
+			return nil
+		}
+		if err = i.set(bs, []byte{}, writeOptions); err != nil {
+			return err
+		}
 	}
 
 	for _, tap := range tapEntry {
@@ -142,26 +151,37 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	}
 	defer catchErr(&err, pebble.ErrClosed)
 	defer i.begin()()
-	buf := indexBufPool.Get().(*bytes.Buffer)
-	defer func() {
-		buf.Reset()
-		indexBufPool.Put(buf)
-	}()
-	if err := sb.Copy(
-		sb.Marshal(sb.Tuple{
-			Idx,
-			StoreIndex{
-				ID:    i.id,
-				Value: sb.Marshal(entry),
-			},
-		}),
-		sb.Encode(buf),
-	); err != nil {
-		return err
+
+	for _, obj := range []any{
+		entry,
+		index.PreEntry{
+			Key:   *entry.Key,
+			Type:  entry.Type,
+			Tuple: entry.Tuple,
+		},
+	} {
+		buf := indexBufPool.Get().(*bytes.Buffer)
+		defer func() {
+			buf.Reset()
+			indexBufPool.Put(buf)
+		}()
+		if err := sb.Copy(
+			sb.Marshal(sb.Tuple{
+				Idx,
+				StoreIndex{
+					ID:    i.id,
+					Value: sb.Marshal(obj),
+				},
+			}),
+			sb.Encode(buf),
+		); err != nil {
+			return err
+		}
+		if err = i.delete(buf.Bytes(), writeOptions); err != nil {
+			return err
+		}
 	}
-	if err = i.delete(buf.Bytes(), writeOptions); err != nil {
-		return err
-	}
+
 	return nil
 }
 
