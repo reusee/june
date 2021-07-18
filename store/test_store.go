@@ -13,6 +13,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/codec"
@@ -337,6 +338,36 @@ func (_ Def) TestStore(
 					fmt.Sprintf("aead-%x", key),
 					newAEAD,
 				)
+			},
+		)
+
+		// concurrent read and write
+		withStore(
+			func(
+				store Store,
+			) {
+				_, err := store.Write(ns, sb.Marshal(42))
+				ce(err)
+				if err := store.IterAllKeys(func(key Key) (err error) {
+					done := make(chan struct{})
+					go func() {
+						defer func() {
+							close(done)
+						}()
+						_, err = store.Write(ns, sb.Marshal(rand.Int63()))
+					}()
+					select {
+					case <-done:
+					case <-time.After(time.Second * 1):
+						t.Fatal("dead lock")
+					}
+					return
+				}); err != nil {
+					t.Fatal(err)
+				}
+			},
+			func() codec.Codec {
+				return codec.DefaultCodec
 			},
 		)
 
