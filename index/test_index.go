@@ -100,19 +100,34 @@ func (_ Def) TestIndex(
 						n := 0
 						err = selIndex(
 							Asc,
-							Call(func(name string, i int, key Key) {
-								if name != "index.testingIndex" {
-									t.Fatalf("got %s", name)
-								}
-								n++
-								if i != num {
-									t.Fatal()
-								}
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									// Entry
+									sb.Unmarshal(func(name string, i int, key Key) {
+										if name != "index.testingIndex" {
+											t.Fatalf("got %s", name)
+										}
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+									// PreEntry
+									sb.Unmarshal(func(key Key, name string, i int) {
+										if name != "index.testingIndex" {
+											t.Fatalf("got %s", name)
+										}
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 1 {
-							t.Fatal()
+						if n != 2 {
+							t.Fatalf("got %d\n", n)
 						}
 
 						// same tuple
@@ -123,33 +138,58 @@ func (_ Def) TestIndex(
 						n = 0
 						err = selIndex(
 							Asc,
-							Call(func(name string, i int, key Key) {
-								if name != "index.testingIndex" {
-									t.Fatal()
-								}
-								n++
-								if i != num {
-									t.Fatal()
-								}
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									// Entry
+									sb.Unmarshal(func(name string, i int, key Key) {
+										if name != "index.testingIndex" {
+											t.Fatal()
+										}
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+									// PreEntry
+									sb.Unmarshal(func(key Key, name string, i int) {
+										if name != "index.testingIndex" {
+											t.Fatal()
+										}
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 1 {
+						if n != 2 {
 							t.Fatal()
 						}
 
 						n = 0
 						err = selIndex(
 							Asc,
-							Call(func(name string, i int, key Key) {
-								n++
-								if i != num {
-									t.Fatal()
-								}
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									sb.Unmarshal(func(name string, i int, key Key) {
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+									sb.Unmarshal(func(key Key, name string, i int) {
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 1 {
+						if n != 2 {
 							t.Fatal()
 						}
 
@@ -157,15 +197,25 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							Asc,
-							Call(func(name string, i int, key Key) {
-								n++
-								if i != num {
-									t.Fatal()
-								}
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									sb.Unmarshal(func(name string, i int, key Key) {
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+									sb.Unmarshal(func(key Key, name string, i int) {
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 1 {
+						if n != 2 {
 							t.Fatalf("got %d", n)
 						}
 
@@ -173,15 +223,25 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							Asc,
-							Call(func(name string, i int, key Key) {
-								n++
-								if i != num {
-									t.Fatal()
-								}
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									sb.Unmarshal(func(name string, i int, key Key) {
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+									sb.Unmarshal(func(key Key, name string, i int) {
+										n++
+										if i != num {
+											t.Fatal()
+										}
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 1 {
+						if n != 2 {
 							t.Fatal()
 						}
 
@@ -260,21 +320,37 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							Desc,
-							Call(func(name string, i int, key Key) {
-								if n == 0 {
-									if i != num+1 {
-										t.Fatal()
-									}
-								} else if n == 1 {
-									if i != num {
-										t.Fatal()
-									}
-								}
-								n++
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									sb.Unmarshal(func(name string, i int, key Key) {
+										if n == 0 {
+											if i != num+1 {
+												t.Fatal()
+											}
+										} else if n == 1 {
+											if i != num {
+												t.Fatal()
+											}
+										}
+										n++
+									}),
+									sb.Unmarshal(func(key Key, name string, i int) {
+										if n == 0 {
+											if i != num+1 {
+												t.Fatal()
+											}
+										} else if n == 1 {
+											if i != num {
+												t.Fatal()
+											}
+										}
+										n++
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 2 {
+						if n != 4 {
 							t.Fatalf("got %d", n)
 						}
 
@@ -282,21 +358,37 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							Asc,
-							Call(func(name string, i int, key Key) {
-								if n == 1 {
-									if i != num+1 {
-										t.Fatal()
-									}
-								} else if n == 0 {
-									if i != num {
-										t.Fatal()
-									}
-								}
-								n++
+							Sink(func() sb.Sink {
+								return sb.AltSink(
+									sb.Unmarshal(func(name string, i int, key Key) {
+										if n == 1 {
+											if i != num+1 {
+												t.Fatal()
+											}
+										} else if n == 0 {
+											if i != num {
+												t.Fatal()
+											}
+										}
+										n++
+									}),
+									sb.Unmarshal(func(key Key, name string, i int) {
+										if n == 1 {
+											if i != num+1 {
+												t.Fatal()
+											}
+										} else if n == 0 {
+											if i != num {
+												t.Fatal()
+											}
+										}
+										n++
+									}),
+								)
 							}),
 						)
 						ce(err)
-						if n != 2 {
+						if n != 4 {
 							t.Fatal()
 						}
 
@@ -414,7 +506,7 @@ func (_ Def) TestIndex(
 							Call(func(args ...any) {
 							}),
 						))
-						if n != 5 {
+						if n != 10 {
 							t.Fatal()
 						}
 
@@ -448,7 +540,7 @@ func (_ Def) TestIndex(
 							Offset(0),
 							Count(&n),
 						))
-						if n != 5 {
+						if n != 10 {
 							t.Fatal()
 						}
 						n = 0
@@ -467,8 +559,8 @@ func (_ Def) TestIndex(
 							Offset(1),
 							Count(&n),
 						))
-						if n != 4 {
-							t.Fatal()
+						if n != 9 {
+							t.Fatalf("got %d\n", n)
 						}
 						n = 0
 						ce(Select(
@@ -476,7 +568,7 @@ func (_ Def) TestIndex(
 							Offset(2),
 							Count(&n),
 						))
-						if n != 3 {
+						if n != 8 {
 							t.Fatal()
 						}
 						n = 0
@@ -527,12 +619,18 @@ func (_ Def) TestIndex(
 						ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
 							s := v.(sb.Stream)
 							defer he(&err)
-							var entry Entry
+							var entry *Entry
+							var preEntry *PreEntry
 							ce(sb.Copy(
 								s,
-								sb.Unmarshal(&entry),
+								sb.AltSink(
+									sb.Unmarshal(&entry),
+									sb.Unmarshal(&preEntry),
+								),
 							))
-							toDelete = append(toDelete, entry)
+							if entry != nil {
+								toDelete = append(toDelete, *entry)
+							}
 							return nil
 						})))
 						ce(closer.Close())
