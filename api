@@ -183,7 +183,7 @@ fsys.Watch
 	func(path string, options ...fsys.WatchOption) (watcher *fsys.Watcher, err error)
 
 index.Index
-	interface{Delete(entry index.Entry) error; Iter(lower *index.Entry, upper *index.Entry, order index.Order) (pp.Src, io.Closer, error); Name() string; Save(entry index.Entry, options ...index.SaveOption) error}
+	interface{Delete(entry index.Entry) error; Iter(lower *sb.Tokens, upper *sb.Tokens, order index.Order) (pp.Src, io.Closer, error); Name() string; Save(entry index.Entry, options ...index.SaveOption) error}
 
 index.SelectIndex
 	func(args ...index.SelectOption) error
@@ -247,6 +247,9 @@ stores3.New
 
 stores3.Timeout
 	int64
+
+storesqlite.New
+	func(path string) (*storesqlite.Store, error)
 
 storestacked.New
 	func(store.Store, store.Store, storestacked.ReadPolicy, storestacked.WritePolicy) (*storestacked.Store, error)

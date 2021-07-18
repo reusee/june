@@ -15,6 +15,7 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/klauspost/compress v1.13.1
 	github.com/klauspost/cpuid/v2 v2.0.8 // indirect
+	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.12
 	github.com/minio/sha256-simd v1.0.0 // indirect
@@ -41,5 +42,4 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
-	modernc.org/sqlite v1.11.2
 )

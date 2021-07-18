@@ -22,6 +22,7 @@ import (
 	"github.com/reusee/june/storeonedrive"
 	"github.com/reusee/june/storepebble"
 	"github.com/reusee/june/stores3"
+	"github.com/reusee/june/storesqlite"
 	"github.com/reusee/june/storestacked"
 	"github.com/reusee/june/storetap"
 	"github.com/reusee/june/sys"
@@ -344,6 +345,11 @@ func Test_storepebble_TestMixedKV(t *testing.T) {
 func Test_stores3_TestKV(t *testing.T) {
 	t.Parallel()
 	runTest(t, stores3.TestKV)
+}
+
+func Test_storesqlite_TestKV(t *testing.T) {
+	t.Parallel()
+	runTest(t, storesqlite.TestKV)
 }
 
 func Test_storestacked_TestStore(t *testing.T) {

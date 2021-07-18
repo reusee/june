@@ -23,6 +23,7 @@ import (
 	"github.com/reusee/june/storeonedrive"
 	"github.com/reusee/june/storepebble"
 	"github.com/reusee/june/stores3"
+	"github.com/reusee/june/storesqlite"
 	"github.com/reusee/june/storestacked"
 	"github.com/reusee/june/storetap"
 	"github.com/reusee/june/sys"
@@ -49,6 +50,7 @@ var Defs = dscope.Methods(
 	storeonedrive.Def{},
 	storepebble.Def{},
 	stores3.Def{},
+	storesqlite.Def{},
 	storestacked.Def{},
 	storetap.Def{},
 	sys.Def{},
