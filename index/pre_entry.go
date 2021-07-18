@@ -76,8 +76,8 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	var types []reflect.Type
 	var entry PreEntry
 
-	var unmarshalTyped Sink
-	unmarshalTyped = func(token *sb.Token) (Sink, error) {
+	var unmarshalTyped sb.Sink
+	unmarshalTyped = func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
 			return nil, we(sb.ExpectingValue)
 		}
@@ -90,15 +90,15 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 		return ctx.Unmarshal(
 			ctx,
 			value,
-			func(token *sb.Token) (Sink, error) {
+			func(token *sb.Token) (sb.Sink, error) {
 				entry.Tuple = append(entry.Tuple, value.Elem().Interface())
 				return unmarshalTyped(token)
 			},
 		)(token)
 	}
 
-	var unmarshalUnknown Sink
-	unmarshalUnknown = func(token *sb.Token) (Sink, error) {
+	var unmarshalUnknown sb.Sink
+	unmarshalUnknown = func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
 			return nil, we(sb.ExpectingValue)
 		}
@@ -110,7 +110,7 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 		return ctx.Unmarshal(
 			ctx,
 			reflect.ValueOf(&value),
-			func(token *sb.Token) (Sink, error) {
+			func(token *sb.Token) (sb.Sink, error) {
 				entry.Tuple = append(entry.Tuple, value)
 				return unmarshalUnknown(token)
 			},
@@ -120,7 +120,7 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	unmarshalName := ctx.Unmarshal(
 		ctx,
 		reflect.ValueOf(&name),
-		func(token *sb.Token) (Sink, error) {
+		func(token *sb.Token) (sb.Sink, error) {
 			var spec Spec
 			v, ok := specsByName.Load(name)
 			if !ok {

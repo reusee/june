@@ -91,17 +91,17 @@ func Count(target *int) AssignCount {
 	}
 }
 
-type TupleSink func() any
+type Sink func() sb.Sink
 
-func (_ TupleSink) IsSelectOption() {}
+func (_ Sink) IsSelectOption() {}
 
-func Call(fn any) TupleSink {
-	return func() any {
-		return fn
+func Call(fn any) Sink {
+	return func() sb.Sink {
+		return sb.Unmarshal(fn)
 	}
 }
 
-func Tap(fn any) TupleSink {
+func Tap(fn any) Sink {
 	argTypes := []reflect.Type{
 		reflect.TypeOf((*string)(nil)).Elem(),
 	}
@@ -110,8 +110,8 @@ func Tap(fn any) TupleSink {
 	for i := 0; i < fnType.NumIn(); i++ {
 		argTypes = append(argTypes, fnType.In(i))
 	}
-	return func() any {
-		return reflect.MakeFunc(
+	return func() sb.Sink {
+		return sb.Unmarshal(reflect.MakeFunc(
 			reflect.FuncOf(
 				argTypes,
 				[]reflect.Type{},
@@ -121,7 +121,7 @@ func Tap(fn any) TupleSink {
 				fnValue.Call(args[1:])
 				return nil
 			},
-		).Interface()
+		).Interface())
 	}
 }
 
@@ -379,11 +379,11 @@ func Select(
 				option(tokens)
 			})
 
-		case TupleSink:
+		case Sink:
 			tokensFuncs = append(tokensFuncs, func(tokens sb.Tokens) {
 				ce(sb.Copy(
 					tokens.Iter(),
-					sb.Unmarshal(option()),
+					option(),
 				))
 			})
 

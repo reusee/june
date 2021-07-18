@@ -14,7 +14,6 @@ import (
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
 	"github.com/reusee/pp"
-	"github.com/reusee/sb"
 )
 
 var (
@@ -28,7 +27,6 @@ var (
 type (
 	any = interface{}
 
-	Sink  = sb.Sink
 	Scope = dscope.Scope
 
 	StoreID = store.ID
