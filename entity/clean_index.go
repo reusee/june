@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/reusee/june/index"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
@@ -83,23 +84,30 @@ func (_ Def) CleanIndex(
 								}
 								hasInvalidKey = true
 							}
-							if cont != nil {
-								return cont(token)
-							}
-							return nil, nil
+							return cont.Sink(token)
 						},
 					)
 				}
 
 				var entry IndexEntry
+				var preEntry index.PreEntry
 				ce(sb.Copy(
 					stream,
-					unmarshal(
-						sb.Ctx{
-							Unmarshal: unmarshal,
-						},
-						reflect.ValueOf(&entry),
-						nil,
+					sb.AltSink(
+						unmarshal(
+							sb.Ctx{
+								Unmarshal: unmarshal,
+							},
+							reflect.ValueOf(&entry),
+							nil,
+						),
+						unmarshal(
+							sb.Ctx{
+								Unmarshal: unmarshal,
+							},
+							reflect.ValueOf(&preEntry),
+							nil,
+						),
 					),
 				))
 
