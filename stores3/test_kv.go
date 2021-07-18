@@ -23,6 +23,9 @@ func TestKV(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
+	//TODO
+	t.Skip()
+
 	configDir, err := os.UserConfigDir()
 	ce(err)
 	content, err := os.ReadFile(filepath.Join(configDir, "qcloud-cos-key.toml"))
