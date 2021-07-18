@@ -54,7 +54,7 @@ func (_ Def) New(
 				time.Now().UnixNano(),
 				filepath.Base(path),
 			),
-			storeID: fmt.Sprintf("pebble(%s, %s)",
+			storeID: fmt.Sprintf("sqlite(%s, %s)",
 				machine,
 				path,
 			),
