@@ -140,6 +140,10 @@ func (_ Def) IndexGC(
 			put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
 				defer he(&err)
 				tokens := v.(sb.Tokens)
+				if tokens[1].Kind != sb.KindString {
+					// non-Entry
+					return nil
+				}
 				var entry IndexEntry
 				ce(sb.Copy(
 					tokens.Iter(),
