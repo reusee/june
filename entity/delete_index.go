@@ -66,7 +66,24 @@ func (_ Def) DeleteIndex(
 			stream := v.(sb.Stream)
 			defer he(&err)
 
-			entry, err := predict(stream)
+			tupleToken, err := stream.Next()
+			ce(err)
+			if tupleToken.Kind != sb.KindTuple {
+				panic("bad index stream")
+			}
+			firstToken, err := stream.Next()
+			ce(err)
+			if firstToken.Kind != sb.KindString {
+				// not Entry
+				return nil
+			}
+
+			s := sb.ConcatStreams(
+				sb.Tokens{*tupleToken, *firstToken}.Iter(),
+				stream,
+			)
+
+			entry, err := predict(s)
 			ce(err)
 
 			if entry != nil {
