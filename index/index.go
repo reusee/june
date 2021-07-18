@@ -6,6 +6,8 @@ package index
 
 import (
 	"io"
+
+	"github.com/reusee/sb"
 )
 
 type IndexManager interface {
@@ -23,8 +25,8 @@ func (_ TapEntry) IsSaveOption() {}
 type Index interface {
 	Name() string
 	Iter(
-		lower *Entry, // inclusive in any order
-		upper *Entry, // exclusive in any order
+		lower *sb.Tokens, // inclusive in any order
+		upper *sb.Tokens, // exclusive in any order
 		order Order,
 	) (Src, io.Closer, error)
 	Save(entry Entry, options ...SaveOption) error

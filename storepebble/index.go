@@ -108,7 +108,7 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 			Idx,
 			StoreIndex{
 				ID:    i.id,
-				Value: entry,
+				Value: sb.Marshal(entry),
 			},
 		}),
 		sb.Encode(buf),
@@ -152,7 +152,7 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 			Idx,
 			StoreIndex{
 				ID:    i.id,
-				Value: entry,
+				Value: sb.Marshal(entry),
 			},
 		}),
 		sb.Encode(buf),
@@ -176,8 +176,8 @@ type indexIter struct {
 }
 
 func (idx Index) Iter(
-	lower *IndexEntry,
-	upper *IndexEntry,
+	lower *sb.Tokens,
+	upper *sb.Tokens,
 	order index.Order,
 ) (pp.Src, io.Closer, error) {
 	select {
@@ -199,7 +199,7 @@ func (idx Index) Iter(
 				Idx,
 				StoreIndex{
 					ID:    idx.id,
-					Value: lower,
+					Value: lower.Iter(),
 				},
 			}),
 			sb.Encode(buf),
@@ -215,7 +215,7 @@ func (idx Index) Iter(
 				Idx,
 				StoreIndex{
 					ID:    idx.id,
-					Value: sb.Min,
+					Value: sb.Marshal(sb.Min),
 				},
 			}),
 			sb.Encode(buf),
@@ -233,7 +233,7 @@ func (idx Index) Iter(
 				Idx,
 				StoreIndex{
 					ID:    idx.id,
-					Value: upper,
+					Value: upper.Iter(),
 				},
 			}),
 			sb.Encode(buf),
@@ -249,7 +249,7 @@ func (idx Index) Iter(
 				Idx,
 				StoreIndex{
 					ID:    idx.id,
-					Value: sb.Max,
+					Value: sb.Marshal(sb.Max),
 				},
 			}),
 			sb.Encode(buf),

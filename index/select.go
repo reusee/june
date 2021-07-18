@@ -236,9 +236,9 @@ func Iter(
 			upper.Tuple = append(upper.Tuple, sb.Max)
 		}
 
-		// match pre
+		// match pre TODO
 		if matchPre != nil {
-			//TODO
+			_ = matchPre
 		}
 
 		// exact
@@ -250,10 +250,28 @@ func Iter(
 			ce(err)
 		}
 
+		var lowerTokens, upperTokens *sb.Tokens
+		if lower != nil {
+			var tokens sb.Tokens
+			ce(sb.Copy(
+				sb.Marshal(*lower),
+				sb.CollectTokens(&tokens),
+			))
+			lowerTokens = &tokens
+		}
+		if upper != nil {
+			var tokens sb.Tokens
+			ce(sb.Copy(
+				sb.Marshal(*upper),
+				sb.CollectTokens(&tokens),
+			))
+			upperTokens = &tokens
+		}
+
 		// iter
 		iter, closer, err = index.Iter(
-			lower,
-			upper,
+			lowerTokens,
+			upperTokens,
 			order,
 		)
 		ce(err)

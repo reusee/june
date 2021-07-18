@@ -11,7 +11,7 @@ import (
 )
 
 type StoreIndex struct {
-	Value any
+	Value sb.Stream
 	ID    StoreID
 }
 

@@ -57,7 +57,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 	tokens, err := sb.TokensFromStream(
 		sb.Marshal(StoreIndex{
 			ID:    i.id,
-			Value: entry,
+			Value: sb.Marshal(entry),
 		}),
 	)
 	ce(err)
@@ -77,7 +77,7 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	tokens, err := sb.TokensFromStream(
 		sb.Marshal(index.StoreIndex{
 			ID:    i.id,
-			Value: entry,
+			Value: sb.Marshal(entry),
 		}),
 	)
 	ce(err)
@@ -96,8 +96,8 @@ type indexIter struct {
 }
 
 func (i Index) Iter(
-	lower *IndexEntry,
-	upper *IndexEntry,
+	lower *sb.Tokens,
+	upper *sb.Tokens,
 	order Order,
 ) (
 	_ pp.Src,
@@ -116,14 +116,14 @@ func (i Index) Iter(
 		lowerTokens = sb.MustTokensFromStream(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
-				Value: sb.Min,
+				Value: sb.Marshal(sb.Min),
 			}),
 		)
 	} else {
 		lowerTokens, err = sb.TokensFromStream(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
-				Value: lower,
+				Value: lower.Iter(),
 			}),
 		)
 		ce(err)
@@ -135,14 +135,14 @@ func (i Index) Iter(
 		upperTokens = sb.MustTokensFromStream(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
-				Value: sb.Max,
+				Value: sb.Marshal(sb.Max),
 			}),
 		)
 	} else {
 		upperTokens, err = sb.TokensFromStream(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
-				Value: upper,
+				Value: upper.Iter(),
 			}),
 		)
 		ce(err)
