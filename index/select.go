@@ -161,6 +161,7 @@ func Iter(
 		defer he(&err)
 
 		var lower, upper, match, exact *Entry
+		var matchPre *PreEntry
 		var order = Asc
 		var assignCount []AssignCount
 		var offset int
@@ -182,6 +183,9 @@ func Iter(
 
 			case Entry:
 				match = &option
+
+			case PreEntry:
+				matchPre = &option
 
 			case AssignCount:
 				assignCount = append(assignCount, option)
@@ -218,7 +222,7 @@ func Iter(
 			handleOption(option)
 		}
 
-		// prefix
+		// match
 		if match != nil {
 			lower = &Entry{
 				Type:  match.Type,
@@ -230,6 +234,11 @@ func Iter(
 				Tuple: append(match.Tuple[:0:0], match.Tuple...),
 			}
 			upper.Tuple = append(upper.Tuple, sb.Max)
+		}
+
+		// match pre
+		if matchPre != nil {
+			//TODO
 		}
 
 		// exact
