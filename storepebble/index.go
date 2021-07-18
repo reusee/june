@@ -98,40 +98,15 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 		}
 	}
 
-	for _, obj := range []any{
-		entry,
-		index.PreEntry{
+	if err := i.save(entry); err != nil {
+		return err
+	}
+	if entry.Key != nil {
+		if err := i.save(index.PreEntry{
 			Key:   *entry.Key,
 			Type:  entry.Type,
 			Tuple: entry.Tuple,
-		},
-	} {
-		buf := indexBufPool.Get().(*bytes.Buffer)
-		defer func() {
-			buf.Reset()
-			indexBufPool.Put(buf)
-		}()
-		if err := sb.Copy(
-			sb.Marshal(sb.Tuple{
-				Idx,
-				StoreIndex{
-					ID:    i.id,
-					Value: sb.Marshal(obj),
-				},
-			}),
-			sb.Encode(buf),
-		); err != nil {
-			return err
-		}
-		bs := buf.Bytes()
-		yes, err := i.exists(bs)
-		if err != nil {
-			return err
-		}
-		if yes {
-			return nil
-		}
-		if err = i.set(bs, []byte{}, writeOptions); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
@@ -140,6 +115,38 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 		tap(entry)
 	}
 
+	return nil
+}
+
+func (i Index) save(obj any) error {
+	buf := indexBufPool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		indexBufPool.Put(buf)
+	}()
+	if err := sb.Copy(
+		sb.Marshal(sb.Tuple{
+			Idx,
+			StoreIndex{
+				ID:    i.id,
+				Value: sb.Marshal(obj),
+			},
+		}),
+		sb.Encode(buf),
+	); err != nil {
+		return err
+	}
+	bs := buf.Bytes()
+	yes, err := i.exists(bs)
+	if err != nil {
+		return err
+	}
+	if yes {
+		return nil
+	}
+	if err = i.set(bs, []byte{}, writeOptions); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -152,36 +159,43 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	defer catchErr(&err, pebble.ErrClosed)
 	defer i.begin()()
 
-	for _, obj := range []any{
-		entry,
-		index.PreEntry{
+	if err := i._delete(entry); err != nil {
+		return err
+	}
+	if entry.Key != nil {
+		if err := i._delete(index.PreEntry{
 			Key:   *entry.Key,
 			Type:  entry.Type,
 			Tuple: entry.Tuple,
-		},
-	} {
-		buf := indexBufPool.Get().(*bytes.Buffer)
-		defer func() {
-			buf.Reset()
-			indexBufPool.Put(buf)
-		}()
-		if err := sb.Copy(
-			sb.Marshal(sb.Tuple{
-				Idx,
-				StoreIndex{
-					ID:    i.id,
-					Value: sb.Marshal(obj),
-				},
-			}),
-			sb.Encode(buf),
-		); err != nil {
-			return err
-		}
-		if err = i.delete(buf.Bytes(), writeOptions); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (i Index) _delete(obj any) error {
+	buf := indexBufPool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		indexBufPool.Put(buf)
+	}()
+	if err := sb.Copy(
+		sb.Marshal(sb.Tuple{
+			Idx,
+			StoreIndex{
+				ID:    i.id,
+				Value: sb.Marshal(obj),
+			},
+		}),
+		sb.Encode(buf),
+	); err != nil {
+		return err
+	}
+	if err := i.delete(buf.Bytes(), writeOptions); err != nil {
+		return err
+	}
 	return nil
 }
 
