@@ -19,19 +19,20 @@ import (
 type (
 	any = interface{}
 
-	Key          = key.Key
-	Hash         = key.Hash
-	KeyPath      = key.KeyPath
-	WriteResult  = store.WriteResult
-	WriteOption  = store.WriteOption
-	Order        = index.Order
-	Store        = store.Store
-	Scope        = dscope.Scope
-	IndexEntry   = index.Entry
-	NewHashState = key.NewHashState
-	Limit        = index.Limit
-	Index        = index.Index
-	IndexManager = index.IndexManager
+	Key           = key.Key
+	Hash          = key.Hash
+	KeyPath       = key.KeyPath
+	WriteResult   = store.WriteResult
+	WriteOption   = store.WriteOption
+	Order         = index.Order
+	Store         = store.Store
+	Scope         = dscope.Scope
+	IndexEntry    = index.Entry
+	IndexPreEntry = index.PreEntry
+	NewHashState  = key.NewHashState
+	Limit         = index.Limit
+	Index         = index.Index
+	IndexManager  = index.IndexManager
 
 	TapKey          = opts.TapKey
 	TapTokens       = index.TapTokens

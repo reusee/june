@@ -116,7 +116,11 @@ func TestSave(
 	numName := 0
 	ce(Select(index, Call(func(tuple ...any) {
 		numIdx++
-		prefix := tuple[0].(string)
+		prefix, ok := tuple[0].(string)
+		if !ok {
+			// non Entry
+			return
+		}
 		if strings.HasSuffix(prefix, "idxType") {
 			numType++
 			if tuple[1].(string) == "entity.testSaveFoo" {
@@ -139,7 +143,7 @@ func TestSave(
 		}
 	})))
 
-	if numIdx != 7 {
+	if numIdx != 14 {
 		t.Fatalf("got %d", numIdx)
 	}
 	if numType != 1 {
@@ -186,7 +190,11 @@ func TestSave(
 		numName = 0
 		ce(Select(index, Call(func(tuple ...any) {
 			numIdx++
-			prefix := tuple[0].(string)
+			prefix, ok := tuple[0].(string)
+			if !ok {
+				// non Entry
+				return
+			}
 			if strings.HasSuffix(prefix, "idxType") {
 				numType++
 				if tuple[1].(string) == "entity.testSaveFoo" {
@@ -202,7 +210,7 @@ func TestSave(
 		})))
 
 		// no new
-		if numIdx != 7 {
+		if numIdx != 14 {
 			t.Fatalf("got %d", numIdx)
 		}
 		if numType != 1 {
@@ -253,7 +261,10 @@ func TestSave(
 			Desc,
 			Call(func(tuple ...any) {
 				numIdx++
-				prefix := tuple[0].(string)
+				prefix, ok := tuple[0].(string)
+				if !ok {
+					return
+				}
 				if strings.HasSuffix(prefix, "idxType") {
 					numType++
 					if tuple[1].(string) == "entity.testSaveFoo" {
@@ -269,7 +280,7 @@ func TestSave(
 			}),
 		))
 
-		if numIdx != 14 {
+		if numIdx != 28 {
 			t.Fatalf("got %d", numIdx)
 		}
 		if numType != 2 {
@@ -340,16 +351,22 @@ func TestSave(
 		ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
 			s := v.(sb.Stream)
 			defer he(&err)
-			var entry IndexEntry
+			var entry *IndexEntry
+			var preEntry *IndexPreEntry
 			var h []byte
 			ce(sb.Copy(
 				s,
-				sb.Unmarshal(&entry),
+				sb.AltSink(
+					sb.Unmarshal(&entry),
+					sb.Unmarshal(&preEntry),
+				),
 				sb.Hash(newHashState, &h, nil),
 			))
 			var hash Hash
 			copy(hash[:], h)
-			indexes[hash] = entry
+			if entry != nil {
+				indexes[hash] = *entry
+			}
 			n++
 			return nil
 		})))
@@ -386,18 +403,24 @@ func TestSave(
 			defer closer.Close()
 			ce(pp.Copy(iter, pp.Tap(func(v any) error {
 				s := v.(sb.Stream)
-				var entry IndexEntry
+				var entry *IndexEntry
+				var preEntry *IndexPreEntry
 				var h []byte
 				if err := sb.Copy(
 					s,
-					sb.Unmarshal(&entry),
+					sb.AltSink(
+						sb.Unmarshal(&entry),
+						sb.Unmarshal(&preEntry),
+					),
 					sb.Hash(newHashState, &h, nil),
 				); err != nil {
 					t.Fatal(err)
 				}
 				var hash Hash
 				copy(hash[:], h)
-				newIndexes[hash] = entry
+				if entry != nil {
+					newIndexes[hash] = *entry
+				}
 				n2++
 				return nil
 			})))
