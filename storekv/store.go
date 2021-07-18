@@ -367,7 +367,3 @@ func (s *Store) Delete(keys []Key) error {
 	}
 	return s.kv.KeyDelete(paths...)
 }
-
-func (s *Store) Sync() error {
-	return s.kv.Sync()
-}

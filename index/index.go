@@ -13,7 +13,6 @@ import (
 type IndexManager interface {
 	Name() string
 	IndexFor(StoreID) (Index, error)
-	Sync() error
 }
 
 type SaveOption interface {

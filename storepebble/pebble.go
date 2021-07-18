@@ -157,10 +157,6 @@ func catchErr(errp *error, errs ...error) {
 	panic(p)
 }
 
-func (s *Store) Sync() (err error) {
-	return nil
-}
-
 var writeOptions = &pebble.WriteOptions{
 	Sync: false,
 }

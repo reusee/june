@@ -182,15 +182,3 @@ func (s *Store) Delete(keys []Key) error {
 	}
 	return nil
 }
-
-func (s *Store) Sync() error {
-	for _, shard := range s.shards {
-		if err := shard.Sync(); err != nil {
-			return err
-		}
-	}
-	if err := s.defaultStore.Sync(); err != nil {
-		return err
-	}
-	return nil
-}

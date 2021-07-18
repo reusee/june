@@ -26,9 +26,8 @@ func (s StringKey) Error() string {
 }
 
 type KV interface {
-	StoreID() string // IndexID is only used in initialization, should be stable and unique
-	Name() string    // Name is for human readable
-	Sync() error
+	StoreID() string                      // IndexID is only used in initialization, should be stable and unique
+	Name() string                         // Name is for human readable
 	KeyPut(key string, r io.Reader) error // implementation should not retain reader underlying bytes after return
 	KeyGet(key string, fn func(io.Reader) error) error
 	KeyExists(key string) (bool, error)

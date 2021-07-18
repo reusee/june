@@ -70,15 +70,6 @@ func (b *Batch) StoreID() string {
 	return b.store.StoreID()
 }
 
-func (b *Batch) Sync() error {
-	select {
-	case <-b.Ctx.Done():
-		return b.Ctx.Err()
-	default:
-	}
-	return nil
-}
-
 func (b *Batch) Commit() (err error) {
 	defer he(&err)
 	b.Lock()

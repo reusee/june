@@ -266,15 +266,3 @@ func (s *Store) Delete(keys []Key) (err error) {
 	}
 	panic("bad policy")
 }
-
-func (s *Store) Sync() (err error) {
-	select {
-	case <-s.Ctx.Done():
-		return ErrClosed
-	default:
-	}
-	defer he(&err)
-	ce(s.Backing.Sync())
-	ce(s.Upstream.Sync())
-	return nil
-}

@@ -161,7 +161,3 @@ func (s *Store) request(
 	ce(err)
 	return resp, nil
 }
-
-func (s *Store) Sync() error {
-	return nil
-}

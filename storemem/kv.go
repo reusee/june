@@ -94,12 +94,3 @@ func (s *Store) KeyDelete(keys ...string) error {
 	}
 	return nil
 }
-
-func (s *Store) Sync() error {
-	select {
-	case <-s.Ctx.Done():
-		return ErrClosed
-	default:
-	}
-	return nil
-}

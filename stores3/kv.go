@@ -150,8 +150,3 @@ func (k *KV) KeyDelete(keys ...string) (err error) {
 	}
 	return nil
 }
-
-func (k *KV) Sync() error {
-	defer k.Add()()
-	return nil
-}

@@ -22,8 +22,6 @@ type Store struct {
 type Funcs struct {
 	ID func(store.ID, error)
 
-	Sync func(error)
-
 	Write func(
 		key.Namespace,
 		sb.Stream,
@@ -91,15 +89,6 @@ func (s *Store) ID() (id store.ID, err error) {
 		}
 	}()
 	return s.upstream.ID()
-}
-
-func (s *Store) Sync() (err error) {
-	defer func() {
-		if s.funcs.Sync != nil {
-			s.funcs.Sync(err)
-		}
-	}()
-	return s.upstream.Sync()
 }
 
 func (s *Store) Write(

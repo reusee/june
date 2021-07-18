@@ -25,8 +25,6 @@ type Store interface {
 	ID() (ID, error)
 	Name() string
 
-	Sync() error
-
 	Write(
 		key.Namespace,
 		sb.Stream,
