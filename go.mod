@@ -27,7 +27,7 @@ require (
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
-	github.com/reusee/pr v0.0.0-20210714172237-20a2bdb927d3
+	github.com/reusee/pr v0.0.0-20210719063051-3a6786819629
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
 	github.com/reusee/sb v0.0.0-20210709051922-381af69d8bcf
 	github.com/reusee/starlarkutil v0.0.0-20210318165519-05bcd557628b

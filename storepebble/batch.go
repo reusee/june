@@ -72,8 +72,8 @@ func (b *Batch) StoreID() string {
 
 func (b *Batch) Commit() (err error) {
 	defer he(&err)
-	b.Lock()
-	defer b.Unlock()
+	b.l.Lock()
+	defer b.l.Unlock()
 	ce(b.batch.Commit(writeOptions))
 	return
 }
@@ -91,8 +91,8 @@ func (b *Batch) KeyDelete(keys ...string) (err error) {
 	default:
 	}
 	defer b.Add()()
-	b.Lock()
-	defer b.Unlock()
+	b.l.Lock()
+	defer b.l.Unlock()
 	return b.store.keyDelete(b.Add, b.delete, keys...)
 }
 
@@ -177,8 +177,8 @@ func (b *Batch) KeyPut(key string, r io.Reader) (err error) {
 	default:
 	}
 	defer b.Add()()
-	b.Lock()
-	defer b.Unlock()
+	b.l.Lock()
+	defer b.l.Unlock()
 	return b.store.keyPut(b.Add, b.get, b.set, key, r)
 }
 
@@ -226,13 +226,13 @@ func (b *Batch) IndexFor(id StoreID) (index.Index, error) {
 			return true, nil
 		},
 		set: func(key []byte, value []byte, options *pebble.WriteOptions) error {
-			b.Lock()
-			defer b.Unlock()
+			b.l.Lock()
+			defer b.l.Unlock()
 			return b.set(key, value, options)
 		},
 		delete: func(key []byte, options *pebble.WriteOptions) error {
-			b.Lock()
-			defer b.Unlock()
+			b.l.Lock()
+			defer b.l.Unlock()
 			return b.delete(key, options)
 		},
 		newIter: func(options *pebble.IterOptions) *pebble.Iterator {
