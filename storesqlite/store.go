@@ -28,7 +28,6 @@ type Store struct {
 	numWrite int
 	DB       *sql.DB
 	mem      sync.Map
-	deleted  sync.Map
 	dirty    chan struct{}
 }
 
@@ -132,50 +131,50 @@ func (s *Store) sync() {
 			tx.Rollback()
 		}))
 
-		// delete
-		s.deleted.Range(func(k, v any) bool {
-			key := k.(string)
-			_, err = tx.Exec(`
-        delete from kv
-        where kind = ?
-        and key = ?
-        `,
-				Kv,
-				key,
-			)
-			ce(err)
-			s.deleted.Delete(k)
-			return true
-		})
-
 		// put
 		s.mem.Range(func(k, v any) bool {
 			key := k.(string)
-			var exists bool
-			ce(tx.QueryRow(`
-        select exists (
-          select 1 from kv
+
+			if v == nil {
+				// delete
+				_, err = tx.Exec(`
+          delete from kv
           where kind = ?
           and key = ?
-        )
-        `,
-				Kv,
-				key,
-			).Scan(&exists))
-
-			if !exists {
-				value := v.([]byte)
-				_, err = tx.Exec(`
-          insert into kv
-          (kind, key, value)
-          values 
-          (?, ?, ?)
           `,
 					Kv,
 					key,
-					value,
 				)
 				ce(err)
+
+			} else {
+				// put
+				var exists bool
+				ce(tx.QueryRow(`
+          select exists (
+            select 1 from kv
+            where kind = ?
+            and key = ?
+          )
+          `,
+					Kv,
+					key,
+				).Scan(&exists))
+
+				if !exists {
+					value := v.([]byte)
+					_, err = tx.Exec(`
+            insert into kv
+            (kind, key, value)
+            values 
+            (?, ?, ?)
+            `,
+						Kv,
+						key,
+						value,
+					)
+					ce(err)
+				}
 			}
 
 			s.mem.Delete(key)

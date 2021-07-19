@@ -29,13 +29,13 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 
 	defer s.lockRead()()
 
-	if _, ok := s.deleted.Load(key); ok {
-		return false, nil
-	}
-
-	_, ok = s.mem.Load(key)
+	v, ok := s.mem.Load(key)
 	if ok {
-		return true, nil
+		if v == nil {
+			return false, nil
+		} else {
+			return true, nil
+		}
 	}
 
 	var exists bool
@@ -60,15 +60,15 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 
 	defer s.lockRead()()
 
-	if _, ok := s.deleted.Load(key); ok {
-		return we(storekv.ErrKeyNotFound,
-			e4.With(storekv.StringKey(key)),
-		)
-	}
-
 	v, ok := s.mem.Load(key)
 	if ok {
-		return fn(bytes.NewReader(v.([]byte)))
+		if v == nil {
+			return we(storekv.ErrKeyNotFound,
+				e4.With(storekv.StringKey(key)),
+			)
+		} else {
+			return fn(bytes.NewReader(v.([]byte)))
+		}
 	}
 
 	var data []byte
@@ -106,7 +106,6 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	ce(err)
 
 	s.mem.Store(key, bs)
-	s.deleted.Delete(key)
 
 	select {
 	case s.dirty <- struct{}{}:
@@ -124,8 +123,7 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 	defer s.lockRead()()
 
 	for _, key := range keys {
-		s.deleted.Store(key, struct{}{})
-		s.mem.Delete(key)
+		s.mem.Store(key, nil)
 	}
 
 	select {
@@ -148,10 +146,10 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 	s.mem.Range(func(k, v any) bool {
 		key := k.(string)
 		visited[key] = struct{}{}
-		if !strings.HasPrefix(key, prefix) {
+		if v == nil {
 			return true
 		}
-		if _, ok := s.deleted.Load(key); ok {
+		if !strings.HasPrefix(key, prefix) {
 			return true
 		}
 		err := fn(key)
@@ -180,9 +178,6 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 		var key string
 		ce(rows.Scan(&key))
 		if _, ok := visited[key]; ok {
-			continue
-		}
-		if _, ok := s.deleted.Load(key); ok {
 			continue
 		}
 		err = fn(key)
