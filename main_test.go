@@ -38,6 +38,7 @@ func init() {
 func TestMain(m *testing.M) {
 
 	runtime.SetBlockProfileRate(10 * 1000)
+	runtime.SetMutexProfileFraction(1)
 	runtime.MemProfileRate = 64 * 1024
 
 	ret := m.Run()

@@ -222,14 +222,14 @@ func (_ Def) TestStore(
 					t.Fatal()
 				}
 				var n int64
-				if err := store.IterKeys(nsBar, func(_ Key) error {
+				if err := store.IterKeys(nsBar, func(key Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
 					t.Fatal(err)
 				}
 				if n != 1 {
-					t.Fatal()
+					t.Fatalf("got %d\n", n)
 				}
 				n = 0
 				nss := make(map[key.Namespace]bool)

@@ -12,16 +12,24 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/reusee/e4"
 	"github.com/reusee/june/naming"
+	"github.com/reusee/june/storemem"
 	"github.com/reusee/pr"
 )
 
 type Store struct {
 	*pr.WaitTree
-	sync.RWMutex
 	name    string
 	storeID string
-	DB      *sql.DB
+
+	cond     *sync.Cond
+	numRead  int
+	numWrite int
+	DB       *sql.DB
+	mem      sync.Map
+	deleted  sync.Map
+	dirty    chan struct{}
 }
 
 type New func(
@@ -31,6 +39,7 @@ type New func(
 func (_ Def) New(
 	parentWt *pr.WaitTree,
 	machine naming.MachineName,
+	newMem storemem.New,
 ) New {
 	return func(
 		path string,
@@ -43,13 +52,14 @@ func (_ Def) New(
 		_, err = db.Exec(`
       create table if not exists kv (
         kind integer(1),
-        key text,
+        key text unique,
         value blob
       )
     `)
 		ce(err)
 
 		s := &Store{
+			cond: sync.NewCond(new(sync.Mutex)),
 			name: fmt.Sprintf("sqlite%d(%s)",
 				time.Now().UnixNano(),
 				filepath.Base(path),
@@ -58,7 +68,8 @@ func (_ Def) New(
 				machine,
 				path,
 			),
-			DB: db,
+			DB:    db,
+			dirty: make(chan struct{}, 1),
 		}
 
 		s.WaitTree = pr.NewWaitTree(parentWt)
@@ -67,6 +78,8 @@ func (_ Def) New(
 			s.WaitTree.Wait()
 			ce(db.Close())
 		})
+
+		s.WaitTree.Go(s.sync)
 
 		return s, nil
 	}
@@ -78,4 +91,110 @@ func (s *Store) Name() string {
 
 func (s *Store) StoreID() string {
 	return s.storeID
+}
+
+func (s *Store) lockRead() func() {
+	s.cond.L.Lock()
+	for s.numWrite > 0 {
+		s.cond.Wait()
+	}
+	s.numRead++
+	s.cond.L.Unlock()
+	return func() {
+		s.cond.L.Lock()
+		s.numRead--
+		s.cond.L.Unlock()
+		s.cond.Broadcast()
+	}
+}
+
+func (s *Store) sync() {
+
+	sync := func() (err error) {
+		defer he(&err)
+
+		s.cond.L.Lock()
+		for s.numRead > 0 {
+			s.cond.Wait()
+		}
+		s.numWrite++
+		s.cond.L.Unlock()
+		defer func() {
+			s.cond.L.Lock()
+			s.numWrite--
+			s.cond.L.Unlock()
+			s.cond.Broadcast()
+		}()
+
+		tx, err := s.DB.Begin()
+		ce(err)
+		defer he(&err, e4.Do(func() {
+			tx.Rollback()
+		}))
+
+		// delete
+		s.deleted.Range(func(k, v any) bool {
+			key := k.(string)
+			_, err = tx.Exec(`
+        delete from kv
+        where kind = ?
+        and key = ?
+        `,
+				Kv,
+				key,
+			)
+			ce(err)
+			s.deleted.Delete(k)
+			return true
+		})
+
+		// put
+		s.mem.Range(func(k, v any) bool {
+			key := k.(string)
+			var exists bool
+			ce(tx.QueryRow(`
+        select exists (
+          select 1 from kv
+          where kind = ?
+          and key = ?
+        )
+        `,
+				Kv,
+				key,
+			).Scan(&exists))
+
+			if !exists {
+				value := v.([]byte)
+				_, err = tx.Exec(`
+          insert into kv
+          (kind, key, value)
+          values 
+          (?, ?, ?)
+          `,
+					Kv,
+					key,
+					value,
+				)
+				ce(err)
+			}
+
+			s.mem.Delete(key)
+
+			return true
+		})
+
+		ce(tx.Commit())
+
+		return nil
+	}
+
+	for {
+		select {
+		case <-s.dirty:
+			ce(sync())
+		case <-s.Ctx.Done():
+			ce(sync())
+			return
+		}
+	}
 }

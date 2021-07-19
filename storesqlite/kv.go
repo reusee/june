@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/storekv"
@@ -26,8 +27,16 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 	done := s.Add()
 	defer done()
 
-	s.RLock()
-	defer s.RUnlock()
+	defer s.lockRead()()
+
+	if _, ok := s.deleted.Load(key); ok {
+		return false, nil
+	}
+
+	_, ok = s.mem.Load(key)
+	if ok {
+		return true, nil
+	}
 
 	var exists bool
 	ce(s.DB.QueryRow(`
@@ -49,8 +58,18 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	done := s.Add()
 	defer done()
 
-	s.RLock()
-	defer s.RUnlock()
+	defer s.lockRead()()
+
+	if _, ok := s.deleted.Load(key); ok {
+		return we(storekv.ErrKeyNotFound,
+			e4.With(storekv.StringKey(key)),
+		)
+	}
+
+	v, ok := s.mem.Load(key)
+	if ok {
+		return fn(bytes.NewReader(v.([]byte)))
+	}
 
 	var data []byte
 	err = s.DB.QueryRow(`
@@ -81,54 +100,20 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	done := s.Add()
 	defer done()
 
-	s.Lock()
-	defer s.Unlock()
+	defer s.lockRead()()
 
-	tx, err := s.DB.Begin()
+	bs, err := io.ReadAll(r)
 	ce(err)
-	defer he(&err, e4.Do(func() {
-		tx.Rollback()
-	}))
 
-	var exists bool
-	ce(tx.QueryRow(`
-    select exists (
-      select 1 from kv
-      where kind = ?
-      and key = ?
-    )
-    `,
-		Kv,
-		key,
-	).Scan(&exists))
-	if exists {
-		return tx.Rollback()
+	s.mem.Store(key, bs)
+	s.deleted.Delete(key)
+
+	select {
+	case s.dirty <- struct{}{}:
+	default:
 	}
 
-	var bs []byte
-	if b, ok := r.(interface {
-		Bytes() []byte
-	}); ok {
-		bs = b.Bytes()
-	} else {
-		bs, err = io.ReadAll(r)
-		ce(err)
-	}
-
-	_, err = tx.Exec(`
-    insert into kv
-    (kind, key, value)
-    values 
-    (?, ?, ?)
-    `,
-		Kv,
-		key,
-		bs,
-	)
-	ce(err)
-	ce(tx.Commit())
-
-	return
+	return nil
 }
 
 func (s *Store) KeyDelete(keys ...string) (err error) {
@@ -136,28 +121,17 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 	done := s.Add()
 	defer done()
 
-	s.Lock()
-	defer s.Unlock()
-
-	tx, err := s.DB.Begin()
-	ce(err)
-	defer he(&err, e4.Do(func() {
-		tx.Rollback()
-	}))
+	defer s.lockRead()()
 
 	for _, key := range keys {
-		_, err = tx.Exec(`
-      delete from kv
-      where kind = ?
-      and key = ?
-      `,
-			Kv,
-			key,
-		)
-		ce(err)
+		s.deleted.Store(key, struct{}{})
+		s.mem.Delete(key)
 	}
 
-	ce(tx.Commit())
+	select {
+	case s.dirty <- struct{}{}:
+	default:
+	}
 
 	return
 }
@@ -167,8 +141,30 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 	done := s.Add()
 	defer done()
 
-	s.RLock()
-	defer s.RUnlock()
+	defer s.lockRead()()
+
+	visited := make(map[string]struct{})
+	isBreak := false
+	s.mem.Range(func(k, v any) bool {
+		key := k.(string)
+		visited[key] = struct{}{}
+		if !strings.HasPrefix(key, prefix) {
+			return true
+		}
+		if _, ok := s.deleted.Load(key); ok {
+			return true
+		}
+		err := fn(key)
+		if errors.Is(err, storekv.Break) {
+			isBreak = true
+			return false
+		}
+		ce(err)
+		return true
+	})
+	if isBreak {
+		return nil
+	}
 
 	rows, err := s.DB.Query(`
     select key
@@ -183,6 +179,12 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 	for rows.Next() {
 		var key string
 		ce(rows.Scan(&key))
+		if _, ok := visited[key]; ok {
+			continue
+		}
+		if _, ok := s.deleted.Load(key); ok {
+			continue
+		}
 		err = fn(key)
 		if errors.Is(err, storekv.Break) {
 			break

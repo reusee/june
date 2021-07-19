@@ -16,3 +16,7 @@ var (
 	pt = fmt.Printf
 	we = e4.WrapWithStacktrace
 )
+
+type (
+	any = interface{}
+)
