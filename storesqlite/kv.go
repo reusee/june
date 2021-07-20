@@ -100,6 +100,44 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	done := s.Add()
 	defer done()
 
+	// try lock write
+	ok := false
+	s.cond.L.Lock()
+	if s.numRead == 0 && s.numWrite == 0 {
+		s.numWrite++
+		ok = true
+	}
+	s.cond.L.Unlock()
+	if ok {
+		defer func() {
+			s.cond.L.Lock()
+			s.numWrite--
+			s.cond.L.Unlock()
+			s.cond.Broadcast()
+		}()
+
+		var bs []byte
+		if b, ok := r.(interface {
+			Bytes() []byte
+		}); ok {
+			bs = b.Bytes()
+		} else {
+			bs, err = io.ReadAll(r)
+			ce(err)
+		}
+
+		var tx *sql.Tx
+		tx, err = s.DB.Begin()
+		ce(err)
+		defer he(&err, e4.Do(func() {
+			tx.Rollback()
+		}))
+		ce(s.put(tx, key, bs))
+		ce(tx.Commit())
+
+		return
+	}
+
 	defer s.lockRead()()
 
 	bs, err := io.ReadAll(r)
@@ -190,4 +228,38 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 	rows.Close()
 
 	return
+}
+
+func (s *Store) put(tx *sql.Tx, key string, value []byte) error {
+	var exists bool
+	if err := tx.QueryRow(`
+          select exists (
+            select 1 from kv
+            where kind = ?
+            and key = ?
+          )
+          `,
+		Kv,
+		key,
+	).Scan(&exists); err != nil {
+		return err
+	}
+
+	if !exists {
+		_, err := tx.Exec(`
+            insert into kv
+            (kind, key, value)
+            values 
+            (?, ?, ?)
+            `,
+			Kv,
+			key,
+			value,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

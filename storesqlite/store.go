@@ -117,7 +117,7 @@ func (s *Store) sync() {
 		defer he(&err)
 
 		s.cond.L.Lock()
-		for s.numRead > 0 {
+		for s.numRead > 0 || s.numWrite > 0 {
 			s.cond.Wait()
 		}
 		s.numWrite++
@@ -153,32 +153,7 @@ func (s *Store) sync() {
 
 			} else {
 				// put
-				var exists bool
-				ce(tx.QueryRow(`
-          select exists (
-            select 1 from kv
-            where kind = ?
-            and key = ?
-          )
-          `,
-					Kv,
-					key,
-				).Scan(&exists))
-
-				if !exists {
-					value := v.([]byte)
-					_, err = tx.Exec(`
-            insert into kv
-            (kind, key, value)
-            values 
-            (?, ?, ?)
-            `,
-						Kv,
-						key,
-						value,
-					)
-					ce(err)
-				}
+				ce(s.put(tx, key, v.([]byte)))
 			}
 
 			s.mem.Delete(key)
