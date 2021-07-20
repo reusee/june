@@ -18,16 +18,12 @@ import (
 
 type Batch struct {
 	*pr.WaitTree
-
-	name string
-
-	store *Store
-
-	batch *pebble.Batch
-
-	l sync.RWMutex
-
-	closeOnce sync.Once
+	name     string
+	store    *Store
+	batch    *pebble.Batch
+	cond     *sync.Cond
+	numRead  int
+	numWrite int
 }
 
 var batchSerial int64
@@ -51,6 +47,7 @@ func (_ Def) NewBatch(
 			),
 			store: store,
 			batch: batch,
+			cond:  sync.NewCond(new(sync.Mutex)),
 		}
 		b.WaitTree = pr.NewWaitTree(parentWaitTree)
 		parentWaitTree.Go(func() {
@@ -70,17 +67,45 @@ func (b *Batch) StoreID() string {
 	return b.store.StoreID()
 }
 
+func (b *Batch) lockRead() func() {
+	b.cond.L.Lock()
+	defer b.cond.L.Unlock()
+	for b.numWrite > 0 {
+		b.cond.Wait()
+	}
+	b.numRead++
+	return func() {
+		b.cond.L.Lock()
+		defer b.cond.L.Unlock()
+		b.numRead--
+		b.cond.Broadcast()
+	}
+}
+
+func (b *Batch) lockWrite() func() {
+	b.cond.L.Lock()
+	defer b.cond.L.Unlock()
+	for b.numRead > 0 || b.numWrite > 0 {
+		b.cond.Wait()
+	}
+	b.numWrite++
+	return func() {
+		b.cond.L.Lock()
+		defer b.cond.L.Unlock()
+		b.numWrite--
+		b.cond.Broadcast()
+	}
+}
+
 func (b *Batch) Commit() (err error) {
 	defer he(&err)
-	b.l.Lock()
-	defer b.l.Unlock()
+	defer b.lockWrite()()
 	ce(b.batch.Commit(writeOptions))
 	return
 }
 
 func (b *Batch) Abort() error {
-	b.l.Lock()
-	defer b.l.Unlock()
+	defer b.lockWrite()()
 	return b.batch.Close()
 }
 
@@ -105,8 +130,7 @@ func (b *Batch) delete(
 		return b.Ctx.Err()
 	default:
 	}
-	b.l.Lock()
-	defer b.l.Unlock()
+	defer b.lockWrite()()
 	if err := b.batch.Delete(key, writeOptions); err != nil {
 		return err
 	}
@@ -135,8 +159,7 @@ func (b *Batch) get(
 		return nil, nil, b.Ctx.Err()
 	default:
 	}
-	b.l.RLock()
-	defer b.l.RUnlock()
+	defer b.lockRead()()
 	return b.batch.Get(key)
 }
 
@@ -162,8 +185,7 @@ func (b *Batch) KeyIter(prefix string, fn func(key string) error) (err error) {
 		b.newIter,
 		prefix,
 		func(fn func()) {
-			b.l.RLock()
-			defer b.l.RUnlock()
+			defer b.lockRead()()
 			fn()
 		},
 		fn,
@@ -171,8 +193,7 @@ func (b *Batch) KeyIter(prefix string, fn func(key string) error) (err error) {
 }
 
 func (b *Batch) newIter(options *pebble.IterOptions) *pebble.Iterator {
-	b.l.RLock()
-	defer b.l.RUnlock()
+	defer b.lockRead()()
 	return b.batch.NewIter(options)
 }
 
@@ -196,8 +217,7 @@ func (b *Batch) set(
 		return b.Ctx.Err()
 	default:
 	}
-	b.l.Lock()
-	defer b.l.Unlock()
+	defer b.lockWrite()()
 	return b.batch.Set(key, value, option)
 }
 
@@ -239,8 +259,7 @@ func (b *Batch) IndexFor(id StoreID) (index.Index, error) {
 			return b.newIter(options)
 		},
 		withRLock: func(fn func()) {
-			b.l.RLock()
-			defer b.l.RUnlock()
+			defer b.lockRead()()
 			fn()
 		},
 		id: id,
