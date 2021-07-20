@@ -100,21 +100,8 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	done := s.Add()
 	defer done()
 
-	// try lock write
-	ok := false
-	s.cond.L.Lock()
-	if s.numRead == 0 && s.numWrite == 0 {
-		s.numWrite++
-		ok = true
-	}
-	s.cond.L.Unlock()
-	if ok {
-		defer func() {
-			s.cond.L.Lock()
-			s.numWrite--
-			s.cond.L.Unlock()
-			s.cond.Broadcast()
-		}()
+	if unlock := s.tryLockWrite(); unlock != nil {
+		defer unlock()
 
 		var bs []byte
 		if b, ok := r.(interface {
@@ -157,6 +144,21 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 	defer he(&err)
 	done := s.Add()
 	defer done()
+
+	if unlock := s.tryLockWrite(); unlock != nil {
+		defer unlock()
+		var tx *sql.Tx
+		tx, err = s.DB.Begin()
+		ce(err)
+		defer he(&err, e4.Do(func() {
+			tx.Rollback()
+		}))
+		for _, key := range keys {
+			ce(s.del(tx, key))
+		}
+		ce(tx.Commit())
+		return
+	}
 
 	defer s.lockRead()()
 
@@ -262,4 +264,16 @@ func (s *Store) put(tx *sql.Tx, key string, value []byte) error {
 	}
 
 	return nil
+}
+
+func (s *Store) del(tx *sql.Tx, key string) error {
+	_, err := tx.Exec(`
+    delete from kv
+    where kind = ?
+    and key = ?
+    `,
+		Kv,
+		key,
+	)
+	return err
 }

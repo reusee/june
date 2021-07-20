@@ -98,17 +98,35 @@ func (s *Store) StoreID() string {
 
 func (s *Store) lockRead() func() {
 	s.cond.L.Lock()
+	defer s.cond.L.Unlock()
 	for s.numWrite > 0 {
 		s.cond.Wait()
 	}
 	s.numRead++
-	s.cond.L.Unlock()
 	return func() {
 		s.cond.L.Lock()
 		s.numRead--
 		s.cond.L.Unlock()
 		s.cond.Broadcast()
 	}
+}
+
+func (s *Store) tryLockWrite() func() {
+	s.cond.L.Lock()
+	defer s.cond.L.Unlock()
+	for s.numRead == 0 && s.numWrite > 0 {
+		s.cond.Wait()
+	}
+	if s.numRead == 0 && s.numWrite == 0 {
+		s.numWrite++
+		return func() {
+			s.cond.L.Lock()
+			s.numWrite--
+			s.cond.L.Unlock()
+			s.cond.Broadcast()
+		}
+	}
+	return nil
 }
 
 func (s *Store) sync() {
@@ -141,15 +159,7 @@ func (s *Store) sync() {
 
 			if v == nil {
 				// delete
-				_, err = tx.Exec(`
-          delete from kv
-          where kind = ?
-          and key = ?
-          `,
-					Kv,
-					key,
-				)
-				ce(err)
+				ce(s.del(tx, key))
 
 			} else {
 				// put
