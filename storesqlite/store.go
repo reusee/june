@@ -13,6 +13,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/reusee/e4"
+	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/pr"
@@ -39,6 +40,7 @@ func (_ Def) New(
 	parentWt *pr.WaitTree,
 	machine naming.MachineName,
 	newMem storemem.New,
+	setRestrictedPath fsys.SetRestrictedPath,
 ) New {
 	return func(
 		path string,
@@ -47,6 +49,8 @@ func (_ Def) New(
 
 		db, err := sql.Open("sqlite3", "file:"+path)
 		ce(err)
+
+		ce(setRestrictedPath(path))
 
 		_, err = db.Exec(`
       create table if not exists kv (
