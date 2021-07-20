@@ -79,6 +79,8 @@ func (b *Batch) Commit() (err error) {
 }
 
 func (b *Batch) Abort() error {
+	b.l.Lock()
+	defer b.l.Unlock()
 	return b.batch.Close()
 }
 
@@ -91,8 +93,6 @@ func (b *Batch) KeyDelete(keys ...string) (err error) {
 	default:
 	}
 	defer b.Add()()
-	b.l.Lock()
-	defer b.l.Unlock()
 	return b.store.keyDelete(b.Add, b.delete, keys...)
 }
 
@@ -159,7 +159,7 @@ func (b *Batch) KeyIter(prefix string, fn func(key string) error) (err error) {
 	defer b.Add()()
 	return b.store.keyIter(
 		b.Add,
-		b.batch.NewIter,
+		b.newIter,
 		prefix,
 		func(fn func()) {
 			b.l.RLock()
@@ -170,6 +170,12 @@ func (b *Batch) KeyIter(prefix string, fn func(key string) error) (err error) {
 	)
 }
 
+func (b *Batch) newIter(options *pebble.IterOptions) *pebble.Iterator {
+	b.l.RLock()
+	defer b.l.RUnlock()
+	return b.batch.NewIter(options)
+}
+
 func (b *Batch) KeyPut(key string, r io.Reader) (err error) {
 	select {
 	case <-b.Ctx.Done():
@@ -177,8 +183,6 @@ func (b *Batch) KeyPut(key string, r io.Reader) (err error) {
 	default:
 	}
 	defer b.Add()()
-	b.l.Lock()
-	defer b.l.Unlock()
 	return b.store.keyPut(b.Add, b.get, b.set, key, r)
 }
 
@@ -226,17 +230,13 @@ func (b *Batch) IndexFor(id StoreID) (index.Index, error) {
 			return true, nil
 		},
 		set: func(key []byte, value []byte, options *pebble.WriteOptions) error {
-			b.l.Lock()
-			defer b.l.Unlock()
 			return b.set(key, value, options)
 		},
 		delete: func(key []byte, options *pebble.WriteOptions) error {
-			b.l.Lock()
-			defer b.l.Unlock()
 			return b.delete(key, options)
 		},
 		newIter: func(options *pebble.IterOptions) *pebble.Iterator {
-			return b.batch.NewIter(options)
+			return b.newIter(options)
 		},
 		withRLock: func(fn func()) {
 			b.l.RLock()
