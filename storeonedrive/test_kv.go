@@ -15,12 +15,14 @@ import (
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 	"golang.org/x/oauth2"
 )
 
 func TestKV(
 	t *testing.T,
+	wt *pr.WaitTree,
 	testKV storekv.TestKV,
 	newStore New,
 	ctx context.Context,
@@ -60,6 +62,7 @@ func TestKV(
 		client := config.Client(ctx, token)
 		dir := fmt.Sprintf("%d", rand.Int63())
 		kv, err := newStore(
+			wt,
 			client,
 			"/me/drive/special/AppRoot/",
 			dir,

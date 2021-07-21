@@ -22,6 +22,7 @@ import (
 )
 
 type New func(
+	parentWt *pr.WaitTree,
 	client *http.Client,
 	drivePath string,
 	dir string,
@@ -38,10 +39,9 @@ type Store struct {
 	idByPath  sync.Map
 }
 
-func (_ Def) New(
-	parentWt *pr.WaitTree,
-) New {
+func (_ Def) New() New {
 	return func(
+		parentWt *pr.WaitTree,
 		client *http.Client,
 		drivePath string,
 		dir string,
