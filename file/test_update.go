@@ -51,7 +51,7 @@ func TestUpdate(
 	) {
 
 		dir := t.TempDir()
-		watcher, err := watch(dir)
+		watcher, err := watch(wt, dir)
 		ce(err)
 
 		// build

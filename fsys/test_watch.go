@@ -14,10 +14,12 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/pr"
 )
 
 func TestWatch(
 	t *testing.T,
+	wt *pr.WaitTree,
 	watch Watch,
 	shuffle ShuffleDir,
 ) {
@@ -37,6 +39,7 @@ func TestWatch(
 	var updatedCounter int64
 	initOK := make(chan struct{})
 	w, err := watch(
+		wt,
 		dir,
 		TapUpdatePaths(func(paths []string) {
 			atomic.AddInt64(&counter, int64(len(paths)))

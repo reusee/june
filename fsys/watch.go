@@ -25,6 +25,7 @@ type WatchOption interface {
 }
 
 type Watch func(
+	wt *pr.WaitTree,
 	path string,
 	options ...WatchOption,
 ) (
@@ -46,13 +47,12 @@ type Watcher struct {
 	traceFiles   bool
 }
 
-func (_ Def) Watch(
-	parentWt *pr.WaitTree,
-) (
+func (_ Def) Watch() (
 	watch Watch,
 ) {
 
 	watch = func(
+		parentWt *pr.WaitTree,
 		path string,
 		options ...WatchOption,
 	) (
