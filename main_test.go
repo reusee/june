@@ -203,8 +203,9 @@ var indexManagerDefs = []any{
 
 var memIndexManager = func(
 	newMemStore storemem.New,
+	wt *pr.WaitTree,
 ) index.IndexManager {
-	return newMemStore()
+	return newMemStore(wt)
 }
 
 var storeDefs = []any{
@@ -264,8 +265,9 @@ var storeDefs = []any{
 var memStore = func(
 	newMem storemem.New,
 	newKV storekv.New,
+	wt *pr.WaitTree,
 ) store.Store {
-	s, err := newKV(newMem(), "foo")
+	s, err := newKV(newMem(wt), "foo")
 	ce(err)
 	return s
 }

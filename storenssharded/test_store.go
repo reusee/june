@@ -13,10 +13,12 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
+	wt *pr.WaitTree,
 	testStore store.TestStore,
 	scope dscope.Scope,
 ) {
@@ -28,9 +30,9 @@ func TestStore(
 			newKV storekv.New,
 			newStore New,
 		) {
-			s1, err := newKV(newMem(), "foo")
+			s1, err := newKV(newMem(wt), "foo")
 			ce(err)
-			s2, err := newKV(newMem(), "foo")
+			s2, err := newKV(newMem(wt), "foo")
 			ce(err)
 			s, err := newStore(
 				map[key.Namespace]store.Store{

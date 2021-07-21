@@ -21,12 +21,14 @@ type Store struct {
 	sync.RWMutex
 }
 
-type New func() *Store
-
-func (_ Def) New(
+type New func(
 	parentWt *pr.WaitTree,
-) New {
-	return func() *Store {
+) *Store
+
+func (_ Def) New() New {
+	return func(
+		parentWt *pr.WaitTree,
+	) *Store {
 		return &Store{
 			WaitTree: parentWt,
 			name:     fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),

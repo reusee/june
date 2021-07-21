@@ -12,10 +12,12 @@ import (
 	"github.com/reusee/e4"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestPush(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newMem storemem.New,
 	newKV storekv.New,
 	scope Scope,
@@ -23,7 +25,7 @@ func TestPush(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	mem1 := newMem()
+	mem1 := newMem(wt)
 	store1, err := newKV(mem1, "foo")
 	ce(err)
 	scope.Sub(func() Store {
@@ -50,7 +52,7 @@ func TestPush(
 		key := summary.Key
 
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 
@@ -97,7 +99,7 @@ func TestPush(
 
 		// keys not specified
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 
@@ -144,7 +146,7 @@ func TestPush(
 
 		// index manager not specified
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 

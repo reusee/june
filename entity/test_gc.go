@@ -15,6 +15,7 @@ import (
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestGC(
@@ -174,6 +175,7 @@ func TestGC(
 
 func TestGCWithEmptyIndex(
 	t *testing.T,
+	wt *pr.WaitTree,
 	save Save,
 	newMemStore storemem.New,
 	scope Scope,
@@ -201,7 +203,7 @@ func TestGCWithEmptyIndex(
 		t.Fatal()
 	}
 
-	indexManager := newMemStore()
+	indexManager := newMemStore(wt)
 	scope.Sub(func() index.IndexManager {
 		return indexManager
 	}).Call(func(

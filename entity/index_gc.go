@@ -49,6 +49,7 @@ func (_ Def) IndexGC(
 	fetch Fetch,
 	index Index,
 	parallel sys.Parallel,
+	wt *pr.WaitTree,
 ) IndexGC {
 	return func(
 		options ...IndexGCOption,
@@ -66,7 +67,7 @@ func (_ Def) IndexGC(
 		}
 
 		// rebuild summary in mem store
-		memStore := newMem()
+		memStore := newMem(wt)
 		memScope := scope.Sub(func() (Store, IndexManager) {
 			kv, err := newKV(memStore, "index-gc", storekv.WithCodec(
 				blackholeCodec{},

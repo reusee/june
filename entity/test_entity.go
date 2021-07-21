@@ -17,6 +17,7 @@ import (
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/storetap"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
@@ -32,6 +33,7 @@ func (t testSaveFoo) EntityIndexes() (IndexSet, int64, error) {
 
 func TestSave(
 	t *testing.T,
+	wt *pr.WaitTree,
 	save SaveEntity,
 	store store.Store,
 	rebuildIndex RebuildIndex,
@@ -373,7 +375,7 @@ func TestSave(
 
 		newIndexes := make(map[Hash]IndexEntry)
 		var n2 int
-		manager := IndexManager(newMemStore())
+		manager := IndexManager(newMemStore(wt))
 		storeID, err := store.ID()
 		ce(err)
 		scope.Sub(

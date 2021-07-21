@@ -14,10 +14,12 @@ import (
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr"
 )
 
 func TestPushFile(
 	t *testing.T,
+	wt *pr.WaitTree,
 	build Build,
 	iterDisk IterDiskFile,
 	newMem storemem.New,
@@ -45,7 +47,7 @@ func TestPushFile(
 	summary, err := save(file)
 	ce(err)
 
-	mem := newMem()
+	mem := newMem(wt)
 	kv, err := newKV(
 		mem, "foo",
 	)

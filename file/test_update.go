@@ -26,6 +26,7 @@ import (
 
 func TestUpdate(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newKV storekv.New,
 	newMem storemem.New,
 	scope Scope,
@@ -33,7 +34,7 @@ func TestUpdate(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	store, err := newKV(newMem(), "test")
+	store, err := newKV(newMem(wt), "test")
 	ce(err)
 
 	scope.Sub(func() Store {
