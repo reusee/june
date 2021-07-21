@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/reusee/dscope"
 	"github.com/reusee/june/codec"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
@@ -44,7 +45,7 @@ func (_ Def) IndexGC(
 	rootCtx context.Context,
 	store Store,
 	newMem storemem.New,
-	scope Scope,
+	scope dscope.DependentScope,
 	newKV storekv.New,
 	fetch Fetch,
 	index Index,

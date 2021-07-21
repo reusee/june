@@ -11,6 +11,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/reusee/dscope"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/sys"
@@ -38,7 +39,7 @@ type TapPushSave func(summaryKey Key, summary *Summary)
 func (_ TapPushSave) IsPushOption() {}
 
 func (_ Def) Push(
-	scope Scope,
+	scope dscope.DependentScope,
 	selIndex index.SelectIndex,
 	store Store,
 	rootCtx context.Context,
