@@ -10,10 +10,12 @@ import (
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
 ) {
@@ -21,7 +23,7 @@ func TestStore(
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(dir)
+		s, err := newStore(wt, dir)
 		ce(err)
 		fn(s, "foo")
 	}
@@ -30,6 +32,7 @@ func TestStore(
 
 func TestStoreSoftDelete(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
 ) {
@@ -37,7 +40,7 @@ func TestStoreSoftDelete(
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(dir, SoftDelete(true))
+		s, err := newStore(wt, dir, SoftDelete(true))
 		ce(err)
 		fn(s, "foo")
 	}

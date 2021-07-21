@@ -49,19 +49,26 @@ func (e NewOptions) Error() string {
 	return b.String()
 }
 
-type New func(string, ...NewOption) (*Store, error)
+type New func(
+	wt *pr.WaitTree,
+	path string,
+	options ...NewOption,
+) (*Store, error)
 
 func (_ Def) New(
 	ensureDir fsys.EnsureDir,
 	setRestrictedPath fsys.SetRestrictedPath,
 	isTesting sys.Testing,
-	parentWt *pr.WaitTree,
 	machine naming.MachineName,
 ) New {
 
 	noSync := bool(isTesting && runtime.GOOS == "darwin")
 
-	return func(dir string, options ...NewOption) (_ *Store, err error) {
+	return func(
+		parentWt *pr.WaitTree,
+		dir string,
+		options ...NewOption,
+	) (_ *Store, err error) {
 		defer he(&err,
 			e4.NewInfo("dir: %s", dir),
 			e4.With(NewOptions(options)),

@@ -233,7 +233,7 @@ var storeDefs = []any{
 	) store.Store {
 		defer he(nil, e4.TestingFatal(t))
 		dir := t.TempDir()
-		s, err := newDiskStore(dir)
+		s, err := newDiskStore(wt, dir)
 		ce(err)
 		kv, err := newKV(s, "foo")
 		ce(err)
