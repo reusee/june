@@ -18,18 +18,23 @@ import (
 	"github.com/reusee/sb"
 )
 
-type VarsDir string
+type VarsSpec func() (
+	dir string,
+	wt *pr.WaitTree,
+)
 
 type VarsStore struct {
+	*pr.WaitTree
 	db *pebble.DB
 }
 
 func (_ Def) VarsStore(
 	ensureDir fsys.EnsureDir,
-	dir VarsDir,
+	spec VarsSpec,
 	setRestrictedPath fsys.SetRestrictedPath,
-	wt *pr.WaitTree,
 ) *VarsStore {
+
+	dir, parentWt := spec()
 
 	ce(ensureDir(string(dir)))
 	ce(setRestrictedPath(string(dir)))
@@ -42,17 +47,19 @@ func (_ Def) VarsStore(
 	})
 	ce(err)
 
-	done := wt.Add()
-	go func() {
-		defer done()
-		<-wt.Ctx.Done()
+	wt := pr.NewWaitTree(parentWt)
+
+	parentWt.Go(func() {
+		<-parentWt.Ctx.Done()
+		wt.Wait()
 		var err error
 		defer catchErr(&err, pebble.ErrClosed)
 		ce(db.Close())
-	}()
+	})
 
 	return &VarsStore{
-		db: db,
+		WaitTree: wt,
+		db:       db,
 	}
 }
 
@@ -88,6 +95,13 @@ func (_ Def) Get(
 ) Get {
 
 	return func(key string, target any) (err error) {
+		select {
+		case <-store.Ctx.Done():
+			return store.Ctx.Err()
+		default:
+		}
+		defer store.Add()()
+
 		defer catchErr(&err, pebble.ErrClosed)
 		bs, c, err := store.db.Get([]byte(key))
 		if err != nil {
@@ -127,6 +141,13 @@ func (_ Def) Set(
 ) Set {
 
 	return func(key string, value any) (err error) {
+		select {
+		case <-store.Ctx.Done():
+			return store.Ctx.Err()
+		default:
+		}
+		defer store.Add()()
+
 		defer catchErr(&err, pebble.ErrClosed)
 		buf := new(bytes.Buffer)
 		if err := sb.Copy(

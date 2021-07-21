@@ -8,17 +8,20 @@ import (
 	"testing"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/pr"
 )
 
 func TestVars(
 	t *testing.T,
 	scope Scope,
+	wt *pr.WaitTree,
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	scope.Sub(func() VarsDir {
-		dir := t.TempDir()
-		return VarsDir(dir)
+	scope.Sub(func() VarsSpec {
+		return func() (string, *pr.WaitTree) {
+			return t.TempDir(), wt
+		}
 	}).Call(func(
 		get Get,
 		set Set,

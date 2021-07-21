@@ -115,8 +115,10 @@ func runTest(
 			func() *testing.T {
 				return t
 			},
-			func() vars.VarsDir {
-				return vars.VarsDir(t.TempDir())
+			func() vars.VarsSpec {
+				return func() (string, *pr.WaitTree) {
+					return t.TempDir(), waitTree
+				}
 			},
 			func() (context.Context, *pr.WaitTree) {
 				return waitTree.Ctx, waitTree
@@ -143,8 +145,10 @@ func runTest(
 						func() *testing.T {
 							return t
 						},
-						func() vars.VarsDir {
-							return vars.VarsDir(t.TempDir())
+						func() vars.VarsSpec {
+							return func() (string, *pr.WaitTree) {
+								return t.TempDir(), waitTree
+							}
 						},
 						func() (context.Context, *pr.WaitTree) {
 							return waitTree.Ctx, waitTree
