@@ -12,11 +12,13 @@ import (
 	"github.com/reusee/e4"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
 func TestMixedIndex(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newStore New,
 	testIndex index.TestIndex,
 ) {
@@ -24,7 +26,7 @@ func TestMixedIndex(
 
 	withIndex := func(fn func(index.IndexManager)) {
 		dir := t.TempDir()
-		s, err := newStore(nil, dir)
+		s, err := newStore(wt, nil, dir)
 		ce(err)
 
 		buf := new(bytes.Buffer)
@@ -48,6 +50,7 @@ func TestMixedIndex(
 
 func TestMixedKV(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newStore New,
 	testKV storekv.TestKV,
 ) {
@@ -55,7 +58,7 @@ func TestMixedKV(
 	withKV := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(nil, dir)
+		s, err := newStore(wt, nil, dir)
 		ce(err)
 
 		entry := index.NewEntry(TestingIndex, 42)

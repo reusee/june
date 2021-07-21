@@ -180,7 +180,7 @@ var indexManagerDefs = []any{
 		wt *pr.WaitTree,
 	) index.IndexManager {
 		defer he(nil, e4.TestingFatal(t))
-		peb, err := newPebble(storepebble.NewMemFS(), "foo")
+		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
 		return peb
 	},
@@ -193,9 +193,9 @@ var indexManagerDefs = []any{
 		newBatch storepebble.NewBatch,
 	) index.IndexManager {
 		defer he(nil, e4.TestingFatal(t))
-		peb, err := newPebble(storepebble.NewMemFS(), "foo")
+		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
-		batch, err := newBatch(peb)
+		batch, err := newBatch(wt, peb)
 		ce(err)
 		return batch
 	},
@@ -216,7 +216,7 @@ var storeDefs = []any{
 		wt *pr.WaitTree,
 	) store.Store {
 		defer he(nil, e4.TestingFatal(t))
-		peb, err := newPebble(storepebble.NewMemFS(), "peb")
+		peb, err := newPebble(wt, storepebble.NewMemFS(), "peb")
 		ce(err)
 		s, err := newKV(peb, "foo")
 		ce(err)
@@ -251,9 +251,9 @@ var storeDefs = []any{
 		newKV storekv.New,
 	) store.Store {
 		defer he(nil, e4.TestingFatal(t))
-		peb, err := newPebble(storepebble.NewMemFS(), "foo")
+		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
-		batch, err := newBatch(peb)
+		batch, err := newBatch(wt, peb)
 		ce(err)
 		kv, err := newKV(batch, "foo")
 		ce(err)

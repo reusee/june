@@ -10,11 +10,13 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storepebble"
+	"github.com/reusee/pr"
 )
 
 type KVToStore func(kv storekv.KV) (store.Store, error)
 
 type PebbleTx func(
+	wt *pr.WaitTree,
 	fn any,
 ) error
 
@@ -25,10 +27,10 @@ func UsePebbleTx(
 	scope dscope.DependentScope,
 ) PebbleTx {
 
-	return func(fn any) (err error) {
+	return func(wt *pr.WaitTree, fn any) (err error) {
 		defer he(&err)
 
-		batch, err := newBatch(peb)
+		batch, err := newBatch(wt, peb)
 		ce(err)
 		defer he(&err, func(err error) error {
 			if e := batch.Abort(); e != nil {

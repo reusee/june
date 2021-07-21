@@ -29,6 +29,7 @@ type Store struct {
 
 // create new pebble store
 type New func(
+	wt *pr.WaitTree,
 	fs vfs.FS,
 	dir string,
 ) (*Store, error)
@@ -37,10 +38,10 @@ func (_ Def) New(
 	ensureDir fsys.EnsureDir,
 	cacheSize CacheSize,
 	setRestrictedPath fsys.SetRestrictedPath,
-	parentWt *pr.WaitTree,
 	machine naming.MachineName,
 ) New {
 	return func(
+		parentWt *pr.WaitTree,
 		fs vfs.FS,
 		dir string,
 	) (_ *Store, err error) {

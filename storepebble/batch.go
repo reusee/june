@@ -29,13 +29,13 @@ type Batch struct {
 var batchSerial int64
 
 type NewBatch func(
+	wt *pr.WaitTree,
 	store *Store,
 ) (*Batch, error)
 
-func (_ Def) NewBatch(
-	parentWaitTree *pr.WaitTree,
-) NewBatch {
+func (_ Def) NewBatch() NewBatch {
 	return func(
+		parentWaitTree *pr.WaitTree,
 		store *Store,
 	) (_ *Batch, err error) {
 		defer he(&err)

@@ -21,6 +21,7 @@ import (
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/storepebble"
 	"github.com/reusee/june/tx"
+	"github.com/reusee/pr"
 )
 
 func TestUpdate(
@@ -164,6 +165,7 @@ func TestUpdate(
 
 func TestFileWithTx(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newPeb storepebble.New,
 	watch fsys.Watch,
 	newKV storekv.New,
@@ -173,7 +175,7 @@ func TestFileWithTx(
 
 	dir := t.TempDir()
 
-	peb, err := newPeb(storepebble.NewMemFS(), "")
+	peb, err := newPeb(wt, storepebble.NewMemFS(), "")
 	ce(err)
 
 	scope.Sub(
@@ -190,7 +192,7 @@ func TestFileWithTx(
 			tx tx.PebbleTx,
 		) BuildWithTx {
 			return func(fn any) {
-				ce(tx(fn))
+				ce(tx(wt, fn))
 			}
 		},
 	).Call(func(
@@ -198,7 +200,7 @@ func TestFileWithTx(
 	) {
 
 		var key Key
-		ce(tx(func(
+		ce(tx(wt, func(
 			iterDisk IterDiskFile,
 			build Build,
 			save entity.SaveEntity,
@@ -217,7 +219,7 @@ func TestFileWithTx(
 			key = s.Key
 		}))
 
-		ce(tx(func(
+		ce(tx(wt, func(
 			selIndex index.SelectIndex,
 		) {
 			var n int
