@@ -14,10 +14,12 @@ import (
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestKV(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	scope dscope.Scope,
 	newStore New,
@@ -27,6 +29,7 @@ func TestKV(
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
 		s, err := newStore(
+			wt,
 			filepath.Join(dir, fmt.Sprintf("%d", rand.Int63())),
 		)
 		ce(err)

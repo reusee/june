@@ -33,16 +33,17 @@ type Store struct {
 }
 
 type New func(
+	wt *pr.WaitTree,
 	path string,
 ) (*Store, error)
 
 func (_ Def) New(
-	parentWt *pr.WaitTree,
 	machine naming.MachineName,
 	newMem storemem.New,
 	setRestrictedPath fsys.SetRestrictedPath,
 ) New {
 	return func(
+		parentWt *pr.WaitTree,
 		path string,
 	) (_ *Store, err error) {
 		defer he(&err)
