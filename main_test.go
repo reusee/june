@@ -110,7 +110,7 @@ func runTest(
 	// run
 	if len(specs) == 1 {
 		spec := specs[0]
-		waitTree := pr.NewRootWaitTree(context.Background())
+		waitTree := pr.NewRootWaitTree(context.Background(), pr.ID("test root"))
 		spec.Defs = append(spec.Defs,
 			func() *testing.T {
 				return t
@@ -140,7 +140,7 @@ func runTest(
 				strings.Join(spec.Desc, ":"),
 				func(t *testing.T) {
 					t.Parallel()
-					waitTree := pr.NewRootWaitTree(context.Background())
+					waitTree := pr.NewRootWaitTree(context.Background(), pr.ID("test root"))
 					spec.Defs = append(spec.Defs,
 						func() *testing.T {
 							return t

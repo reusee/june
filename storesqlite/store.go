@@ -76,7 +76,7 @@ func (_ Def) New(
 			dirty: make(chan struct{}, 1),
 		}
 
-		s.WaitTree = pr.NewWaitTree(parentWt)
+		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("sqlite "+s.storeID))
 		parentWt.Go(func() {
 			<-parentWt.Ctx.Done()
 			s.WaitTree.Wait()

@@ -47,7 +47,7 @@ func (_ Def) VarsStore(
 	})
 	ce(err)
 
-	wt := pr.NewWaitTree(parentWt)
+	wt := pr.NewWaitTree(parentWt, pr.ID("vars"))
 
 	parentWt.Go(func() {
 		<-parentWt.Ctx.Done()

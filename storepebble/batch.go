@@ -49,7 +49,7 @@ func (_ Def) NewBatch() NewBatch {
 			batch: batch,
 			cond:  sync.NewCond(new(sync.Mutex)),
 		}
-		b.WaitTree = pr.NewWaitTree(parentWaitTree)
+		b.WaitTree = pr.NewWaitTree(parentWaitTree, pr.ID("pebble batch "+b.name))
 		parentWaitTree.Go(func() {
 			<-parentWaitTree.Ctx.Done()
 			b.WaitTree.Wait()

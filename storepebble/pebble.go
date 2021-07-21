@@ -91,7 +91,7 @@ func (_ Def) New(
 			DB: db,
 		}
 
-		s.WaitTree = pr.NewWaitTree(parentWt)
+		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("pebble "+s.storeID))
 		parentWt.Go(func() {
 			<-parentWt.Ctx.Done()
 			s.WaitTree.Wait()
