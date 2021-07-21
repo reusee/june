@@ -98,13 +98,23 @@ func (b *Batch) lockWrite() func() {
 }
 
 func (b *Batch) Commit() (err error) {
-	defer he(&err)
+	select {
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
+	default:
+	}
+	defer b.Add()()
 	defer b.lockWrite()()
-	ce(b.batch.Commit(writeOptions))
-	return
+	return b.batch.Commit(writeOptions)
 }
 
 func (b *Batch) Abort() error {
+	select {
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
+	default:
+	}
+	defer b.Add()()
 	defer b.lockWrite()()
 	return b.batch.Close()
 }
