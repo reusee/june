@@ -148,7 +148,7 @@ func TestSave(
 		// file numbers
 		m := 0
 		if err := filepath.WalkDir(".", func(path string, entry fs.DirEntry, e error) error {
-			if path == ".git" {
+			if path == ".git" || path == ".github" {
 				return fs.SkipDir
 			}
 			m++
