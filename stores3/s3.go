@@ -36,6 +36,7 @@ type KV struct {
 var _ storekv.KV = new(KV)
 
 type New func(
+	wt *pr.WaitTree,
 	endpoint string,
 	key string,
 	secret string,
@@ -50,9 +51,9 @@ type NewOption interface {
 
 func (_ Def) New(
 	timeout Timeout,
-	parentWt *pr.WaitTree,
 ) New {
 	return func(
+		parentWt *pr.WaitTree,
 		endpoint string,
 		key string,
 		secret string,
