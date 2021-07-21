@@ -12,12 +12,14 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
 	testStore store.TestStore,
 	scope dscope.Scope,
+	wt *pr.WaitTree,
 ) {
 	for _, readPolicy := range []ReadPolicy{
 		ReadThrough,
@@ -44,7 +46,7 @@ func TestStore(
 						if err != nil {
 							t.Fatal(err)
 						}
-						store, err := newStore(upstream, backing, readPolicy, writePolicy)
+						store, err := newStore(wt, upstream, backing, readPolicy, writePolicy)
 						ce(err)
 						fn(store)
 					})

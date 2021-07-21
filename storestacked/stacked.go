@@ -38,16 +38,16 @@ const (
 )
 
 type New func(
+	*pr.WaitTree,
 	store.Store,
 	store.Store,
 	ReadPolicy,
 	WritePolicy,
 ) (*Store, error)
 
-func (_ Def) New(
-	parentWt *pr.WaitTree,
-) New {
+func (_ Def) New() New {
 	return func(
+		parentWt *pr.WaitTree,
 		upstream store.Store,
 		backing store.Store,
 		readPolicy ReadPolicy,
