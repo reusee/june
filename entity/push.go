@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"sync"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/june/index"
-	"github.com/reusee/june/opts"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
@@ -162,15 +160,7 @@ func (_ Def) Push(
 			// save object
 			ce(store.Read(summary.Key, func(stream sb.Stream) (err error) {
 				defer he(&err)
-				get, put := bytesPool.Getter()
-				defer put()
-				res, err := to.Write(summary.Key.Namespace, stream, opts.NewBytesBuffer(func() *bytes.Buffer {
-					buf := get().(*bytes.Buffer)
-					if buf.Len() > 0 {
-						buf.Reset()
-					}
-					return buf
-				}))
+				res, err := to.Write(summary.Key.Namespace, stream)
 				ce(err)
 				if res.Key != summary.Key {
 					return we(fmt.Errorf("bad write: %s", summary.Key))

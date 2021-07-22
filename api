@@ -180,7 +180,7 @@ fsys.ShuffleDir
 	func(string) (op string, path1 string, path2 string, err error)
 
 fsys.Watch
-	func(path string, options ...fsys.WatchOption) (watcher *fsys.Watcher, err error)
+	func(wt *pr.WaitTree, path string, options ...fsys.WatchOption) (watcher *fsys.Watcher, err error)
 
 index.Index
 	interface{Delete(entry index.Entry) error; Iter(lower *sb.Tokens, upper *sb.Tokens, order index.Order) (pp.Src, io.Closer, error); Name() string; Save(entry index.Entry, options ...index.SaveOption) error}
@@ -215,7 +215,7 @@ store.TestStore
 	test Store implementation
 
 storedisk.New
-	func(string, ...storedisk.NewOption) (*storedisk.Store, error)
+	func(wt *pr.WaitTree, path string, options ...storedisk.NewOption) (*storedisk.Store, error)
 
 storekv.New
 	func(kv storekv.KV, prefix string, options ...storekv.NewOption) (*storekv.Store, error)
@@ -224,35 +224,35 @@ storekv.TestKV
 	func(t *testing.T, with func(fn func(kv storekv.KV, prefix string)))
 
 storemem.New
-	func() *storemem.Store
+	func(parentWt *pr.WaitTree) *storemem.Store
 
 storenssharded.New
 	func(shards map[key.Namespace]store.Store, def store.Store) (*storenssharded.Store, error)
 
 storeonedrive.New
-	func(client *http.Client, drivePath string, dir string) (*storeonedrive.Store, error)
+	func(parentWt *pr.WaitTree, client *http.Client, drivePath string, dir string) (*storeonedrive.Store, error)
 
 storepebble.CacheSize
 	int64
 
 storepebble.New
-	func(fs vfs.FS, dir string) (*storepebble.Store, error)
+	func(wt *pr.WaitTree, fs vfs.FS, dir string) (*storepebble.Store, error)
 	create new pebble store
 
 storepebble.NewBatch
-	func(store *storepebble.Store) (*storepebble.Batch, error)
+	func(wt *pr.WaitTree, store *storepebble.Store) (*storepebble.Batch, error)
 
 stores3.New
-	func(endpoint string, key string, secret string, useSSL bool, bucket string, options ...stores3.NewOption) (*stores3.KV, error)
+	func(wt *pr.WaitTree, endpoint string, key string, secret string, useSSL bool, bucket string, options ...stores3.NewOption) (*stores3.KV, error)
 
 stores3.Timeout
 	int64
 
 storesqlite.New
-	func(path string) (*storesqlite.Store, error)
+	func(wt *pr.WaitTree, path string) (*storesqlite.Store, error)
 
 storestacked.New
-	func(store.Store, store.Store, storestacked.ReadPolicy, storestacked.WritePolicy) (*storestacked.Store, error)
+	func(*pr.WaitTree, store.Store, store.Store, storestacked.ReadPolicy, storestacked.WritePolicy) (*storestacked.Store, error)
 
 storetap.New
 	func(upstream store.Store, funcs storetap.Funcs) *storetap.Store

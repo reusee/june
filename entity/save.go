@@ -13,7 +13,6 @@ import (
 	"github.com/reusee/dscope"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/naming"
-	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
@@ -158,16 +157,8 @@ func (_ Def) Save(
 		)
 
 		// write
-		get, put := bytesPool.Getter()
-		defer put()
 		var res WriteResult
-		res, err = store.Write(ns, stream, opts.NewBytesBuffer(func() *bytes.Buffer {
-			buf := get().(*bytes.Buffer)
-			if buf.Len() > 0 {
-				buf.Reset()
-			}
-			return buf
-		}))
+		res, err = store.Write(ns, stream)
 		if tapWriteResult != nil {
 			tapWriteResult(res)
 		}

@@ -5,14 +5,12 @@
 package entity
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/key"
-	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
@@ -285,15 +283,7 @@ func (_ Def) SaveSummary(
 		proc := sb.MarshalValue(sb.Ctx{
 			SkipEmptyStructFields: true,
 		}, reflect.ValueOf(s), nil)
-		get, put := bytesPool.Getter()
-		defer put()
-		res, err := store.Write(NSSummary, &proc, opts.NewBytesBuffer(func() *bytes.Buffer {
-			buf := get().(*bytes.Buffer)
-			if buf.Len() > 0 {
-				buf.Reset()
-			}
-			return buf
-		}))
+		res, err := store.Write(NSSummary, &proc)
 		ce(err)
 		summaryKey := res.Key
 

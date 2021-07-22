@@ -9,13 +9,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"runtime"
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
-	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
@@ -230,13 +228,6 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 
 }
 
-var bytesBufferPool = pr.NewPool(
-	int32(runtime.NumCPU()),
-	func() any {
-		return new(bytes.Buffer)
-	},
-)
-
 func (s *Store) Write(
 	ns key.Namespace,
 	stream sb.Stream,
@@ -314,12 +305,7 @@ func (s *Store) Write(
 		}
 	}
 
-	v, put := bytesBufferPool.Get()
-	buf := v.(*bytes.Buffer)
-	defer func() {
-		buf.Reset()
-		put()
-	}()
+	buf := new(bytes.Buffer)
 	var sink sb.Sink
 	if newBytesBuffer != nil {
 		sink = s.codec.Encode(
