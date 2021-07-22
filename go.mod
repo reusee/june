@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/cockroachdb/errors v1.8.5 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20210716215258-b8b89851512d
+	github.com/cockroachdb/pebble v0.0.0-20210719141320-8c3bd06debb5
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
