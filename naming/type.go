@@ -12,7 +12,10 @@ import (
 	"sync"
 )
 
-var typeToName sync.Map
+var (
+	typeToName sync.Map
+	nameToType sync.Map
+)
 
 //TODO return migrated names
 func Type(t reflect.Type) (name string) {
@@ -23,6 +26,7 @@ func Type(t reflect.Type) (name string) {
 	defer func() {
 		if name != "" {
 			typeToName.Store(t, name)
+			nameToType.Store(name, t)
 		}
 	}()
 
@@ -58,3 +62,12 @@ var buildPackagePath = func() string {
 	}
 	return info.Path
 }()
+
+func GetType(name string) *reflect.Type {
+	v, ok := nameToType.Load(name)
+	if !ok {
+		return nil
+	}
+	t := v.(reflect.Type)
+	return &t
+}
