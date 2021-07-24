@@ -151,5 +151,4 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 
 func (_ PreEntry) IsSelectOption() {}
 
-//TODO
 func (_ PreEntry) IsIterOption() {}
