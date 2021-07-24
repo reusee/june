@@ -55,6 +55,8 @@ func Upper(entry Entry) UpperEntry {
 
 var MatchEntry = NewEntry
 
+var MatchPreEntry = NewPreEntry
+
 type Exact Entry
 
 func (_ Exact) IsSelectOption() {}
