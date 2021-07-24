@@ -7,11 +7,9 @@ package codec
 import (
 	"bytes"
 	"io"
-	"runtime"
 
 	"github.com/golang/snappy"
 	"github.com/klauspost/compress/zstd"
-	"github.com/reusee/pr"
 )
 
 type CompressFunc = func([]byte, io.Writer) error
@@ -56,13 +54,15 @@ func UseSnappyStream() (string, CompressFunc, UncompressFunc) {
 
 func UseZstd() (string, CompressFunc, UncompressFunc) {
 	return "zstd", func(data []byte, w io.Writer) error {
-			encV, encPut := zstdEncoderPool.Get()
-			defer func() {
-				encPut()
-			}()
-			enc := encV.(*zstd.Encoder)
-			enc.Reset(w)
-			_, err := enc.Write(data)
+			enc, err := zstd.NewWriter(
+				w,
+				zstd.WithEncoderCRC(true),
+				zstd.WithEncoderLevel(zstd.SpeedDefault),
+			)
+			if err != nil {
+				return err
+			}
+			_, err = enc.Write(data)
 			if err != nil {
 				return err
 			}
@@ -71,43 +71,17 @@ func UseZstd() (string, CompressFunc, UncompressFunc) {
 			}
 			return nil
 		}, func(data []byte) ([]byte, error) {
-			v, put := zstdDecoderPool.Get()
-			r := v.(*zstd.Decoder)
-			defer func() {
-				if !put() {
-					r.Close()
-				}
-			}()
-			if err := r.Reset(bytes.NewReader(data)); err != nil {
+			r, err := zstd.NewReader(
+				bytes.NewReader(data),
+				zstd.WithDecoderMaxMemory(64*1024*1024),
+			)
+			if err != nil {
 				return nil, err
 			}
-			data, err := io.ReadAll(r)
+			data, err = io.ReadAll(r)
 			if err != nil {
 				return nil, err
 			}
 			return data, nil
 		}
 }
-
-var zstdEncoderPool = pr.NewPool(
-	int32(runtime.NumCPU()),
-	func() any {
-		enc, err := zstd.NewWriter(nil,
-			zstd.WithEncoderCRC(true),
-			zstd.WithEncoderLevel(zstd.SpeedDefault),
-		)
-		ce(err)
-		return enc
-	},
-)
-
-var zstdDecoderPool = pr.NewPool(
-	int32(runtime.NumCPU()),
-	func() any {
-		r, err := zstd.NewReader(nil,
-			zstd.WithDecoderMaxMemory(64*1024*1024),
-		)
-		ce(err)
-		return r
-	},
-)
