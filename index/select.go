@@ -105,6 +105,7 @@ func Call(fn any) Sink {
 
 func Tap(fn any) Sink {
 	argTypes := []reflect.Type{
+		// idx string
 		reflect.TypeOf((*string)(nil)).Elem(),
 	}
 	fnValue := reflect.ValueOf(fn)
@@ -120,7 +121,36 @@ func Tap(fn any) Sink {
 				false,
 			),
 			func(args []reflect.Value) []reflect.Value {
+				// only tuple
 				fnValue.Call(args[1:])
+				return nil
+			},
+		).Interface())
+	}
+}
+
+func TapPre(fn any) Sink {
+	argTypes := []reflect.Type{
+		// Key
+		reflect.TypeOf((*Key)(nil)).Elem(),
+		// idx string
+		reflect.TypeOf((*string)(nil)).Elem(),
+	}
+	fnValue := reflect.ValueOf(fn)
+	fnType := fnValue.Type()
+	for i := 0; i < fnType.NumIn(); i++ {
+		argTypes = append(argTypes, fnType.In(i))
+	}
+	return func() sb.Sink {
+		return sb.Unmarshal(reflect.MakeFunc(
+			reflect.FuncOf(
+				argTypes,
+				[]reflect.Type{},
+				false,
+			),
+			func(args []reflect.Value) []reflect.Value {
+				// only tuple
+				fnValue.Call(args[2:])
 				return nil
 			},
 		).Interface())
@@ -273,7 +303,7 @@ func Iter(
 				sb.Marshal(PreEntry{
 					Key:   matchPre.Key,
 					Type:  matchPre.Type,
-					Tuple: append(match.Tuple, sb.Min),
+					Tuple: append(matchPre.Tuple, sb.Min),
 				}),
 				sb.CollectTokens(&lTokens),
 			))
@@ -282,7 +312,7 @@ func Iter(
 				sb.Marshal(PreEntry{
 					Key:   matchPre.Key,
 					Type:  matchPre.Type,
-					Tuple: append(match.Tuple, sb.Max),
+					Tuple: append(matchPre.Tuple, sb.Max),
 				}),
 				sb.CollectTokens(&uTokens),
 			))
