@@ -8,8 +8,11 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 	"sync/atomic"
 
+	"github.com/reusee/june/index"
+	"github.com/reusee/june/naming"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
@@ -40,7 +43,7 @@ func (_ WithIndexSaveOptions) IsIndexOption() {}
 func (_ Def) IndexFuncs(
 	store Store,
 	saveSummary SaveSummary,
-	index Index,
+	sel index.SelectIndex,
 	rootCtx context.Context,
 	parallel sys.Parallel,
 ) (rebuild RebuildIndex, update UpdateIndex) {
@@ -128,21 +131,83 @@ func (_ Def) IndexFuncs(
 	update = func(
 		options ...IndexOption,
 	) (n int64, err error) {
-		return resave(func(key Key) (_ bool, err error) {
+		return resave(func(summaryKey Key) (_ bool, err error) {
 			defer he(&err)
+
+			// check existence
 			var c int
-			ce(Select(
-				index,
-				MatchEntry(IdxSummaryOf, key),
+			var key Key
+			ce(sel(
+				MatchEntry(IdxSummaryOf, summaryKey),
 				Count(&c),
 				Limit(1),
+				TapEntry(func(e IndexEntry) {
+					key = *e.Key
+				}),
 			))
-			if c > 0 {
-				return true, nil
+			if c == 0 {
+				return false, nil
 			}
-			return
+
+			// check version
+			var typeName string
+			ce(sel(
+				MatchPreEntry(key, IdxType),
+				TapPre(func(t string) {
+					typeName = t
+				}),
+			))
+			ver, err := getVersion(typeName)
+			ce(err)
+			if ver != nil {
+				// get saved version
+				var savedVersion int64
+				ce(sel(
+					MatchPreEntry(key, IdxVersion),
+					TapPre(func(v int64) {
+						savedVersion = v
+					}),
+				))
+				if savedVersion != *ver {
+					return false, nil
+				}
+			}
+
+			return true, nil
 		}, options...)
 	}
 
 	return
+}
+
+var nameToVersion sync.Map
+
+func getVersion(
+	name string,
+) (ret *int64, err error) {
+
+	if v, ok := nameToVersion.Load(name); ok {
+		return v.(*int64), nil
+	}
+
+	defer func() {
+		if err == nil {
+			nameToVersion.Store(name, ret)
+		}
+	}()
+
+	t := naming.GetType(name)
+	if t == nil {
+		return nil, nil
+	}
+	if !(*t).Implements(hasIndexType) {
+		return nil, nil
+	}
+
+	_, ver, err := reflect.New(*t).Elem().Interface().(HasIndex).EntityIndexes()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ver, nil
 }

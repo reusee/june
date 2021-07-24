@@ -34,6 +34,7 @@ type (
 	Index         = index.Index
 	IndexManager  = index.IndexManager
 
+	TapEntry        = index.TapEntry
 	TapKey          = opts.TapKey
 	TapTokens       = index.TapTokens
 	IndexTapEntry   = index.TapEntry
