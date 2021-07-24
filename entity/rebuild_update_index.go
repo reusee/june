@@ -162,12 +162,18 @@ func (_ Def) IndexFuncs(
 			if ver != nil {
 				// get saved version
 				var savedVersion int64
+				var c int
 				ce(sel(
 					MatchPreEntry(key, IdxVersion),
 					TapPre(func(v int64) {
 						savedVersion = v
 					}),
+					Count(&c),
 				))
+				if c == 0 {
+					// no version info
+					return false, nil
+				}
 				if savedVersion != *ver {
 					return false, nil
 				}
