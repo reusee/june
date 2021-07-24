@@ -158,6 +158,18 @@ func TestSave(
 		t.Fatal()
 	}
 
+	// pre index
+	var savedVersion int64
+	ce(Select(index,
+		MatchPreEntry(summary.Key, IdxVersion),
+		TapPre(func(v int64) {
+			savedVersion = v
+		}),
+	))
+	if savedVersion != 1 {
+		t.Fatal()
+	}
+
 	t.Run("same data", func(t *testing.T) {
 		defer he(nil, e4.TestingFatal(t))
 		summary, err = save(testSaveFoo(42))

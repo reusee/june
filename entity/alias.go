@@ -49,15 +49,17 @@ var (
 	he = e4.Handle
 	we = e4.WrapWithStacktrace
 
-	Select      = index.Select
-	Desc        = index.Desc
-	Call        = index.Call
-	Tap         = index.Tap
-	Count       = index.Count
-	IndexEvSave = index.EvSave
-	Asc         = index.Asc
-	NewEntry    = index.NewEntry
-	MatchEntry  = index.MatchEntry
+	Select        = index.Select
+	Desc          = index.Desc
+	Call          = index.Call
+	Tap           = index.Tap
+	TapPre        = index.TapPre
+	Count         = index.Count
+	IndexEvSave   = index.EvSave
+	Asc           = index.Asc
+	NewEntry      = index.NewEntry
+	MatchEntry    = index.MatchEntry
+	MatchPreEntry = index.MatchPreEntry
 
 	ErrKeyNotFound = store.ErrKeyNotFound
 	ErrKeyNotMatch = store.ErrKeyNotMatch
