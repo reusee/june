@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/reusee/pp"
+	"github.com/reusee/pr"
 )
 
 func TestIterIgnore(
@@ -64,15 +65,15 @@ func TestIterIgnore(
 
 }
 
-func TestIterDiskCancelCtx(
+func TestIterDiskCancelWaitTree(
 	t *testing.T,
 	scope Scope,
-	ctx context.Context,
+	parentWt *pr.WaitTree,
 ) {
-	ctx, cancel := context.WithCancel(ctx)
-	cancel()
-	scope.Sub(func() context.Context {
-		return ctx
+	wt := pr.NewWaitTree(parentWt)
+	wt.Cancel()
+	scope.Sub(func() *pr.WaitTree {
+		return wt
 	}).Call(func(
 		iterDisk IterDiskFile,
 	) {
@@ -84,5 +85,4 @@ func TestIterDiskCancelCtx(
 			t.Fatal()
 		}
 	})
-
 }

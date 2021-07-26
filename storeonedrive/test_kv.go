@@ -6,7 +6,6 @@ package storeonedrive
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"math/rand"
 	"os"
@@ -22,10 +21,9 @@ import (
 
 func TestKV(
 	t *testing.T,
-	wt *pr.WaitTree,
 	testKV storekv.TestKV,
 	newStore New,
-	ctx context.Context,
+	wt *pr.WaitTree,
 ) {
 
 	if os.Getenv("test_onedrive") == "" {
@@ -59,7 +57,7 @@ func TestKV(
 			sb.Unmarshal(&token),
 		))
 
-		client := config.Client(ctx, token)
+		client := config.Client(wt.Ctx, token)
 		dir := fmt.Sprintf("%d", rand.Int63())
 		kv, err := newStore(
 			wt,

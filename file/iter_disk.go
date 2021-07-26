@@ -6,7 +6,6 @@ package file
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,6 +15,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/reusee/e4"
 	"github.com/reusee/june/fsys"
+	"github.com/reusee/pr"
 )
 
 type IterDiskFile func(
@@ -31,7 +31,7 @@ type IterDiskFileOption interface {
 func (_ Def) IterDiskFile(
 	ignore Ignore,
 	isRestrictedPath fsys.IsRestrictedPath,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 ) (iter IterDiskFile) {
 
 	type Ignore = func(path string, file DiskFile) bool
@@ -135,8 +135,8 @@ func (_ Def) IterDiskFile(
 		return func() (_ any, _ Src, err error) {
 
 			select {
-			case <-rootCtx.Done():
-				err = rootCtx.Err()
+			case <-wt.Ctx.Done():
+				err = wt.Ctx.Err()
 				return
 			default:
 			}

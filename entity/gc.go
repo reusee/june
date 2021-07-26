@@ -33,7 +33,7 @@ func (_ Def) GC(
 	store Store,
 	selIndex index.SelectIndex,
 	index Index,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 	deleteSummary DeleteSummary,
 ) GC {
@@ -74,7 +74,7 @@ func (_ Def) GC(
 		// mark
 		var reachable sync.Map // Key: struct{}
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 		var put pr.Put
 		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {

@@ -27,7 +27,7 @@ type Scrub func(
 
 func (_ Def) Scrub(
 	newHashState key.NewHashState,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) Scrub {
 
@@ -50,7 +50,7 @@ func (_ Def) Scrub(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 
 		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) error {

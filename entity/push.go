@@ -40,7 +40,7 @@ func (_ Def) Push(
 	scope dscope.DependentScope,
 	selIndex index.SelectIndex,
 	store Store,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	fetch Fetch,
 	parallel sys.Parallel,
 ) Push {
@@ -187,7 +187,7 @@ func (_ Def) Push(
 		type Proc func() error
 
 		// workers
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 		put, wait := pr.Consume(ctx, p, func(_ int, v any) error {
 			proc := v.(Proc)

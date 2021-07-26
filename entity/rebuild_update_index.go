@@ -44,7 +44,7 @@ func (_ Def) IndexFuncs(
 	store Store,
 	saveSummary SaveSummary,
 	sel index.SelectIndex,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) (rebuild RebuildIndex, update UpdateIndex) {
 
@@ -67,7 +67,7 @@ func (_ Def) IndexFuncs(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 
 		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {

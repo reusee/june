@@ -25,7 +25,7 @@ type DeleteIndexOption interface {
 
 func (_ Def) DeleteIndex(
 	index Index,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) DeleteIndex {
 
@@ -53,7 +53,7 @@ func (_ Def) DeleteIndex(
 		ce(err)
 		defer closer.Close()
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 		put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)

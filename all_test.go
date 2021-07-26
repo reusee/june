@@ -172,9 +172,9 @@ func Test_file_TestFileWithTx(t *testing.T) {
 	runTest(t, file.TestFileWithTx)
 }
 
-func Test_file_TestIterDiskCancelCtx(t *testing.T) {
+func Test_file_TestIterDiskCancelWaitTree(t *testing.T) {
 	t.Parallel()
-	runTest(t, file.TestIterDiskCancelCtx)
+	runTest(t, file.TestIterDiskCancelWaitTree)
 }
 
 func Test_file_TestIterIgnore(t *testing.T) {

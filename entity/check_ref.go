@@ -25,7 +25,7 @@ type CheckRef func(
 
 func (_ Def) CheckRef(
 	store Store,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) CheckRef {
 
@@ -42,7 +42,7 @@ func (_ Def) CheckRef(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 
 		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {

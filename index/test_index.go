@@ -15,6 +15,7 @@ import (
 	"github.com/reusee/e4"
 	"github.com/reusee/june/key"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
@@ -45,7 +46,7 @@ func init() {
 
 func (_ Def) TestIndex(
 	scope Scope,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 ) TestIndex {
 	return func(
 		withIndexManager func(func(IndexManager)),
@@ -596,7 +597,7 @@ func (_ Def) TestIndex(
 						}
 
 						// context
-						ctx, cancel := context.WithCancel(rootCtx)
+						ctx, cancel := context.WithCancel(wt.Ctx)
 						cancel()
 						err = Select(
 							index,

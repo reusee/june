@@ -43,7 +43,7 @@ func (_ Def) Build(
 	fetchEntity entity.Fetch,
 	saveEntity entity.SaveEntity,
 	packThreshold PackThreshold,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 	scope Scope,
 	withTx BuildWithTx,
@@ -104,7 +104,7 @@ func (_ Def) Build(
 		}
 
 		// async jobs
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		putFn, wait := pr.Consume(
 			ctx,
 			int(parallel),

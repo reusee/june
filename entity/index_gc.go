@@ -42,7 +42,6 @@ func (_ blackholeCodec) ID() string {
 }
 
 func (_ Def) IndexGC(
-	rootCtx context.Context,
 	store Store,
 	newMem storemem.New,
 	scope dscope.DependentScope,
@@ -137,7 +136,7 @@ func (_ Def) IndexGC(
 				return
 			}
 
-			ctx, cancel := context.WithCancel(rootCtx)
+			ctx, cancel := context.WithCancel(wt.Ctx)
 			defer cancel()
 			put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
 				defer he(&err)

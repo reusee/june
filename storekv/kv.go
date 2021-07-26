@@ -6,7 +6,6 @@ package storekv
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -16,6 +15,7 @@ import (
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/sys"
+	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
@@ -36,8 +36,8 @@ type KV interface {
 }
 
 type Store struct {
+	*pr.WaitTree
 	name          string
-	ctx           context.Context
 	kv            KV
 	codec         Codec
 	cache         store.Cache
@@ -68,7 +68,7 @@ var serial int64
 func (_ Def) New(
 	newHashState key.NewHashState,
 	parallel sys.Parallel,
-	ctx context.Context,
+	wt *pr.WaitTree,
 ) (
 	newStore New,
 ) {
@@ -103,12 +103,12 @@ func (_ Def) New(
 		}
 
 		store := &Store{
+			WaitTree: wt,
 			name: fmt.Sprintf("kv%d(%s, %s)",
 				atomic.AddInt64(&serial, 1),
 				kv.Name(),
 				prefix,
 			),
-			ctx:           ctx,
 			kv:            kv,
 			newHashState:  newHashState,
 			prefix:        prefix,

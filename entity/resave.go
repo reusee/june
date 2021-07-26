@@ -31,7 +31,7 @@ func (_ Def) Resave(
 	sel index.SelectIndex,
 	fetch Fetch,
 	save Save,
-	rootCtx context.Context,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) Resave {
 
@@ -54,7 +54,7 @@ func (_ Def) Resave(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(rootCtx)
+		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
 		put, wait := pr.Consume(
 			ctx,

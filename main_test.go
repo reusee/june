@@ -120,8 +120,8 @@ func runTest(
 					return t.TempDir(), waitTree
 				}
 			},
-			func() (context.Context, *pr.WaitTree) {
-				return waitTree.Ctx, waitTree
+			func() *pr.WaitTree {
+				return waitTree
 			},
 		)
 		scope := dscope.New(spec.Defs...).Sub(
@@ -150,8 +150,8 @@ func runTest(
 								return t.TempDir(), waitTree
 							}
 						},
-						func() (context.Context, *pr.WaitTree) {
-							return waitTree.Ctx, waitTree
+						func() *pr.WaitTree {
+							return waitTree
 						},
 					)
 					scope := dscope.New(spec.Defs...).Sub(

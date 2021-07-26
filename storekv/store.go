@@ -48,7 +48,7 @@ var shards = func() []string {
 func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) error {
 	nsPrefix := s.nsPrefix(ns)
 
-	ctx, cancel := context.WithCancel(s.ctx)
+	ctx, cancel := context.WithCancel(s.Ctx)
 	defer cancel()
 
 	keys := make(chan *Key)

@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"sync/atomic"
 	"testing"
 
@@ -21,7 +20,6 @@ func TestPush(
 	newMem storemem.New,
 	newKV storekv.New,
 	scope Scope,
-	rootCtx context.Context,
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
