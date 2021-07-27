@@ -89,7 +89,7 @@ type Sink func() sb.Sink
 
 func (_ Sink) IsSelectOption() {}
 
-func Call(fn any) Sink {
+func Unmarshal(fn any) Sink {
 	return func() sb.Sink {
 		return sb.Unmarshal(fn)
 	}

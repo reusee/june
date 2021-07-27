@@ -116,7 +116,7 @@ func TestSave(
 	numType := 0
 	numTypeFoo := 0
 	numName := 0
-	ce(Select(index, Call(func(tuple ...any) {
+	ce(Select(index, Unmarshal(func(tuple ...any) {
 		numIdx++
 		prefix, ok := tuple[0].(string)
 		if !ok {
@@ -202,7 +202,7 @@ func TestSave(
 		numType = 0
 		numTypeFoo = 0
 		numName = 0
-		ce(Select(index, Call(func(tuple ...any) {
+		ce(Select(index, Unmarshal(func(tuple ...any) {
 			numIdx++
 			prefix, ok := tuple[0].(string)
 			if !ok {
@@ -273,7 +273,7 @@ func TestSave(
 		ce(Select(
 			index,
 			Desc,
-			Call(func(tuple ...any) {
+			Unmarshal(func(tuple ...any) {
 				numIdx++
 				prefix, ok := tuple[0].(string)
 				if !ok {

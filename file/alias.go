@@ -46,7 +46,6 @@ var (
 	Select     = index.Select
 	MatchEntry = index.MatchEntry
 	Count      = index.Count
-	Call       = index.Call
 	Tap        = index.Tap
 	Desc       = index.Desc
 	Asc        = index.Asc

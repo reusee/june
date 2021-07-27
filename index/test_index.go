@@ -247,7 +247,7 @@ func (_ Def) TestIndex(
 							Lower(NewEntry(TestingIndex, 1)),
 							Upper(NewEntry(TestingIndex, num+1)),
 							Asc,
-							Call(func(name string, i int, key Key) {
+							Unmarshal(func(name string, i int, key Key) {
 								n++
 								if i != num {
 									t.Fatal()
@@ -265,7 +265,7 @@ func (_ Def) TestIndex(
 							Lower(NewEntry(TestingIndex, num+1)),
 							Upper(NewEntry(TestingIndex, 1)),
 							Asc,
-							Call(func(i int, key Key) {
+							Unmarshal(func(i int, key Key) {
 								n++
 							}),
 						)
@@ -406,7 +406,7 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							MatchEntry(TestingIndex2, "foo"),
-							Call(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
 								if p != "foo" {
 									t.Fatal()
 								}
@@ -422,7 +422,7 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							MatchEntry(TestingIndex2, "foo", "foo"),
-							Call(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
 								if p != "foo" {
 									t.Fatal()
 								}
@@ -441,7 +441,7 @@ func (_ Def) TestIndex(
 						err = Select(
 							index,
 							MatchEntry(TestingIndex2, "foo", "bar"),
-							Call(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
 								if p != "foo" {
 									t.Fatal()
 								}
@@ -460,7 +460,7 @@ func (_ Def) TestIndex(
 						ce(Select(
 							index,
 							MatchEntry(TestingIndex2, "baz"),
-							Call(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
 								n++
 							}),
 						))
@@ -499,7 +499,7 @@ func (_ Def) TestIndex(
 						ce(Select(
 							index,
 							Count(&n),
-							Call(func(args ...any) {
+							Unmarshal(func(args ...any) {
 							}),
 						))
 						if n != 10 {
@@ -512,7 +512,7 @@ func (_ Def) TestIndex(
 							index,
 							Count(&n),
 							Limit(1),
-							Call(func(args ...any) {
+							Unmarshal(func(args ...any) {
 							}),
 						))
 						if n != 1 {
@@ -583,7 +583,7 @@ func (_ Def) TestIndex(
 						ce(Select(
 							index,
 							MatchEntry(TestingIndex2, "foo"),
-							Call(func(tuple ...any) {
+							Unmarshal(func(tuple ...any) {
 							}),
 							Count(&n),
 						))
