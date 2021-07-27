@@ -82,7 +82,7 @@ func (_ Def) TestIndex(
 						err = index.Save(entry)
 						ce(err)
 
-						// iter
+						// select
 						n := 0
 						err = selIndex(
 							Asc,
@@ -114,6 +114,16 @@ func (_ Def) TestIndex(
 						ce(err)
 						if n != 2 {
 							t.Fatalf("got %d\n", n)
+						}
+
+						// exact
+						n = 0
+						ce(selIndex(
+							Exact(entry),
+							Count(&n),
+						))
+						if n != 1 {
+							t.Fatal()
 						}
 
 						// same tuple
