@@ -27,15 +27,15 @@ require (
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
-	github.com/reusee/pr v0.0.0-20210721113822-cecd83f9be60
+	github.com/reusee/pr v0.0.0-20210726063359-3496350be6e4
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
 	github.com/reusee/sb v0.0.0-20210709051922-381af69d8bcf
 	github.com/reusee/starlarkutil v0.0.0-20210318165519-05bcd557628b
 	github.com/rs/xid v1.3.0 // indirect
 	go.starlark.net v0.0.0-20210602144842-1cdb82c9e17a
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
-	golang.org/x/exp v0.0.0-20210715201039-d37aa40e8013 // indirect
-	golang.org/x/net v0.0.0-20210716203947-853a461950ff // indirect
+	golang.org/x/exp v0.0.0-20210722180016-6781d3edade3 // indirect
+	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	golang.org/x/tools v0.1.3
