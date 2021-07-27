@@ -82,21 +82,6 @@ func (_ Def) TestIndex(
 						err = index.Save(entry)
 						ce(err)
 
-						// has exact
-						ok, err := Has(index, Exact(entry))
-						ce(err)
-						if !ok {
-							t.Fatal()
-						}
-
-						// not has
-						entry = NewEntry(TestingIndex, 1, k)
-						ok, err = Has(index, Exact(entry))
-						ce(err)
-						if ok {
-							t.Fatal()
-						}
-
 						// iter
 						n := 0
 						err = selIndex(

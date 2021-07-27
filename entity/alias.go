@@ -56,7 +56,6 @@ var (
 	Tap           = index.Tap
 	TapPre        = index.TapPre
 	Count         = index.Count
-	IndexEvSave   = index.EvSave
 	Asc           = index.Asc
 	NewEntry      = index.NewEntry
 	MatchEntry    = index.MatchEntry

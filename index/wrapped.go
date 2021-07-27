@@ -9,10 +9,6 @@ import (
 	"reflect"
 )
 
-type evSave struct{}
-
-var EvSave = evSave{}
-
 func (_ Def) Index(
 	manager IndexManager,
 	storeID StoreID,
