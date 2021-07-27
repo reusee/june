@@ -33,25 +33,17 @@ func (_ IterOptions) IsSelectOption() {}
 
 func (_ IterOptions) IsIterOption() {}
 
-type LowerEntry Entry
+type Lower Entry
 
-func (_ LowerEntry) IsSelectOption() {}
+func (_ Lower) IsSelectOption() {}
 
-func (_ LowerEntry) IsIterOption() {}
+func (_ Lower) IsIterOption() {}
 
-func Lower(entry Entry) LowerEntry {
-	return LowerEntry(entry)
-}
+type Upper Entry
 
-type UpperEntry Entry
+func (_ Upper) IsSelectOption() {}
 
-func (_ UpperEntry) IsSelectOption() {}
-
-func (_ UpperEntry) IsIterOption() {}
-
-func Upper(entry Entry) UpperEntry {
-	return UpperEntry(entry)
-}
+func (_ Upper) IsIterOption() {}
 
 var MatchEntry = NewEntry
 
@@ -204,10 +196,10 @@ func Iter(
 		handleOption = func(option IterOption) {
 			switch option := option.(type) {
 
-			case LowerEntry:
+			case Lower:
 				entry := Entry(option)
 				lower = &entry
-			case UpperEntry:
+			case Upper:
 				entry := Entry(option)
 				upper = &entry
 			case Order:
