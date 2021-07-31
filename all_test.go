@@ -8,7 +8,6 @@ package june
 
 import (
 	"github.com/reusee/june/codec"
-	"github.com/reusee/june/config"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/file"
 	"github.com/reusee/june/filebase"
@@ -80,11 +79,6 @@ func Test_codec_TestSegmented(t *testing.T) {
 func Test_codec_TestSnappyStream(t *testing.T) {
 	t.Parallel()
 	runTest(t, codec.TestSnappyStream)
-}
-
-func Test_config_TestConfig(t *testing.T) {
-	t.Parallel()
-	runTest(t, config.TestConfig)
 }
 
 func Test_entity_TestDelete(t *testing.T) {

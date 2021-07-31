@@ -5,39 +5,23 @@
 package file
 
 import (
-	"github.com/reusee/june/config"
 	"github.com/reusee/june/sys"
 )
 
 func (_ Def) Configs(
-	getConfig config.GetConfig,
 	testing sys.Testing,
 ) (
 	packThreshold PackThreshold,
 	smallFileThreshold SmallFileThreshold,
 ) {
 
-	var data struct {
-		File struct {
-			PackThreshold      PackThreshold
-			SmallFileThreshold SmallFileThreshold
-		}
-	}
-
 	// defaults
-	data.File.PackThreshold = 128
-	data.File.SmallFileThreshold = 4 * 1024
+	packThreshold = 128
+	smallFileThreshold = 4 * 1024
 	if testing {
-		data.File.PackThreshold = 4
-		data.File.SmallFileThreshold = 128
+		packThreshold = 4
+		smallFileThreshold = 128
 	}
-
-	// get
-	err := getConfig(&data)
-	ce(err)
-
-	packThreshold = data.File.PackThreshold
-	smallFileThreshold = data.File.SmallFileThreshold
 
 	return
 }

@@ -4,30 +4,13 @@
 
 package storepebble
 
-import (
-	"github.com/reusee/june/config"
-)
-
 type CacheSize int64
 
-func (_ Def) CacheSize(
-	getConfig config.GetConfig,
-) (
+func (_ Def) CacheSize() (
 	cacheSize CacheSize,
 ) {
 
 	cacheSize = 32 * 1024 * 1024
-
-	var config struct {
-		Pebble struct {
-			CacheSize int64
-		}
-	}
-	err := getConfig(&config)
-	ce(err)
-	if config.Pebble.CacheSize != 0 {
-		cacheSize = CacheSize(config.Pebble.CacheSize)
-	}
 
 	return
 }
