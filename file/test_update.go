@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/june/clock"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
@@ -46,7 +45,6 @@ func TestUpdate(
 		iterKey IterKey,
 		equal Equal,
 		watch fsys.Watch,
-		getTime clock.Now,
 		iterFile IterFile,
 	) {
 
@@ -55,7 +53,7 @@ func TestUpdate(
 		ce(err)
 
 		// build
-		t0 := getTime()
+		t0 := time.Now()
 		file := new(File)
 		var numFile int64
 		err = Copy(
@@ -79,7 +77,7 @@ func TestUpdate(
 
 		// update, same dir
 		file2 := new(File)
-		t1 := getTime()
+		t1 := time.Now()
 		err = Copy(
 			update(
 				dir,
@@ -119,7 +117,7 @@ func TestUpdate(
 
 			// update
 			file := new(File)
-			t2 := getTime()
+			t2 := time.Now()
 			err = Copy(
 				update(
 					dir,

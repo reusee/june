@@ -6,7 +6,6 @@ package june
 
 import (
 	"github.com/reusee/dscope"
-	"github.com/reusee/june/clock"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/file"
 	"github.com/reusee/june/filebase"
@@ -32,7 +31,6 @@ import (
 )
 
 var Defs = dscope.Methods(
-	clock.Def{},
 	entity.Def{},
 	file.Def{},
 	filebase.Def{},

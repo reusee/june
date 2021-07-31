@@ -8,8 +8,8 @@ import (
 	"crypto/rand"
 	"fmt"
 	"path"
+	"time"
 
-	"github.com/reusee/june/clock"
 	"github.com/reusee/june/naming"
 )
 
@@ -27,7 +27,6 @@ type NewName func(prefix string) Name
 
 func (_ Def) NewName(
 	machineName naming.MachineName,
-	now clock.Now,
 	index Index,
 ) NewName {
 
@@ -37,7 +36,7 @@ func (_ Def) NewName(
 			if _, err := rand.Read(bs[:]); err != nil {
 				panic(err)
 			}
-			t := now()
+			t := time.Now()
 			name := Name(path.Join(
 				prefix,
 				fmt.Sprintf(

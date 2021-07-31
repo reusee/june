@@ -4,9 +4,6 @@
 *vars.VarsStore
 	*vars.VarsStore
 
-clock.Now
-	func() time.Time
-
 entity.CheckRef
 	func(options ...entity.CheckRefOption) error
 
