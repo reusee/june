@@ -596,9 +596,7 @@ func (_ Def) TestIndex(
 						cancel()
 						err = Select(
 							index,
-							WithCtx(func() context.Context {
-								return ctx
-							}),
+							WithCtx{ctx},
 						)
 						if !errors.Is(err, Cancel) {
 							t.Fatal()

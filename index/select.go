@@ -73,16 +73,14 @@ func (_ Where) IsSelectOption() {}
 
 func (_ Where) IsIterOption() {}
 
-type AssignCount func() *int
+type AssignCount [1]*int
 
 func (_ AssignCount) IsSelectOption() {}
 
 func (_ AssignCount) IsIterOption() {}
 
 func Count(target *int) AssignCount {
-	return func() *int {
-		return target
-	}
+	return AssignCount{target}
 }
 
 type Sink func() sb.Sink
@@ -157,7 +155,7 @@ type TapEntry func(Entry)
 
 func (_ TapEntry) IsSelectOption() {}
 
-type WithCtx func() context.Context
+type WithCtx [1]context.Context
 
 func (_ WithCtx) IsSelectOption() {}
 
@@ -372,8 +370,8 @@ func Iter(
 		}
 
 		// assign count
-		for _, fn := range assignCount {
-			iter = pp.CountSrc(fn(), iter, nil)
+		for _, opt := range assignCount {
+			iter = pp.CountSrc(opt[0], iter, nil)
 		}
 
 		return
@@ -422,7 +420,7 @@ func Select(
 			})
 
 		case WithCtx:
-			ctxs = append(ctxs, option())
+			ctxs = append(ctxs, option[0])
 
 		case IterOption:
 			iterOptions = append(iterOptions, option)

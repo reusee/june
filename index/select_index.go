@@ -5,8 +5,6 @@
 package index
 
 import (
-	"context"
-
 	"github.com/reusee/pr"
 )
 
@@ -20,9 +18,7 @@ func (_ Def) SelectIndex(
 ) SelectIndex {
 	return func(args ...SelectOption) (err error) {
 		defer he(&err)
-		args = append(args, WithCtx(func() context.Context {
-			return wt.Ctx
-		}))
+		args = append(args, WithCtx{wt.Ctx})
 		return Select(index, args...)
 	}
 }
