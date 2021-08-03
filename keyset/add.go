@@ -13,7 +13,7 @@ import (
 type Threshold int
 
 func (_ Def) Threshold() Threshold {
-	return 128
+	return 48
 }
 
 type Add func(
@@ -64,9 +64,9 @@ func mergeKeyToSet(
 	i := sort.Search(len(set), func(i int) bool {
 		item := set[i]
 		if item.Key != nil {
-			return *item.Key == key
+			return key.Compare(*item.Key) <= 0
 		} else if item.Pack != nil {
-			return key.Compare(item.Pack.Key) <= 0
+			return key.Compare(item.Pack.Max) <= 0
 		}
 		panic("invalid item") // NOCOVER
 	})
@@ -242,8 +242,7 @@ l1:
 		if item.Key != nil {
 			height = 1
 			weight = 1
-		}
-		if item.Pack != nil {
+		} else if item.Pack != nil {
 			height = item.Pack.Height
 			weight = 1
 		}
@@ -301,8 +300,7 @@ l1:
 				item.Key.Compare(max) > 0 {
 				max = *item.Key
 			}
-		}
-		if item.Pack != nil {
+		} else if item.Pack != nil {
 			if !min.Valid() ||
 				item.Pack.Min.Compare(min) < 0 {
 				min = item.Pack.Min
