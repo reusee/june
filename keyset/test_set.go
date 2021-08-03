@@ -20,8 +20,10 @@ func TestSet(
 		iter Iter,
 		has Has,
 		pack PackSet,
+		del Delete,
 	) {
 
+		// add and pack
 		var keys []Key
 		for i := 0; i < 2048; i++ {
 			var key Key
@@ -39,6 +41,7 @@ func TestSet(
 			t.Fatal()
 		}
 
+		// iter
 		var ks []Key
 		ce(iter(set, func(key Key) error {
 			ks = append(ks, key)
@@ -84,6 +87,19 @@ func TestSet(
 			if !ok {
 				t.Fatal()
 			}
+		}
+
+		// delete
+		for i, key := range keys {
+			set, err = del(set, key)
+			ce(err)
+			if i%128 == 0 {
+				set, err = pack(set)
+				ce(err)
+			}
+		}
+		if len(set) != 0 {
+			t.Fatal()
 		}
 
 	})

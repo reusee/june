@@ -34,6 +34,10 @@ func (_ Def) PackSet(
 	) {
 		defer he(&err)
 
+		if len(set) == 0 {
+			return set, nil
+		}
+
 	l1:
 
 		// partition by height
