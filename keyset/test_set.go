@@ -17,6 +17,7 @@ func TestSet(
 	threshold := Threshold(4)
 	scope.Sub(&threshold).Call(func(
 		add Add,
+		iter Iter,
 	) {
 
 		var keys []Key
@@ -32,6 +33,45 @@ func TestSet(
 
 		if len(set) == 0 {
 			t.Fatal()
+		}
+
+		var ks []Key
+		ce(iter(set, func(key Key) error {
+			ks = append(ks, key)
+			return nil
+		}))
+		if len(ks) != len(keys) {
+			t.Fatal()
+		}
+
+		m := make(map[Key]bool)
+		for _, key := range keys {
+			m[key] = true
+		}
+		for _, key := range ks {
+			if _, ok := m[key]; !ok {
+				t.Fatal()
+			}
+		}
+
+		m = make(map[Key]bool)
+		for _, key := range ks {
+			m[key] = true
+		}
+		for _, key := range keys {
+			if _, ok := m[key]; !ok {
+				t.Fatal()
+			}
+		}
+
+		for i, key := range ks {
+			if i == 0 {
+				continue
+			}
+			last := ks[i-1]
+			if key.Compare(last) != 1 {
+				t.Fatal()
+			}
 		}
 
 	})
