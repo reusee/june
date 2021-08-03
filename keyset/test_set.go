@@ -14,11 +14,12 @@ func TestSet(
 	scope Scope,
 ) {
 
-	threshold := Threshold(4)
+	threshold := PackThreshold(4)
 	scope.Sub(&threshold).Call(func(
 		add Add,
 		iter Iter,
 		has Has,
+		pack PackSet,
 	) {
 
 		var keys []Key
@@ -30,6 +31,8 @@ func TestSet(
 			keys = append(keys, key)
 		}
 		set, err := add(Set{}, keys...)
+		ce(err)
+		set, err = pack(set)
 		ce(err)
 
 		if len(set) == 0 {
