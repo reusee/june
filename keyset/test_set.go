@@ -18,6 +18,7 @@ func TestSet(
 	scope.Sub(&threshold).Call(func(
 		add Add,
 		iter Iter,
+		has Has,
 	) {
 
 		var keys []Key
@@ -70,6 +71,14 @@ func TestSet(
 			}
 			last := ks[i-1]
 			if key.Compare(last) != 1 {
+				t.Fatal()
+			}
+		}
+
+		for _, key := range keys {
+			ok, err := has(set, key)
+			ce(err)
+			if !ok {
 				t.Fatal()
 			}
 		}
