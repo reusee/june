@@ -189,6 +189,12 @@ key.NewHashState
 keyset.Add
 	func(set keyset.Set, keys ...key.Key) (keyset.Set, error)
 
+keyset.Has
+	func(set keyset.Set, key key.Key) (ok bool, err error)
+
+keyset.Iter
+	func(set keyset.Set, fn func(key key.Key) error) error
+
 keyset.Threshold
 	int
 
