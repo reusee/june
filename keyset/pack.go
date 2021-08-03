@@ -141,6 +141,5 @@ func (_ Def) PackSet(
 		// repeat
 		goto l1
 
-		return
 	}
 }
