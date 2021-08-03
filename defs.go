@@ -12,6 +12,7 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/key"
+	"github.com/reusee/june/keyset"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storedisk"
@@ -37,6 +38,7 @@ var Defs = dscope.Methods(
 	fsys.Def{},
 	index.Def{},
 	key.Def{},
+	keyset.Def{},
 	naming.Def{},
 	store.Def{},
 	storedisk.Def{},

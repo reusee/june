@@ -14,6 +14,7 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/key"
+	"github.com/reusee/june/keyset"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storedisk"
 	"github.com/reusee/june/storemem"
@@ -269,6 +270,11 @@ func Test_key_TestKeyPath(t *testing.T) {
 func Test_key_TestNamespaceFromString(t *testing.T) {
 	t.Parallel()
 	runTest(t, key.TestNamespaceFromString)
+}
+
+func Test_keyset_TestSet(t *testing.T) {
+	t.Parallel()
+	runTest(t, keyset.TestSet)
 }
 
 func Test_naming_TestTypeName(t *testing.T) {

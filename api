@@ -186,6 +186,12 @@ index.TestIndex
 key.NewHashState
 	func() hash.Hash
 
+keyset.Add
+	func(set keyset.Set, keys ...key.Key) (keyset.Set, error)
+
+keyset.Threshold
+	int
+
 naming.MachineName
 	string
 
