@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/cockroachdb/errors v1.8.6 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20210728210723-48179f1d4dae
+	github.com/cockroachdb/pebble v0.0.0-20210803150729-5c776d69d761
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/klauspost/compress v1.13.2
+	github.com/klauspost/compress v1.13.3
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8
