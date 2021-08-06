@@ -103,17 +103,18 @@ func (_ Def) Push(
 
 		} else {
 			// by index
+			keySet := make(map[Key]struct{})
 			var toSelectIndex index.SelectIndex
 			toScope.Assign(&toSelectIndex)
+			ce(toSelectIndex(
+				MatchEntry(IdxPairSummaryObject),
+				Tap(func(summaryKey Key, _ Key) {
+					keySet[summaryKey] = struct{}{}
+				}),
+			))
 			keyExisted = func(key Key) (bool, error) {
-				var n int
-				if err := toSelectIndex(
-					MatchEntry(IdxPairSummaryObject, key),
-					Count(&n),
-				); err != nil {
-					return false, err
-				}
-				return n > 0, nil
+				_, ok := keySet[key]
+				return ok, nil
 			}
 		}
 
