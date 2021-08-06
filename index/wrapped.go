@@ -32,6 +32,11 @@ var keyType = reflect.TypeOf((*Key)(nil)).Elem()
 func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 	defer he(&err)
 
+	if _, ok := entry.Type.(idxUnknown); ok {
+		// skip unknown
+		return nil
+	}
+
 	var tapEntry []TapEntry
 	for _, option := range options {
 		switch option := option.(type) {
