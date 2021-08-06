@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 
 	"github.com/google/btree"
+	"github.com/reusee/e4"
 	"github.com/reusee/june/index"
 	"github.com/reusee/pp"
 	"github.com/reusee/sb"
@@ -43,6 +44,17 @@ func (i Index) Name() string {
 
 func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 	defer he(&err)
+
+	if entry.Type == nil {
+		return we(index.ErrInvalidEntry,
+			e4.NewInfo("entry type is nil: %+v", entry),
+		)
+	}
+	if entry.Key == nil && entry.Path == nil {
+		return we(index.ErrInvalidEntry,
+			e4.NewInfo("both entry key and path is nil: %+v", entry),
+		)
+	}
 
 	var tapEntry []IndexTapEntry
 	for _, option := range options {

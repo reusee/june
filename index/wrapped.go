@@ -7,6 +7,8 @@ package index
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/reusee/e4"
 )
 
 func (_ Def) Index(
@@ -48,27 +50,35 @@ func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 	}
 
 	if entry.Type == nil {
-		return we(fmt.Errorf("empty index type"))
+		return we(ErrInvalidEntry,
+			e4.NewInfo("entry type is nil: %v", entry),
+		)
 	}
 
 	t := reflect.TypeOf(entry.Type)
 	v, ok := specsByType.Load(t)
 	if !ok {
-		return we(fmt.Errorf("unknown index type: %T", entry.Type))
+		return we(ErrInvalidEntry,
+			e4.NewInfo("unknown index type: %T", entry.Type),
+		)
 	}
 	spec := v.(Spec)
 
 	if entry.Key == nil {
-		return we(fmt.Errorf("entry has no Key"))
+		return we(ErrInvalidEntry,
+			e4.NewInfo("entry has no Key"),
+		)
 	}
 
 	if len(entry.Tuple) != len(spec.Fields) {
-		return we(fmt.Errorf(
-			"%s is expecting %d elements, but got %d",
-			spec.Name,
-			len(spec.Fields),
-			len(entry.Tuple),
-		))
+		return we(ErrInvalidEntry,
+			e4.NewInfo(
+				"%s is expecting %d elements, but got %d",
+				spec.Name,
+				len(spec.Fields),
+				len(entry.Tuple),
+			),
+		)
 	}
 	for i, typ := range spec.Fields {
 		if argType := reflect.TypeOf(entry.Tuple[i]); argType != typ {
@@ -79,7 +89,9 @@ func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 			} else if argType.ConvertibleTo(typ) {
 				entry.Tuple[i] = reflect.ValueOf(entry.Tuple[i]).Convert(typ).Interface()
 			} else {
-				return we(fmt.Errorf("param %d of %s should be %v", i, spec.Name, typ.String()))
+				return we(ErrInvalidEntry,
+					e4.NewInfo("param %d of %s should be %v", i, spec.Name, typ.String()),
+				)
 			}
 		}
 	}

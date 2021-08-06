@@ -88,6 +88,17 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 	defer catchErr(&err, pebble.ErrClosed)
 	defer i.begin()()
 
+	if entry.Type == nil {
+		return we(index.ErrInvalidEntry,
+			e4.NewInfo("entry type is nil: %+v", entry),
+		)
+	}
+	if entry.Key == nil && entry.Path == nil {
+		return we(index.ErrInvalidEntry,
+			e4.NewInfo("both entry key and path is nil: %+v", entry),
+		)
+	}
+
 	var tapEntry []IndexTapEntry
 	for _, option := range options {
 		switch option := option.(type) {

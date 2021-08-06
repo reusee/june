@@ -76,6 +76,20 @@ func (_ Def) TestIndex(
 						k, err := key.KeyFromString("foo:beef")
 						ce(err)
 
+						// invalid
+						err = index.Save(Entry{
+							Type: nil,
+						})
+						if !is(err, ErrInvalidEntry) {
+							t.Fatalf("got %v\n", err)
+						}
+						err = index.Save(Entry{
+							Type: idxFoo{},
+						})
+						if !is(err, ErrInvalidEntry) {
+							t.Fatalf("got %v\n", err)
+						}
+
 						// add
 						num := int(rand.Int63())
 						entry := NewEntry(TestingIndex, num, k)

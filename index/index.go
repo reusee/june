@@ -5,6 +5,7 @@
 package index
 
 import (
+	"errors"
 	"io"
 
 	"github.com/reusee/sb"
@@ -31,6 +32,8 @@ type Index interface {
 	Save(entry Entry, options ...SaveOption) error
 	Delete(entry Entry) error
 }
+
+var ErrInvalidEntry = errors.New("invalid entry")
 
 type Order uint8
 

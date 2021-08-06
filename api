@@ -189,13 +189,19 @@ key.NewHashState
 keyset.Add
 	func(set keyset.Set, keys ...key.Key) (keyset.Set, error)
 
+keyset.Delete
+	func(set keyset.Set, keys ...key.Key) (newSet keyset.Set, err error)
+
 keyset.Has
 	func(set keyset.Set, key key.Key) (ok bool, err error)
 
 keyset.Iter
 	func(set keyset.Set, fn func(key key.Key) error) error
 
-keyset.Threshold
+keyset.PackSet
+	func(set keyset.Set) (keyset.Set, error)
+
+keyset.PackThreshold
 	int
 
 naming.MachineName

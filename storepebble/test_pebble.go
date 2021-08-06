@@ -62,6 +62,7 @@ func TestMixedKV(
 		ce(err)
 
 		entry := index.NewEntry(TestingIndex, 42)
+		entry.Key = &Key{}
 
 		index, err := s.IndexFor("foo")
 		ce(err)
