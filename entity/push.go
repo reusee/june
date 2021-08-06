@@ -207,6 +207,11 @@ func (_ Def) Push(
 		// check summary key
 		var check func(summary Key, cont Proc) Proc
 		check = func(summaryKey Key, cont Proc) Proc {
+
+			if summaryKey.Namespace != NSSummary {
+				panic("impossible")
+			}
+
 			return func() (err error) {
 				defer he(&err)
 
@@ -227,14 +232,6 @@ func (_ Def) Push(
 
 				for _, fn := range tapCheck {
 					fn(summaryKey)
-				}
-
-				// index may be out-dated, check store
-				exists, err := to.Exists(summaryKey)
-				ce(err)
-				if exists {
-					put(cont)
-					return nil
 				}
 
 				// get summary
