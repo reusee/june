@@ -128,7 +128,9 @@ func (_ Def) Push(
 				fn func(summaryKey Key) error,
 			) {
 				for _, key := range keys {
-					if key.Namespace != NSSummary {
+					if key.Namespace == NSSummary {
+						ce(fn(key))
+					} else {
 						ce(selIndex(
 							MatchEntry(IdxPairObjectSummary, key),
 							Tap(func(_ Key, summaryKey Key) {
