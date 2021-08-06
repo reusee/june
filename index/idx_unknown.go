@@ -17,3 +17,8 @@ var nameOfIdxUnknown = naming.Type(
 )
 
 var idxUnknownType = reflect.TypeOf((*idxUnknown)(nil)).Elem()
+
+func (e Entry) IsUnknown() bool {
+	_, ok := e.Type.(idxUnknown)
+	return ok
+}

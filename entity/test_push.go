@@ -189,6 +189,56 @@ func TestPush(
 
 		}
 
+		// ignore
+		{
+			mem2 := newMem(wt)
+			store2, err := newKV(mem2, "foo")
+			ce(err)
+
+			var numCheck int64
+			var numSave int64
+			err = push(
+				store2, indexManager,
+				[]Key{key},
+				TapPushCheckSummary(func(_ Key) {
+					atomic.AddInt64(&numCheck, 1)
+				}),
+				TapPushSave(func(_ Key, _ *Summary) {
+					atomic.AddInt64(&numSave, 1)
+				}),
+				IgnoreSummary(func(s Summary) bool {
+					return false
+				}),
+			)
+			ce(err)
+			if numCheck != 3 {
+				t.Fatal()
+			}
+			if numSave != 3 {
+				t.Fatal()
+			}
+
+			scope.Sub(func() Store {
+				return store2
+			}).Call(func(
+				checkRef CheckRef,
+				store Store,
+			) {
+
+				n := 0
+				ce(store.IterAllKeys(func(key Key) error {
+					n++
+					return nil
+				}))
+				if n != 6 {
+					t.Fatalf("got %d", n)
+				}
+
+				ce(checkRef())
+			})
+
+		}
+
 	})
 
 }

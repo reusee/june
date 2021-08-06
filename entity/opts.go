@@ -54,3 +54,7 @@ type TapWriteResult = store.TapWriteResult
 type Parallel int
 
 func (_ Parallel) IsPushOption() {}
+
+type IgnoreSummary func(Summary) bool
+
+func (_ IgnoreSummary) IsPushOption() {}

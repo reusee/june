@@ -57,6 +57,7 @@ func (_ Def) Push(
 
 		var tapCheck []TapPushCheckSummary
 		var tapSave []TapPushSave
+		var ignoreSummary []IgnoreSummary
 		for _, option := range options {
 			switch option := option.(type) {
 			case TapPushCheckSummary:
@@ -65,6 +66,8 @@ func (_ Def) Push(
 				tapSave = append(tapSave, option)
 			case Parallel:
 				p = int(option)
+			case IgnoreSummary:
+				ignoreSummary = append(ignoreSummary, option)
 			default:
 				panic(fmt.Errorf("bad option: %T", option))
 			}
@@ -235,6 +238,13 @@ func (_ Def) Push(
 				// get summary
 				var summary Summary
 				ce(fetch(summaryKey, &summary))
+
+				for _, fn := range ignoreSummary {
+					if fn(summary) {
+						put(cont)
+						return nil
+					}
+				}
 
 				if len(summary.ReferedKeys) > 0 {
 					// push refered first
