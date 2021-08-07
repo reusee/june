@@ -50,7 +50,12 @@ func (_ Def) CleanIndex(
 		}
 
 		typeKey := reflect.TypeOf((*Key)(nil)).Elem()
+
 		keyExists := make(map[Key]bool)
+		ce(store.IterAllKeys(func(key Key) error {
+			keyExists[key] = true
+			return nil
+		}))
 
 		ce(deleteIndex(
 			func(stream sb.Stream) (_ *IndexEntry, err error) {
@@ -71,12 +76,7 @@ func (_ Def) CleanIndex(
 							for _, fn := range tapKey {
 								fn(key)
 							}
-							exists, ok := keyExists[key]
-							if !ok {
-								exists, err = store.Exists(key)
-								ce(err)
-								keyExists[key] = exists
-							}
+							exists := keyExists[key]
 							if !exists {
 								for _, fn := range tapInvalid {
 									fn(key)
