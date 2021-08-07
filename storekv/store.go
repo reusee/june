@@ -280,11 +280,14 @@ func (s *Store) Write(
 	}
 
 	path := s.keyToPath(res.Key)
-	var ok bool
-	ok, err = s.kv.KeyExists(path)
-	ce(err)
-	if ok {
-		return
+
+	if s.costInfo.Exists <= s.costInfo.Put {
+		var ok bool
+		ok, err = s.kv.KeyExists(path)
+		ce(err)
+		if ok {
+			return
+		}
 	}
 
 	// offload
