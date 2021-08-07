@@ -6,6 +6,7 @@ package stores3
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,6 +35,26 @@ type KV struct {
 }
 
 var _ storekv.KV = new(KV)
+
+func (kv *KV) CostInfo() storekv.CostInfo {
+	// b2
+	if strings.Contains(
+		kv.endpoint,
+		"backblazeb2.com",
+	) {
+		return storekv.CostInfo{
+			Get:    1,
+			Exists: 1,
+			Iter:   2,
+		}
+	}
+	// aws and others
+	return storekv.CostInfo{
+		Put:    1,
+		Iter:   1,
+		Delete: 1,
+	}
+}
 
 type New func(
 	wt *pr.WaitTree,

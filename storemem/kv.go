@@ -15,6 +15,10 @@ import (
 
 var _ storekv.KV = new(Store)
 
+func (s *Store) CostInfo() storekv.CostInfo {
+	return storekv.CostInfo{}
+}
+
 func (s *Store) KeyExists(key string) (bool, error) {
 	select {
 	case <-s.Ctx.Done():

@@ -21,6 +21,13 @@ import (
 
 var _ storekv.KV = new(Store)
 
+func (s *Store) CostInfo() storekv.CostInfo {
+	return storekv.CostInfo{
+		Put:    1,
+		Delete: 1,
+	}
+}
+
 func (s *Store) keyToPath(key string) (path string) {
 	parts := strings.Split(key, "/")
 	hex := parts[len(parts)-1]

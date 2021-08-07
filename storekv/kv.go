@@ -33,6 +33,15 @@ type KV interface {
 	KeyExists(key string) (bool, error)
 	KeyIter(prefix string, fn func(key string) error) error
 	KeyDelete(key ...string) error
+	CostInfo() CostInfo
+}
+
+type CostInfo struct {
+	Put    int
+	Get    int
+	Exists int
+	Iter   int
+	Delete int
 }
 
 type Store struct {
@@ -49,6 +58,7 @@ type Store struct {
 	writeDisabled bool
 	parallel      int
 	offloads      []WithOffload
+	costInfo      CostInfo
 }
 
 var _ store.Store = new(Store)
@@ -118,6 +128,7 @@ func (_ Def) New(
 			readDisabled:  readDisabled,
 			parallel:      int(parallel),
 			offloads:      offloads,
+			costInfo:      kv.CostInfo(),
 		}
 
 		return store, nil

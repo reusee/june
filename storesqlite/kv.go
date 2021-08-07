@@ -22,6 +22,13 @@ const (
 
 var _ storekv.KV = new(Store)
 
+func (s *Store) CostInfo() storekv.CostInfo {
+	return storekv.CostInfo{
+		Put:    1,
+		Delete: 1,
+	}
+}
+
 func (s *Store) KeyExists(key string) (ok bool, err error) {
 	defer he(&err)
 	done := s.Add()

@@ -121,6 +121,10 @@ func (b *Batch) Abort() error {
 
 var _ storekv.KV = new(Batch)
 
+func (b *Batch) CostInfo() storekv.CostInfo {
+	return costInfo
+}
+
 func (b *Batch) KeyDelete(keys ...string) (err error) {
 	select {
 	case <-b.Ctx.Done():

@@ -17,6 +17,10 @@ import (
 
 var _ storekv.KV = new(Store)
 
+func (s *Store) CostInfo() storekv.CostInfo {
+	return costInfo
+}
+
 func (s *Store) KeyExists(key string) (ok bool, err error) {
 	return s.keyExists(s.Add, s.DB.Get, key)
 }

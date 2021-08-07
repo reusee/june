@@ -16,6 +16,7 @@ import (
 	"github.com/cockroachdb/pebble/vfs"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
+	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
@@ -110,6 +111,11 @@ var maxOpenFiles = func() int {
 	}
 	return 1024 * 1024
 }()
+
+var costInfo = storekv.CostInfo{
+	Put:    1,
+	Delete: 1,
+}
 
 var storeSerial int64
 

@@ -21,6 +21,10 @@ const (
 
 var _ storekv.KV = new(Store)
 
+func (s *Store) CostInfo() storekv.CostInfo {
+	return storekv.CostInfo{}
+}
+
 func (s *Store) keyToShardedRelPath(key string) string {
 	parts := strings.Split(key, "/")
 	hex := parts[len(parts)-1]
