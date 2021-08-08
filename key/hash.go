@@ -11,6 +11,7 @@ import (
 	"hash"
 
 	"github.com/reusee/e4"
+	"github.com/reusee/sb"
 )
 
 const HashSize = 32
@@ -43,7 +44,21 @@ func HashFromString(str string) (hash Hash, err error) {
 type NewHashState func() hash.Hash
 
 func (_ Def) NewHashState() NewHashState {
-	return func() hash.Hash {
-		return sha256.New()
+	return newHashState
+}
+
+func newHashState() hash.Hash {
+	return sha256.New()
+}
+
+func HashValue(value any) (ret Hash, err error) {
+	hash := make([]byte, HashSize)
+	if err = sb.Copy(
+		sb.Marshal(value),
+		sb.Hash(newHashState, &hash, nil),
+	); err != nil {
+		return
 	}
+	copy(ret[:], hash)
+	return
 }

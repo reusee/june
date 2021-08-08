@@ -4,10 +4,19 @@
 
 package key
 
-import "github.com/reusee/e4"
+import (
+	"fmt"
+
+	"github.com/reusee/e4"
+)
 
 var (
 	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 	we = e4.WrapWithStacktrace
+	pt = fmt.Printf
+)
+
+type (
+	any = interface{}
 )
