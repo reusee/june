@@ -6,67 +6,12 @@ package key
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/reusee/e4"
 )
-
-// namespace
-
-type Namespace [8]byte
-
-var emptyNamespace = Namespace{}
-
-func (n Namespace) Valid() bool {
-	return n != emptyNamespace
-}
-
-func (n Namespace) String() string {
-	return fmt.Sprintf("%s", bytes.TrimRight(n[:], "\000"))
-}
-
-func NamespaceFromString(s string) (ns Namespace, err error) {
-	if len(s) > len(ns) {
-		err = we(ErrTooLong, e4.With(fmt.Errorf("string: %s", s)))
-		return
-	}
-	copy(ns[:], []byte(s))
-	return
-}
-
-// hash
-
-const HashSize = 32
-
-type Hash [HashSize]byte
-
-func (h Hash) String() string {
-	return hex.EncodeToString(h[:])
-}
-
-var emptyHash = Hash{}
-
-func (h Hash) Valid() bool {
-	return h != emptyHash
-}
-
-func HashFromString(str string) (hash Hash, err error) {
-	defer he(&err)
-	var bs []byte
-	bs, err = hex.DecodeString(str)
-	ce(err)
-	if len(bs) > len(hash) {
-		err = we(ErrTooLong, e4.With(fmt.Errorf("string: %s", str)))
-		return
-	}
-	copy(hash[:], bs)
-	return
-}
-
-// key
 
 type Key struct {
 	Namespace Namespace
