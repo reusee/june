@@ -82,6 +82,7 @@ entity.SaveEntity
 
 entity.SaveSummary
 	func(summary *entity.Summary, isLatest bool, options ...entity.SaveSummaryOption) error
+	SaveSummary
 
 entity.UpdateIndex
 	func(options ...entity.IndexOption) (n int64, err error)

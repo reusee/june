@@ -252,6 +252,11 @@ func Test_key_TestHashFromString(t *testing.T) {
 	runTest(t, key.TestHashFromString)
 }
 
+func Test_key_TestHashValue(t *testing.T) {
+	t.Parallel()
+	runTest(t, key.TestHashValue)
+}
+
 func Test_key_TestKeyFromString(t *testing.T) {
 	t.Parallel()
 	runTest(t, key.TestKeyFromString)

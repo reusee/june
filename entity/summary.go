@@ -235,6 +235,7 @@ type SaveSummaryOption interface {
 
 func (_ WithIndexSaveOptions) IsSaveSummaryOption() {}
 
+// SaveSummary
 type SaveSummary func(
 	summary *Summary,
 	isLatest bool,
@@ -260,9 +261,11 @@ func (_ Def) SaveSummary(
 	) {
 		defer he(&err)
 
+		// lock with entity key
 		unlock := locks.Lock(s.Key)
 		defer unlock()
 
+		// options
 		var tapKey []TapKey
 		var indexSaveOptions []IndexSaveOption
 		for _, option := range options {
@@ -315,20 +318,39 @@ func (_ Def) SaveSummary(
 			}
 		}
 
-		// indexes
-		// remove old indexes
-		for i, oldKey := range oldSummaryKeys {
-			entries, err := onDel(&oldSummaries[i], oldKey)
+		// update indexes
+		if len(oldSummaryKeys) > 0 {
+			deletingIndexes := make(map[Hash]IndexEntry)
+			for i, oldKey := range oldSummaryKeys {
+				entries, err := onDel(&oldSummaries[i], oldKey)
+				ce(err)
+				for _, entry := range entries {
+					h, err := key.HashValue(entry)
+					ce(err)
+					deletingIndexes[h] = entry
+				}
+			}
+			entries, err := onAdd(s, summaryKey)
 			ce(err)
 			for _, entry := range entries {
+				h, err := key.HashValue(entry)
+				ce(err)
+				if _, ok := deletingIndexes[h]; ok {
+					delete(deletingIndexes, h)
+					continue
+				}
+				ce(index.Save(entry, indexSaveOptions...))
+			}
+			for _, entry := range deletingIndexes {
 				ce(index.Delete(entry))
 			}
-		}
-		// indexes
-		entries, err := onAdd(s, summaryKey)
-		ce(err)
-		for _, entry := range entries {
-			ce(index.Save(entry, indexSaveOptions...))
+
+		} else {
+			entries, err := onAdd(s, summaryKey)
+			ce(err)
+			for _, entry := range entries {
+				ce(index.Save(entry, indexSaveOptions...))
+			}
 		}
 
 		return nil
