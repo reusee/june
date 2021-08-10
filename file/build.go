@@ -31,12 +31,6 @@ type SmallFileThreshold int64
 
 type PackThreshold int
 
-type BuildWithTx func(any)
-
-func (_ Def) BuildWithTx() BuildWithTx {
-	return nil
-}
-
 func (_ Def) Build(
 	toContents ToContents,
 	smallFileThreshold SmallFileThreshold,
@@ -46,25 +40,11 @@ func (_ Def) Build(
 	wt *pr.WaitTree,
 	parallel sys.Parallel,
 	scope Scope,
-	withTx BuildWithTx,
+	save entity.SaveEntity,
 ) Build {
 
 	// if a partition's weight is larger than threshold, the partition will be packed
 	threshold := int(packThreshold)
-
-	var save entity.SaveEntity
-	if withTx == nil {
-		save = saveEntity
-	} else {
-		save = func(value any, options ...entity.SaveOption) (s *entity.Summary, err error) {
-			withTx(func(
-				saveEntity entity.SaveEntity,
-			) {
-				s, err = saveEntity(value, options...)
-			})
-			return
-		}
-	}
 
 	return func(
 		root *File,

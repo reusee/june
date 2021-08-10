@@ -12,14 +12,9 @@ import (
 	"time"
 
 	"github.com/reusee/e4"
-	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
-	"github.com/reusee/june/index"
-	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/june/storepebble"
-	"github.com/reusee/june/tx"
 	"github.com/reusee/pr"
 )
 
@@ -157,90 +152,6 @@ func TestUpdate(
 		if numRead == 0 {
 			t.Fatal()
 		}
-
-	})
-
-}
-
-func TestFileWithTx(
-	t *testing.T,
-	wt *pr.WaitTree,
-	newPeb storepebble.New,
-	watch fsys.Watch,
-	newKV storekv.New,
-	scope Scope,
-) {
-	defer he(nil, e4.TestingFatal(t))
-
-	dir := t.TempDir()
-
-	peb, err := newPeb(wt, storepebble.NewMemFS(), "")
-	ce(err)
-
-	scope.Sub(
-		func() tx.KVToStore {
-			return func(kv storekv.KV) (store.Store, error) {
-				return newKV(kv, "foo")
-			}
-		},
-		tx.UsePebbleTx,
-		&peb,
-
-		// build with tx
-		func(
-			tx tx.PebbleTx,
-		) BuildWithTx {
-			return func(fn any) {
-				ce(tx(wt, fn))
-			}
-		},
-	).Call(func(
-		tx tx.PebbleTx,
-	) {
-
-		var key Key
-		ce(tx(wt, func(
-			iterDisk IterDiskFile,
-			build Build,
-			save entity.SaveEntity,
-		) {
-			file := new(File)
-			ce(Copy(
-				iterDisk(dir, nil),
-				build(
-					file,
-					nil,
-				),
-			))
-			file = file.Subs[0].File
-			s, err := save(file)
-			ce(err)
-			key = s.Key
-		}))
-
-		ce(tx(wt, func(
-			selIndex index.SelectIndex,
-		) {
-			var n int
-
-			ce(selIndex(
-				MatchEntry(entity.IdxSummaryKey, key),
-				Count(&n),
-			))
-			if n != 1 {
-				t.Fatal()
-			}
-
-			ce(selIndex(
-				entity.MatchType(&File{}),
-				Count(&n),
-			))
-			if n != 1 {
-				t.Fatalf("got %d\n", n)
-			}
-
-		}))
-		_ = key
 
 	})
 

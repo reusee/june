@@ -162,11 +162,6 @@ func Test_file_TestFileFS(t *testing.T) {
 	runTest(t, file.TestFileFS)
 }
 
-func Test_file_TestFileWithTx(t *testing.T) {
-	t.Parallel()
-	runTest(t, file.TestFileWithTx)
-}
-
 func Test_file_TestIterDiskCancelWaitTree(t *testing.T) {
 	t.Parallel()
 	runTest(t, file.TestIterDiskCancelWaitTree)

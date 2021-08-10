@@ -90,9 +90,6 @@ entity.UpdateIndex
 file.Build
 	func(root *filebase.File, cont pp.Sink, options ...file.BuildOption) pp.Sink
 
-file.BuildWithTx
-	func(interface{})
-
 file.Equal
 	func(a pp.Src, b pp.Src, fn func(interface{}, interface{}, string)) (bool, error)
 
@@ -152,9 +149,6 @@ filebase.NewFileFS
 
 filebase.ToContents
 	func(r io.Reader, size int64) (keys []key.Key, lengths []int64, err error)
-
-filebase.ToContentsWithTx
-	func(fn interface{})
 
 filebase.WriteContents
 	func(keys []key.Key, w io.Writer) (err error)
