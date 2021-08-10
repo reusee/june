@@ -135,12 +135,6 @@ func (_ Def) ChunkArgs() (ChunkThreshold, MaxChunkSize) {
 	return 1 * 1024 * 1024, 32 * 1024 * 1024
 }
 
-type ToContentsWithTx func(fn any)
-
-func (_ Def) ToContentsWithTx() ToContentsWithTx {
-	return nil
-}
-
 type ToContents func(
 	r io.Reader,
 	size int64,
@@ -154,27 +148,9 @@ func (_ Def) ToContents(
 	save entity.SaveEntity,
 	chunkThreshold ChunkThreshold,
 	maxChunkSize MaxChunkSize,
-	withTx ToContentsWithTx,
 ) ToContents {
 
 	maxSize := int64(maxChunkSize)
-
-	var doSave entity.SaveEntity
-	if withTx == nil {
-		doSave = save
-	} else {
-		doSave = func(value any, options ...entity.SaveOption) (
-			summary *entity.Summary,
-			err error,
-		) {
-			withTx(func(
-				save entity.SaveEntity,
-			) {
-				summary, err = save(value, options...)
-			})
-			return
-		}
-	}
 
 	return func(
 		r io.Reader,
@@ -192,7 +168,7 @@ func (_ Def) ToContents(
 			data := make([]byte, size)
 			_, err := io.ReadFull(r, data)
 			ce(err)
-			summary, err := doSave(Content(data))
+			summary, err := save(Content(data))
 			ce(err)
 			return []Key{summary.Key}, []int64{size}, nil
 		}
@@ -215,7 +191,7 @@ func (_ Def) ToContents(
 		for {
 			chunk, err := chunker.Next()
 			if len(chunk.Data) > 0 {
-				summary, err := doSave(Content(chunk.Data))
+				summary, err := save(Content(chunk.Data))
 				ce(err)
 				keys = append(keys, summary.Key)
 				lengths = append(lengths, int64(len(chunk.Data)))

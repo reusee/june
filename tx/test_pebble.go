@@ -7,12 +7,10 @@ package tx
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/reusee/e4"
 	"github.com/reusee/june/entity"
-	"github.com/reusee/june/filebase"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
@@ -31,9 +29,6 @@ func TestPebbleTx(
 
 	dir := t.TempDir()
 	peb, err := newPeb(wt, nil, dir)
-	ce(err)
-
-	kv, err := newKV(peb, "foo")
 	ce(err)
 
 	scope.Sub(
@@ -180,57 +175,6 @@ func TestPebbleTx(
 				t.Fatal()
 			}
 		}))
-
-		// ToContens with tx
-		var key Key
-		scope.Sub(
-			func() filebase.ToContentsWithTx {
-				return func(fn any) {
-					ce(tx(wt, fn))
-				}
-			},
-		).Call(func(
-			toContents filebase.ToContents,
-		) {
-			r := strings.NewReader("foo")
-			keys, _, err := toContents(r, int64(r.Len()))
-			ce(err)
-			if len(keys) != 1 {
-				t.Fatal()
-			}
-			if keys[0].String() != "c-entity:6f893e6ca357461a27335071b90f8781acf3c59dfe0a6667b6f6ca8ae389c7ee" {
-				t.Fatal()
-			}
-			key = keys[0]
-
-			ce(tx(wt, func(
-				fetch entity.Fetch,
-			) {
-				for _, key := range keys {
-					var data []byte
-					ce(fetch(key, &data))
-				}
-			}))
-
-		})
-
-		scope.Sub(
-			func() Store {
-				return kv
-			},
-		).Call(func(
-			fetch entity.Fetch,
-		) {
-			var o any
-			ce(fetch(key, &o))
-			bs, ok := o.([]byte)
-			if !ok {
-				t.Fatal()
-			}
-			if string(bs) != "foo" {
-				t.Fatal()
-			}
-		})
 
 	})
 
