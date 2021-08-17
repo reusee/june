@@ -48,6 +48,8 @@ func (_ Def) Delete(
 	deleteSummary DeleteSummary,
 ) Delete {
 
+	//TODO entity lock
+
 	return func(
 		key Key,
 	) (
