@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/cockroachdb/pebble/sstable"
 	"github.com/cockroachdb/pebble/vfs"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
@@ -64,6 +65,7 @@ func (_ Def) New(
 			MemTableSize:                32 * 1024 * 1024,
 			MemTableStopWritesThreshold: 2,
 			Logger:                      new(Logger),
+			TablePropertyCollectors:     tablePropertyCollectors,
 			//EventListener: pebble.EventListener{
 			//	CompactionBegin: func(info pebble.CompactionInfo) {
 			//		pt("compaction: %s\n", info.Reason)
@@ -166,4 +168,79 @@ func catchErr(errp *error, errs ...error) {
 
 var writeOptions = &pebble.WriteOptions{
 	Sync: false,
+}
+
+var tablePropertyCollectors = []func() pebble.TablePropertyCollector{
+	func() pebble.TablePropertyCollector {
+		return new(minMaxCollector)
+	},
+}
+
+type minMaxCollector struct {
+	min []byte
+	max []byte
+}
+
+func (m *minMaxCollector) Add(key sstable.InternalKey, value []byte) error {
+	if m.min == nil {
+		bs := make([]byte, len(key.UserKey))
+		copy(bs, key.UserKey)
+		m.min = bs
+	} else {
+		res := sb.MustCompareBytes(key.UserKey, m.min)
+		if res < 0 {
+			bs := make([]byte, len(key.UserKey))
+			copy(bs, key.UserKey)
+			m.min = bs
+		}
+	}
+
+	if m.max == nil {
+		bs := make([]byte, len(key.UserKey))
+		copy(bs, key.UserKey)
+		m.max = bs
+	} else {
+		res := sb.MustCompareBytes(key.UserKey, m.max)
+		if res > 0 {
+			bs := make([]byte, len(key.UserKey))
+			copy(bs, key.UserKey)
+			m.max = bs
+		}
+	}
+
+	return nil
+}
+
+func (m *minMaxCollector) Finish(props map[string]string) error {
+	props["min"] = string(m.min)
+	props["max"] = string(m.max)
+	return nil
+}
+
+func (m *minMaxCollector) Name() string {
+	return "min-max"
+}
+
+func minMaxFilter(
+	lowerBytes []byte,
+	upperBytes []byte,
+) func(map[string]string) bool {
+	return func(props map[string]string) bool {
+
+		if min, ok := props["min"]; ok {
+			res := sb.MustCompareBytes(upperBytes, []byte(min))
+			if res < 0 {
+				return false
+			}
+		}
+
+		if max, ok := props["max"]; ok {
+			res := sb.MustCompareBytes(lowerBytes, []byte(max))
+			if res > 0 {
+				return false
+			}
+		}
+
+		return true
+	}
 }

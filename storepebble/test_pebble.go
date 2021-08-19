@@ -6,7 +6,10 @@ package storepebble
 
 import (
 	"bytes"
+	"fmt"
+	"math/rand"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/reusee/e4"
@@ -80,3 +83,38 @@ type testingIndex struct {
 }
 
 var TestingIndex = testingIndex{}
+
+func TestTableFilter(
+	t *testing.T,
+	newPeb New,
+	wt *pr.WaitTree,
+) {
+	defer he(nil, e4.TestingFatal(t))
+
+	dir := t.TempDir()
+	peb, err := newPeb(wt, nil, dir)
+	ce(err)
+
+	keys := make(map[string]string)
+	for i := 0; i < 8; i++ {
+		prefix := fmt.Sprintf("%d", rand.Int63())
+		for i := 0; i < 128; i++ {
+			key := fmt.Sprintf("%s-%05d", prefix, i)
+			ce(peb.KeyPut(key, strings.NewReader(fmt.Sprintf("%d", i))))
+			keys[key] = key
+		}
+		ce(peb.DB.Flush())
+	}
+
+	n := 0
+	for _, key := range keys {
+		ce(peb.KeyIter(key, func(_ string) error {
+			n++
+			return nil
+		}))
+	}
+	if n != len(keys) {
+		t.Fatalf("get %d\n", n)
+	}
+
+}

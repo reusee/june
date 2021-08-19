@@ -2,6 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
+//go:build !step1 || !step2
 // +build !step1 !step2
 
 package june
@@ -340,6 +341,11 @@ func Test_storepebble_TestMixedIndex(t *testing.T) {
 func Test_storepebble_TestMixedKV(t *testing.T) {
 	t.Parallel()
 	runTest(t, storepebble.TestMixedKV)
+}
+
+func Test_storepebble_TestTableFilter(t *testing.T) {
+	t.Parallel()
+	runTest(t, storepebble.TestTableFilter)
 }
 
 func Test_stores3_TestKV(t *testing.T) {
