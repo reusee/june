@@ -304,11 +304,6 @@ func (idx Index) Iter(
 		iterOptions.UpperBound = buf.Bytes()
 	}
 
-	iterOptions.TableFilter = minMaxFilter(
-		iterOptions.LowerBound,
-		iterOptions.UpperBound,
-	)
-
 	var ok bool
 	var iter *pebble.Iterator
 	idx.withRLock(func() {

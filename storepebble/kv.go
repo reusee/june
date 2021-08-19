@@ -150,9 +150,8 @@ func (s *Store) keyIter(
 	var iter *pebble.Iterator
 	withRLock(func() {
 		iter = newIter(&pebble.IterOptions{
-			LowerBound:  lowerBytes,
-			UpperBound:  upperBytes,
-			TableFilter: minMaxFilter(lowerBytes, upperBytes),
+			LowerBound: lowerBytes,
+			UpperBound: upperBytes,
 		})
 	})
 
