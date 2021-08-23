@@ -102,7 +102,7 @@ func (e *Entry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	var unmarshalTyped sb.Sink
 	unmarshalTyped = func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
-			return nil, we(sb.ExpectingValue)
+			return nil, we()(sb.ExpectingValue)
 		}
 		if token.Kind == sb.KindTupleEnd {
 			*e = entry
@@ -150,7 +150,7 @@ func (e *Entry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	var unmarshalUnknown sb.Sink
 	unmarshalUnknown = func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
-			return nil, we(sb.ExpectingValue)
+			return nil, we()(sb.ExpectingValue)
 		}
 		if token.Kind == sb.KindTupleEnd {
 			*e = entry

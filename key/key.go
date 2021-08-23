@@ -62,8 +62,7 @@ func KeyFromString(str string) (key Key, err error) {
 	defer he(&err)
 	parts := strings.Split(str, ":")
 	if len(parts) != 2 {
-		err = we(ErrBadKey, e4.With(fmt.Errorf("key: %s", str)))
-		return
+		ce(ErrBadKey, e4.With(fmt.Errorf("key: %s", str)))
 	}
 	var ns Namespace
 	ns, err = NamespaceFromString(parts[0])

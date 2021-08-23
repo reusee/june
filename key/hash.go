@@ -34,8 +34,7 @@ func HashFromString(str string) (hash Hash, err error) {
 	bs, err = hex.DecodeString(str)
 	ce(err)
 	if len(bs) > len(hash) {
-		err = we(ErrTooLong, e4.With(fmt.Errorf("string: %s", str)))
-		return
+		ce(ErrTooLong, e4.With(fmt.Errorf("string: %s", str)))
 	}
 	copy(hash[:], bs)
 	return

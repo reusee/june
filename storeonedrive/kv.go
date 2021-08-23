@@ -116,7 +116,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	ce(err, e4.NewInfo("path %s", path))
 	defer resp.Body.Close()
 	if resp.StatusCode == 404 {
-		return we(storekv.ErrKeyNotFound, e4.With(storekv.StringKey(key)))
+		return we(e4.With(storekv.StringKey(key)))(storekv.ErrKeyNotFound)
 	}
 	return fn(resp.Body)
 }

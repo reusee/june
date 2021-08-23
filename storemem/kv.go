@@ -40,7 +40,7 @@ func (s *Store) KeyGet(key string, fn func(r io.Reader) error) (err error) {
 	)
 	v, ok := s.values.Load(key)
 	if !ok {
-		return we(ErrKeyNotFound, e4.With(storekv.StringKey(key)))
+		return we(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	}
 	if fn != nil {
 		err := fn(bytes.NewReader(v.([]byte)))

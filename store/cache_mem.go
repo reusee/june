@@ -48,7 +48,7 @@ func (m *MemCache) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 	defer he(&err)
 	v, ok := m.cache.Get(key)
 	if !ok {
-		return we(ErrKeyNotFound, e4.With(key))
+		return we(e4.With(key))(ErrKeyNotFound)
 	}
 	err = fn(sb.Decode(bytes.NewReader(v.([]byte))))
 	ce(err)

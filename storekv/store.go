@@ -152,7 +152,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 			exists, err := s.Exists(key)
 			ce(err)
 			if !exists {
-				return we(ErrKeyNotFound, e4.With(key))
+				return we(e4.With(key))(ErrKeyNotFound)
 			}
 			err = fn(stream)
 			ce(err, e4.With(ErrRead), e4.With(key))
@@ -219,7 +219,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 		}
 
 		if !bytes.Equal(key.Hash[:], sum) {
-			return we(ErrKeyNotMatch, e4.With(key))
+			return we(e4.With(key))(ErrKeyNotMatch)
 		}
 		err = fn(tokens.Iter())
 		ce(err, e4.With(ErrRead), e4.With(key))
@@ -302,7 +302,7 @@ func (s *Store) Write(
 			result, e := offloadStore.Write(ns, tokens.Iter(), options...)
 			ce(e)
 			if result.Key != res.Key {
-				err = we(ErrKeyNotMatch)
+				err = we()(ErrKeyNotMatch)
 				return
 			}
 		}

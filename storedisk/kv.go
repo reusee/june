@@ -78,7 +78,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	path := s.keyToPath(key)
 	f, err := os.Open(path)
 	if os.IsNotExist(err) {
-		return we(ErrKeyNotFound, e4.With(storekv.StringKey(key)))
+		return we(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	} else {
 		ce(err)
 	}

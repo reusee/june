@@ -169,7 +169,7 @@ func (_ Def) Push(
 				res, err := to.Write(summary.Key.Namespace, stream)
 				ce(err)
 				if res.Key != summary.Key {
-					return we(fmt.Errorf("bad write: %s", summary.Key))
+					return we()(fmt.Errorf("bad write: %s", summary.Key))
 				}
 				return
 			}))
@@ -184,7 +184,7 @@ func (_ Def) Push(
 				}),
 			))
 			if retKey != summaryKey {
-				return we(fmt.Errorf("bad summary write: %s", summaryKey))
+				return we()(fmt.Errorf("bad summary write: %s", summaryKey))
 			}
 
 			return
@@ -274,7 +274,7 @@ func (_ Def) Push(
 							}),
 						))
 						if c == 0 {
-							return we(fmt.Errorf(
+							return we()(fmt.Errorf(
 								"no summary for %s",
 								key,
 							))

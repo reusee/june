@@ -46,14 +46,14 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 	defer he(&err)
 
 	if entry.Type == nil {
-		return we(index.ErrInvalidEntry,
+		return we(
 			e4.NewInfo("entry type is nil: %+v", entry),
-		)
+		)(index.ErrInvalidEntry)
 	}
 	if entry.Key == nil && entry.Path == nil {
-		return we(index.ErrInvalidEntry,
+		return we(
 			e4.NewInfo("both entry key and path is nil: %+v", entry),
-		)
+		)(index.ErrInvalidEntry)
 	}
 
 	var tapEntry []IndexTapEntry

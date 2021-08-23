@@ -21,8 +21,8 @@ require (
 	github.com/minio/minio-go/v7 v7.0.12
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.3
-	github.com/reusee/dscope v0.0.0-20210810090831-79dd2e20fe1f
-	github.com/reusee/e4 v0.0.0-20210710045002-e0d2a4069a09
+	github.com/reusee/dscope v0.0.0-20210823015038-ed7d07fe4753
+	github.com/reusee/e4 v0.0.0-20210823023438-ae28ab3a86c5
 	github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
@@ -30,7 +30,7 @@ require (
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
 	github.com/reusee/pr v0.0.0-20210726063359-3496350be6e4
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
-	github.com/reusee/sb v0.0.0-20210811085007-87aaa9787960
+	github.com/reusee/sb v0.0.0-20210823022904-2c40a9760501
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rs/xid v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20210812204632-0ba0e8f03122 // indirect

@@ -227,7 +227,7 @@ func (s *Store) Write(
 		ce(err)
 		if !ignore {
 			if res1.Key != res2.Key {
-				return res, we(ErrKeyNotMatch, e4.With(res1.Key))
+				return res, we(e4.With(res1.Key))(ErrKeyNotMatch)
 			}
 		}
 		return store.WriteResult{

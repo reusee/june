@@ -25,7 +25,7 @@ func (n Namespace) String() string {
 
 func NamespaceFromString(s string) (ns Namespace, err error) {
 	if len(s) > len(ns) {
-		err = we(ErrTooLong, e4.With(fmt.Errorf("string: %s", s)))
+		err = we(e4.With(fmt.Errorf("string: %s", s)))(ErrTooLong)
 		return
 	}
 	copy(ns[:], []byte(s))

@@ -40,13 +40,13 @@ func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	obj, err := k.client.GetObject(ctx, k.bucket, key, minio.GetObjectOptions{})
 	var resp minio.ErrorResponse
 	if as(err, &resp) && resp.Code == "NoSuchKey" {
-		return we(ErrKeyNotFound, e4.With(storekv.StringKey(key)))
+		return we(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	}
 	ce(err)
 	defer obj.Close()
 	if fn != nil {
 		if err := fn(obj); as(err, &resp) && resp.Code == "NoSuchKey" {
-			return we(ErrKeyNotFound, e4.With(storekv.StringKey(key)))
+			return we(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
 		} else {
 			ce(err)
 		}

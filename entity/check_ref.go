@@ -85,9 +85,10 @@ func (s *Summary) checkRef(store Store) (err error) {
 			}
 		}
 		return we(
-			ErrKeyNotFound,
 			e4.NewInfo("lost key: %s", s.Key),
 			e4.NewInfo("entity type: %s", typeName),
+		)(
+			ErrKeyNotFound,
 		)
 	}
 
@@ -97,10 +98,11 @@ func (s *Summary) checkRef(store Store) (err error) {
 		ce(err)
 		if !ok {
 			return we(
-				ErrKeyNotFound,
 				e4.NewInfo("entity key: %s", s.Key),
 				e4.NewInfo("index tuple: %+v", idx),
 				e4.NewInfo("lost key: %s", key),
+			)(
+				ErrKeyNotFound,
 			)
 		}
 		return nil
@@ -135,7 +137,7 @@ func (s *Summary) checkRef(store Store) (err error) {
 		ok, err := store.Exists(key)
 		ce(err)
 		if !ok {
-			return we(ErrKeyNotFound, e4.With(key))
+			return we(e4.With(key))(ErrKeyNotFound)
 		}
 	}
 
