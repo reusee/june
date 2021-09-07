@@ -93,12 +93,12 @@ func (o OnionCodec) Encode(sink sb.Sink, options ...Option) sb.Sink {
 
 var ErrCodecNotFound = errors.New("codec not found")
 
-func (o OnionCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
+func (o OnionCodec) Decode(src sb.Proc, options ...Option) sb.Proc {
 	proc := sb.Proc(func() (*sb.Token, sb.Proc, error) {
 		var ids []string
 		var tokens sb.Tokens
 		if err := sb.Copy(
-			stream,
+			src,
 			sb.Unmarshal(&sb.Tuple{
 				sb.Unmarshal(&ids),
 				sb.CollectValueTokens(&tokens),
@@ -106,7 +106,7 @@ func (o OnionCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
 		); err != nil {
 			return nil, nil, err
 		}
-		cur := sb.Stream(tokens.Iter())
+		cur := tokens.Iter()
 		for i := len(ids) - 1; i >= 0; i-- {
 			id := ids[i]
 			codec, ok := o.decoders[id]
@@ -118,7 +118,7 @@ func (o OnionCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
 			s := codec.Decode(cur, options...)
 			cur = s
 		}
-		return nil, sb.IterStream(cur, nil), nil
+		return nil, sb.Iter(cur, nil), nil
 	})
-	return &proc
+	return proc
 }

@@ -49,7 +49,7 @@ func (_ Def) CheckRef(
 			defer he(&err)
 			key := v.(Key)
 			var summary Summary
-			ce(store.Read(key, func(s sb.Stream) error {
+			ce(store.Read(key, func(s sb.Proc) error {
 				return sb.Copy(s, sb.Unmarshal(&summary))
 			}))
 			ce(summary.checkRef(store))

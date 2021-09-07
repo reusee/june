@@ -487,7 +487,7 @@ func (_ Def) TestIndex(
 						ce(Select(
 							index,
 							MatchEntry(TestingIndex2),
-							Where(func(s sb.Stream) bool {
+							Where(func(s sb.Proc) bool {
 								var entry Entry
 								ce(sb.Copy(s, sb.Unmarshal(&entry)))
 								return entry.Tuple[2] == 3
@@ -625,7 +625,7 @@ func (_ Def) TestIndex(
 						ce(err)
 						var toDelete []Entry
 						ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
-							s := v.(sb.Stream)
+							s := v.(sb.Proc)
 							defer he(&err)
 							var entry *Entry
 							var preEntry *PreEntry

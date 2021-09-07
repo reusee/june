@@ -8,7 +8,7 @@ import (
 	"github.com/reusee/sb"
 )
 
-func IterStreams(streams []sb.Stream) Src {
+func IterStreams(streams []sb.Proc) Src {
 	return func() (any, Src, error) {
 		if len(streams) == 0 {
 			return nil, nil, nil

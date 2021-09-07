@@ -58,7 +58,7 @@ func (_ Def) CleanIndex(
 		}))
 
 		ce(deleteIndex(
-			func(stream sb.Stream) (_ *IndexEntry, err error) {
+			func(proc sb.Proc) (_ *IndexEntry, err error) {
 				defer he(&err)
 
 				hasInvalidKey := false
@@ -93,7 +93,7 @@ func (_ Def) CleanIndex(
 
 				var entry IndexEntry
 				ce(sb.Copy(
-					stream,
+					proc,
 					unmarshal(
 						sb.Ctx{
 							Unmarshal: unmarshal,

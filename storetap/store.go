@@ -24,7 +24,7 @@ type Funcs struct {
 
 	Write func(
 		key.Namespace,
-		sb.Stream,
+		sb.Proc,
 		[]store.WriteOption,
 		store.WriteResult,
 		error,
@@ -32,7 +32,7 @@ type Funcs struct {
 
 	Read func(
 		key.Key,
-		func(sb.Stream) error,
+		func(sb.Proc) error,
 		error,
 	)
 
@@ -93,7 +93,7 @@ func (s *Store) ID() (id store.ID, err error) {
 
 func (s *Store) Write(
 	ns key.Namespace,
-	stream sb.Stream,
+	proc sb.Proc,
 	options ...store.WriteOption,
 ) (
 	res store.WriteResult,
@@ -101,15 +101,15 @@ func (s *Store) Write(
 ) {
 	defer func() {
 		if s.funcs.Write != nil {
-			s.funcs.Write(ns, stream, options, res, err)
+			s.funcs.Write(ns, proc, options, res, err)
 		}
 	}()
-	return s.upstream.Write(ns, stream, options...)
+	return s.upstream.Write(ns, proc, options...)
 }
 
 func (s *Store) Read(
 	key key.Key,
-	fn func(sb.Stream) error,
+	fn func(sb.Proc) error,
 ) (err error) {
 	defer func() {
 		if s.funcs.Read != nil {

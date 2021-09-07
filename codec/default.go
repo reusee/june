@@ -21,6 +21,6 @@ func (d defaultCodec) Encode(sink sb.Sink, options ...Option) sb.Sink {
 	return sink
 }
 
-func (d defaultCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
-	return stream
+func (d defaultCodec) Decode(proc sb.Proc, options ...Option) sb.Proc {
+	return proc
 }

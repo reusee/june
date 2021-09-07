@@ -58,7 +58,7 @@ func (_ Def) Scrub(
 			if tapKey != nil {
 				tapKey(key)
 			}
-			if err := store.Read(key, func(s sb.Stream) error {
+			if err := store.Read(key, func(s sb.Proc) error {
 				var sum []byte
 				if err := sb.Copy(
 					s,

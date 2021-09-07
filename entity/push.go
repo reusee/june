@@ -164,9 +164,9 @@ func (_ Def) Push(
 			}
 
 			// save object
-			ce(store.Read(summary.Key, func(stream sb.Stream) (err error) {
+			ce(store.Read(summary.Key, func(proc sb.Proc) (err error) {
 				defer he(&err)
-				res, err := to.Write(summary.Key.Namespace, stream)
+				res, err := to.Write(summary.Key.Namespace, proc)
 				ce(err)
 				if res.Key != summary.Key {
 					return we()(fmt.Errorf("bad write: %s", summary.Key))

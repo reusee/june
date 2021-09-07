@@ -74,13 +74,13 @@ func (a aeadCodec) Encode(sink sb.Sink, options ...Option) sb.Sink {
 	)
 }
 
-func (a aeadCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
+func (a aeadCodec) Decode(src sb.Proc, options ...Option) sb.Proc {
 	proc := sb.Proc(func() (_ *sb.Token, _ sb.Proc, err error) {
 		defer he(&err)
 		var nonce []byte
 		var ciphertext []byte
 		if err := sb.Copy(
-			stream,
+			src,
 			sb.Unmarshal(func(n []byte, c []byte) {
 				nonce = n
 				ciphertext = c
@@ -96,7 +96,7 @@ func (a aeadCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
 		buf := make([]byte, 8)
 		return nil, sb.DecodeBuffer(br, br, buf, nil), nil
 	})
-	return &proc
+	return proc
 }
 
 func AESGCM(key []byte) aeadCodec {

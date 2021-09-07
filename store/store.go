@@ -27,7 +27,7 @@ type Store interface {
 
 	Write(
 		key.Namespace,
-		sb.Stream,
+		sb.Proc,
 		...WriteOption,
 	) (
 		WriteResult,
@@ -36,7 +36,7 @@ type Store interface {
 
 	Read(
 		Key,
-		func(sb.Stream) error,
+		func(sb.Proc) error,
 	) error
 
 	Exists(

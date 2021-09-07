@@ -58,7 +58,7 @@ func TestSave(
 		return newTap(store, storetap.Funcs{
 			Write: func(
 				_ key.Namespace,
-				_ sb.Stream,
+				_ sb.Proc,
 				_ []WriteOption,
 				res WriteResult,
 				err error,
@@ -363,7 +363,7 @@ func TestSave(
 		indexes := make(map[Hash]IndexEntry)
 		n := 0
 		ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
-			s := v.(sb.Stream)
+			s := v.(sb.Proc)
 			defer he(&err)
 			var entry *IndexEntry
 			var preEntry *IndexPreEntry
@@ -416,7 +416,7 @@ func TestSave(
 			ce(err)
 			defer closer.Close()
 			ce(pp.Copy(iter, pp.Tap(func(v any) error {
-				s := v.(sb.Stream)
+				s := v.(sb.Proc)
 				var entry *IndexEntry
 				var preEntry *IndexPreEntry
 				var h []byte

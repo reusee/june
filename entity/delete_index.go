@@ -15,7 +15,7 @@ import (
 )
 
 type DeleteIndex func(
-	predict func(sb.Stream) (*IndexEntry, error),
+	predict func(sb.Proc) (*IndexEntry, error),
 	options ...DeleteIndexOption,
 ) error
 
@@ -30,7 +30,7 @@ func (_ Def) DeleteIndex(
 ) DeleteIndex {
 
 	return func(
-		predict func(sb.Stream) (*IndexEntry, error),
+		predict func(sb.Proc) (*IndexEntry, error),
 		options ...DeleteIndexOption,
 	) (err error) {
 		defer he(&err)
@@ -63,24 +63,24 @@ func (_ Def) DeleteIndex(
 		})
 
 		ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
-			stream := v.(sb.Stream)
+			proc := v.(sb.Proc)
 			defer he(&err)
 
-			tupleToken, err := stream.Next()
+			tupleToken, err := proc.Next()
 			ce(err)
 			if tupleToken.Kind != sb.KindTuple {
-				panic("bad index stream")
+				panic("bad index proc")
 			}
-			firstToken, err := stream.Next()
+			firstToken, err := proc.Next()
 			ce(err)
 			if firstToken.Kind != sb.KindString {
 				// not Entry
 				return nil
 			}
 
-			s := sb.ConcatStreams(
+			s := sb.ConcatProcs(
 				sb.Tokens{*tupleToken, *firstToken}.Iter(),
-				stream,
+				proc,
 			)
 
 			entry, err := predict(s)

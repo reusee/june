@@ -149,7 +149,7 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 	panic("bad policy")
 }
 
-func (s *Store) Read(key Key, fn func(sb.Stream) error) (err error) {
+func (s *Store) Read(key Key, fn func(sb.Proc) error) (err error) {
 	select {
 	case <-s.Ctx.Done():
 		return ErrClosed
@@ -174,9 +174,9 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) (err error) {
 		} else if !is(err, ErrKeyNotFound) {
 			return err
 		}
-		return s.Upstream.Read(key, func(str sb.Stream) (err error) {
+		return s.Upstream.Read(key, func(proc sb.Proc) (err error) {
 			defer he(&err)
-			tokens, err := sb.TokensFromStream(str)
+			tokens, err := sb.TokensFromProc(proc)
 			ce(err)
 			err = fn(tokens.Iter())
 			ce(err)
@@ -199,7 +199,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) (err error) {
 
 func (s *Store) Write(
 	ns key.Namespace,
-	stream sb.Stream,
+	proc sb.Proc,
 	options ...WriteOption,
 ) (res store.WriteResult, err error) {
 	select {
@@ -214,7 +214,7 @@ func (s *Store) Write(
 	switch s.WritePolicy {
 
 	case WriteThrough:
-		tokens, err := sb.TokensFromStream(stream)
+		tokens, err := sb.TokensFromProc(proc)
 		ce(err)
 		res1, err := s.Backing.Write(ns, tokens.Iter(), options...)
 		ignore := false
@@ -237,7 +237,7 @@ func (s *Store) Write(
 		}, nil
 
 	case WriteAround:
-		return s.Upstream.Write(ns, stream, options...)
+		return s.Upstream.Write(ns, proc, options...)
 
 	}
 	panic("bad policy")

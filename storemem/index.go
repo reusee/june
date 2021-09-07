@@ -66,7 +66,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 		}
 	}
 
-	tokens, err := sb.TokensFromStream(
+	tokens, err := sb.TokensFromProc(
 		sb.Marshal(StoreIndex{
 			ID:    i.id,
 			Value: sb.Marshal(entry),
@@ -78,7 +78,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 	i.store.Unlock()
 
 	if entry.Key != nil {
-		preTokens, err := sb.TokensFromStream(
+		preTokens, err := sb.TokensFromProc(
 			sb.Marshal(StoreIndex{
 				ID: i.id,
 				Value: sb.Marshal(index.PreEntry{
@@ -103,7 +103,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 
 func (i Index) Delete(entry IndexEntry) (err error) {
 	defer he(&err)
-	tokens, err := sb.TokensFromStream(
+	tokens, err := sb.TokensFromProc(
 		sb.Marshal(index.StoreIndex{
 			ID:    i.id,
 			Value: sb.Marshal(entry),
@@ -115,7 +115,7 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	i.store.Unlock()
 
 	if entry.Key != nil {
-		preTokens, err := sb.TokensFromStream(
+		preTokens, err := sb.TokensFromProc(
 			sb.Marshal(index.StoreIndex{
 				ID: i.id,
 				Value: sb.Marshal(index.PreEntry{
@@ -160,14 +160,14 @@ func (i Index) Iter(
 
 	var lowerTokens sb.Tokens
 	if lower == nil {
-		lowerTokens = sb.MustTokensFromStream(
+		lowerTokens = sb.MustTokensFromProc(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
 				Value: sb.Marshal(sb.Min),
 			}),
 		)
 	} else {
-		lowerTokens, err = sb.TokensFromStream(
+		lowerTokens, err = sb.TokensFromProc(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
 				Value: lower.Iter(),
@@ -179,14 +179,14 @@ func (i Index) Iter(
 
 	var upperTokens sb.Tokens
 	if upper == nil {
-		upperTokens = sb.MustTokensFromStream(
+		upperTokens = sb.MustTokensFromProc(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
 				Value: sb.Marshal(sb.Max),
 			}),
 		)
 	} else {
-		upperTokens, err = sb.TokensFromStream(
+		upperTokens, err = sb.TokensFromProc(
 			sb.Marshal(StoreIndex{
 				ID:    i.id,
 				Value: upper.Iter(),
@@ -209,7 +209,7 @@ func (m *indexIter) Close() error {
 	return nil
 }
 
-func extractIndex(s sb.Stream) (sb.Stream, error) {
+func extractIndex(s sb.Proc) (sb.Proc, error) {
 	var tokens sb.Tokens
 	tuple := sb.Tuple{
 		nil,
@@ -229,7 +229,7 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 
 	if m.order == Asc {
 		n := 0
-		var s sb.Stream
+		var s sb.Proc
 		m.store.RLock()
 		defer m.store.RUnlock()
 		m.store.index.AscendGreaterOrEqual(Item{m.current}, func(item btree.Item) bool {
@@ -263,7 +263,7 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 
 	} else {
 		n := 0
-		var s sb.Stream
+		var s sb.Proc
 		m.store.RLock()
 		defer m.store.RUnlock()
 		m.store.index.DescendLessOrEqual(Item{m.current}, func(item btree.Item) bool {

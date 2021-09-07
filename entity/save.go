@@ -119,13 +119,12 @@ func (_ Def) Save(
 		proc := fn(sb.Ctx{
 			Marshal: fn,
 		}, reflect.ValueOf(value), nil)
-		stream := &proc
 
 		// hash
 		var rootSummary *Summary
 		var sum []byte
-		stream = sb.Tee(
-			stream,
+		proc = sb.Tee(
+			proc,
 			sb.HashFunc(
 				newHashState,
 				&sum,
@@ -158,7 +157,7 @@ func (_ Def) Save(
 
 		// write
 		var res WriteResult
-		res, err = store.Write(ns, stream)
+		res, err = store.Write(ns, proc)
 		if tapWriteResult != nil {
 			tapWriteResult(res)
 		}

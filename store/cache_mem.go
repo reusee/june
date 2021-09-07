@@ -44,7 +44,7 @@ func (_ Def) NewMemCache(
 
 var _ Cache = new(MemCache)
 
-func (m *MemCache) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
+func (m *MemCache) CacheGet(key Key, fn func(sb.Proc) error) (err error) {
 	defer he(&err)
 	v, ok := m.cache.Get(key)
 	if !ok {

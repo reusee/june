@@ -11,7 +11,7 @@ import (
 )
 
 type StoreIndex struct {
-	Value sb.Stream
+	Value sb.Proc
 	ID    StoreID
 }
 

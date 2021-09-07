@@ -59,7 +59,7 @@ func (_ Def) Fetch(
 				path = path[1:]
 			}
 			checkTail = !checkTail
-			err := store.Read(keyToCheck, func(s sb.Stream) (err error) {
+			err := store.Read(keyToCheck, func(s sb.Proc) (err error) {
 				defer he(&err)
 
 				if keyToCheck == key {

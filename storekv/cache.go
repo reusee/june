@@ -12,9 +12,9 @@ import (
 
 var _ Cache = new(Store)
 
-func (s *Store) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
+func (s *Store) CacheGet(key Key, fn func(sb.Proc) error) (err error) {
 	defer he(&err)
-	if err := s.Read(key, func(s sb.Stream) error {
+	if err := s.Read(key, func(s sb.Proc) error {
 		return fn(s)
 	}); is(err, ErrKeyNotFound) {
 		return we(e4.With(key))(err)

@@ -286,7 +286,7 @@ func (_ Def) SaveSummary(
 		proc := sb.MarshalValue(sb.Ctx{
 			SkipEmptyStructFields: true,
 		}, reflect.ValueOf(s), nil)
-		res, err := store.Write(NSSummary, &proc)
+		res, err := store.Write(NSSummary, proc)
 		ce(err)
 		summaryKey := res.Key
 

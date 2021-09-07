@@ -78,13 +78,13 @@ func (c hybridCompressedCodec) Encode(sink sb.Sink, options ...Option) sb.Sink {
 	)
 }
 
-func (c hybridCompressedCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
+func (c hybridCompressedCodec) Decode(src sb.Proc, options ...Option) sb.Proc {
 	proc := sb.Proc(func() (_ *sb.Token, _ sb.Proc, err error) {
 		defer he(&err)
 		var compressed bool
 		var bs []byte
 		if err := sb.Copy(
-			stream,
+			src,
 			sb.Unmarshal(func(c bool, b []byte) {
 				compressed = c
 				bs = b
@@ -104,7 +104,7 @@ func (c hybridCompressedCodec) Decode(stream sb.Stream, options ...Option) sb.St
 		buf := make([]byte, 8)
 		return nil, sb.DecodeBuffer(br, br, buf, nil), nil
 	})
-	return &proc
+	return proc
 }
 
 func HybridSnappy() hybridCompressedCodec {

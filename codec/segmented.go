@@ -114,7 +114,7 @@ func (s segmentedCodec) Encode(sink sb.Sink, options ...Option) sb.Sink {
 
 type segmentedReader struct {
 	wrapped    Codec
-	stream     sb.Stream
+	src        sb.Proc
 	options    []Option
 	chunk      []byte
 	headerRead bool
@@ -135,7 +135,7 @@ func (s *segmentedReader) Read(buf []byte) (int, error) {
 }
 
 func (s *segmentedReader) read() error {
-	token, err := s.stream.Next()
+	token, err := s.src.Next()
 	if err != nil {
 		return err
 	}
@@ -157,10 +157,10 @@ func (s *segmentedReader) read() error {
 	}
 
 	p := sb.Proc(func() (*sb.Token, sb.Proc, error) {
-		return token, sb.IterStream(s.stream, nil), nil
+		return token, sb.Iter(s.src, nil), nil
 	})
 	if err := sb.Copy(
-		s.wrapped.Decode(&p, s.options...),
+		s.wrapped.Decode(p, s.options...),
 		sb.Unmarshal(&s.chunk),
 	); err != nil {
 		return err
@@ -183,13 +183,12 @@ func (s *segmentedReader) ReadByte() (byte, error) {
 	return s.ReadByte()
 }
 
-func (s segmentedCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
+func (s segmentedCodec) Decode(src sb.Proc, options ...Option) sb.Proc {
 	r := &segmentedReader{
 		wrapped: s.wrapped,
-		stream:  stream,
+		src:     src,
 		options: options,
 	}
 	buf := make([]byte, 8)
-	proc := sb.DecodeBuffer(r, r, buf, nil)
-	return &proc
+	return sb.DecodeBuffer(r, r, buf, nil)
 }

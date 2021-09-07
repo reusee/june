@@ -1,6 +1,6 @@
 module github.com/reusee/june
 
-go 1.17
+go 1.18
 
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
@@ -22,15 +22,15 @@ require (
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.3
 	github.com/reusee/dscope v0.0.0-20210823015038-ed7d07fe4753
-	github.com/reusee/e4 v0.0.0-20210823023438-ae28ab3a86c5
+	github.com/reusee/e4 v0.0.0-20210823030452-7b426bb6f109
 	github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
-	github.com/reusee/pr v0.0.0-20210726063359-3496350be6e4
+	github.com/reusee/pr v0.0.0-20210907085212-ce3985200e36
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
-	github.com/reusee/sb v0.0.0-20210823022904-2c40a9760501
+	github.com/reusee/sb v0.0.0-20210906134411-af0e47edf3fa
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rs/xid v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20210812204632-0ba0e8f03122 // indirect

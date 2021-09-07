@@ -151,18 +151,18 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) error {
 	return s.defaultStore.IterKeys(ns, fn)
 }
 
-func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
+func (s *Store) Read(key Key, fn func(sb.Proc) error) error {
 	if store, ok := s.shards[key.Namespace]; ok {
 		return store.Read(key, fn)
 	}
 	return s.defaultStore.Read(key, fn)
 }
 
-func (s *Store) Write(ns key.Namespace, stream sb.Stream, options ...WriteOption) (WriteResult, error) {
+func (s *Store) Write(ns key.Namespace, proc sb.Proc, options ...WriteOption) (WriteResult, error) {
 	if store, ok := s.shards[ns]; ok {
-		return store.Write(ns, stream, options...)
+		return store.Write(ns, proc, options...)
 	}
-	return s.defaultStore.Write(ns, stream, options...)
+	return s.defaultStore.Write(ns, proc, options...)
 }
 
 func (s *Store) Delete(keys []Key) error {

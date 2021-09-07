@@ -54,12 +54,12 @@ func (a snappyCodec) Encode(sink sb.Sink, options ...Option) sb.Sink {
 	)
 }
 
-func (a snappyCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
+func (a snappyCodec) Decode(src sb.Proc, options ...Option) sb.Proc {
 	proc := sb.Proc(func() (_ *sb.Token, _ sb.Proc, err error) {
 		defer he(&err)
 		var compressed []byte
 		if err := sb.Copy(
-			stream,
+			src,
 			sb.Unmarshal(&compressed),
 		); err != nil {
 			return nil, nil, err
@@ -70,5 +70,5 @@ func (a snappyCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
 		buf := make([]byte, 8)
 		return nil, sb.DecodeBuffer(br, br, buf, nil), nil
 	})
-	return &proc
+	return proc
 }

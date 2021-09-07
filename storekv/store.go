@@ -142,11 +142,11 @@ loop:
 	return nil
 }
 
-func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
+func (s *Store) Read(key Key, fn func(sb.Proc) error) error {
 
 	// cache
 	if s.cache != nil {
-		if err := s.cache.CacheGet(key, func(stream sb.Stream) (err error) {
+		if err := s.cache.CacheGet(key, func(stream sb.Proc) (err error) {
 			defer he(&err)
 			// cache hit, check exists
 			exists, err := s.Exists(key)
@@ -177,7 +177,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 			if err := sb.Copy(
 				sb.Deref(
 					s.codec.Decode(sb.Decode(r)),
-					func(value []byte) (sb.Stream, error) {
+					func(value []byte) (sb.Proc, error) {
 						if !bytes.Equal(value, []byte("offloaded")) {
 							return nil, nil
 						}
@@ -187,7 +187,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 								continue
 							}
 							var offloadTokens sb.Tokens
-							err := offloadStore.Read(key, func(s sb.Stream) error {
+							err := offloadStore.Read(key, func(s sb.Proc) error {
 								return sb.Copy(
 									s,
 									sb.CollectTokens(&offloadTokens),
@@ -230,7 +230,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 
 func (s *Store) Write(
 	ns key.Namespace,
-	stream sb.Stream,
+	proc sb.Proc,
 	options ...WriteOption,
 ) (res store.WriteResult, err error) {
 	defer he(&err)
@@ -259,7 +259,7 @@ func (s *Store) Write(
 	var tokens sb.Tokens
 	var encodedLen int
 	if err = sb.Copy(
-		stream,
+		proc,
 		sb.Hash(s.newHashState, &hash, nil),
 		sb.CollectTokens(&tokens),
 		sb.EncodedLen(&encodedLen, nil),
@@ -321,7 +321,7 @@ func (s *Store) Write(
 		)
 	}
 
-	var src sb.Stream
+	var src sb.Proc
 	if offloaded {
 		src = sb.Tokens{
 			{

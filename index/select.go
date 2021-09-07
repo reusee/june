@@ -67,7 +67,7 @@ func (_ Offset) IsSelectOption() {}
 
 func (_ Offset) IsIterOption() {}
 
-type Where func(sb.Stream) bool
+type Where func(sb.Proc) bool
 
 func (_ Where) IsSelectOption() {}
 
@@ -261,7 +261,7 @@ func Iter(
 		// exact
 		var exactTokens sb.Tokens
 		if exact != nil {
-			exactTokens, err = sb.TokensFromStream(
+			exactTokens, err = sb.TokensFromProc(
 				sb.Marshal(*exact),
 			)
 			ce(err)
@@ -325,7 +325,7 @@ func Iter(
 					var tokens sb.Tokens
 					res := sb.MustCompare(
 						sb.Tee(
-							v.(sb.Stream),
+							v.(sb.Proc),
 							sb.CollectTokens(&tokens),
 						),
 						exactTokens.Iter(),
@@ -347,7 +347,7 @@ func Iter(
 				func(v any) any {
 					var tokens sb.Tokens
 					ce(sb.Copy(
-						v.(sb.Stream),
+						v.(sb.Proc),
 						sb.CollectTokens(&tokens),
 					))
 					if fn(tokens.Iter()) {
@@ -447,7 +447,7 @@ func Select(
 	ce(pp.Copy(
 		iter,
 		pp.Tap(func(v any) (err error) {
-			s := v.(sb.Stream)
+			s := v.(sb.Proc)
 			defer he(&err)
 
 			// check context

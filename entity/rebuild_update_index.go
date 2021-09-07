@@ -91,7 +91,7 @@ func (_ Def) IndexFuncs(
 			// fetch
 			var summary Summary
 			ce(
-				store.Read(key, func(s sb.Stream) error {
+				store.Read(key, func(s sb.Proc) error {
 					err := sb.Copy(
 						s,
 						sb.UnmarshalValue(sb.Ctx{

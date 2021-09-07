@@ -10,7 +10,7 @@ import (
 
 type Codec interface {
 	Encode(sb.Sink, ...Option) sb.Sink
-	Decode(sb.Stream, ...Option) sb.Stream
+	Decode(sb.Proc, ...Option) sb.Proc
 	ID() string
 }
 

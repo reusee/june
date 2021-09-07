@@ -62,7 +62,7 @@ func (_ Def) TestStore(
 
 			t.Run("read", func(t *testing.T) {
 				defer he(nil, e4.TestingFatal(t))
-				if err := store.Read(res.Key, func(s sb.Stream) (err error) {
+				if err := store.Read(res.Key, func(s sb.Proc) (err error) {
 					defer he(&err)
 					var i int
 					err = sb.Copy(s, sb.Unmarshal(&i))
@@ -78,7 +78,7 @@ func (_ Def) TestStore(
 
 			t.Run("read error", func(t *testing.T) {
 				errFoo := fmt.Errorf("bad")
-				err := store.Read(res.Key, func(s sb.Stream) error {
+				err := store.Read(res.Key, func(s sb.Proc) error {
 					return errFoo
 				})
 				if err == nil {

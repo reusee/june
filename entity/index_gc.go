@@ -33,7 +33,7 @@ func (_ blackholeCodec) Encode(sink sb.Sink, options ...codec.Option) sb.Sink {
 	return sb.Discard
 }
 
-func (_ blackholeCodec) Decode(str sb.Stream, options ...codec.Option) sb.Stream {
+func (_ blackholeCodec) Decode(proc sb.Proc, options ...codec.Option) sb.Proc {
 	panic("should not be called")
 }
 
@@ -114,9 +114,9 @@ func (_ Def) IndexGC(
 				if v == nil {
 					return
 				}
-				stream := v.(sb.Stream)
+				proc := v.(sb.Proc)
 				ce(sb.Copy(
-					stream,
+					proc,
 					sb.CollectTokens(&tokens),
 				))
 				return
@@ -128,9 +128,9 @@ func (_ Def) IndexGC(
 				if v == nil {
 					return
 				}
-				stream := v.(sb.Stream)
+				proc := v.(sb.Proc)
 				ce(sb.Copy(
-					stream,
+					proc,
 					sb.CollectTokens(&tokens),
 				))
 				return

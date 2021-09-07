@@ -76,11 +76,10 @@ func (_ Def) GC(
 
 		ctx, cancel := context.WithCancel(wt.Ctx)
 		defer cancel()
-		var put pr.Put
-		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {
+		var put pr.Put[Key]
+		put, wait := pr.Consume(ctx, int(parallel), func(i int, key Key) (err error) {
 			defer he(&err)
 
-			key := v.(Key)
 			if _, ok := reachable.Load(key); ok {
 				return nil
 			}
@@ -118,17 +117,16 @@ func (_ Def) GC(
 
 		// collect dead objects
 		deadObjects := make([][]DeadObject, int(parallel))
-		put, wait = pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {
+		put, wait = pr.Consume(ctx, int(parallel), func(i int, key Key) (err error) {
 			defer he(&err)
 
-			key := v.(Key)
 			if tapIter != nil {
 				tapIter(key)
 			}
 			if key.Namespace == NSSummary {
 				var summary Summary
-				ce(store.Read(key, func(stream sb.Stream) error {
-					return sb.Copy(stream, sb.Unmarshal(&summary))
+				ce(store.Read(key, func(proc sb.Proc) error {
+					return sb.Copy(proc, sb.Unmarshal(&summary))
 				}))
 				if _, ok := reachable.Load(summary.Key); ok {
 					return nil
@@ -168,10 +166,10 @@ func (_ Def) GC(
 
 		// delete
 		batchKeys := make([][]Key, int(parallel))
-		put, wait = pr.Consume(ctx, int(parallel), func(proc int, v any) (err error) {
+		var putDead pr.Put[DeadObject]
+		putDead, wait = pr.Consume(ctx, int(parallel), func(proc int, obj DeadObject) (err error) {
 			defer he(&err)
 
-			obj := v.(DeadObject)
 			if obj.Key.Namespace == NSSummary {
 				ce(deleteSummary(obj.Summary, obj.Key))
 			} else {
@@ -187,7 +185,7 @@ func (_ Def) GC(
 			return nil
 		})
 		for _, obj := range objs {
-			put(obj)
+			putDead(obj)
 		}
 		ce(wait(true))
 		for _, keys := range batchKeys {
