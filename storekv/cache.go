@@ -17,7 +17,7 @@ func (s *Store) CacheGet(key Key, fn func(sb.Proc) error) (err error) {
 	if err := s.Read(key, func(s sb.Proc) error {
 		return fn(s)
 	}); is(err, ErrKeyNotFound) {
-		return we(e4.With(key))(err)
+		return we.With(e4.With(key))(err)
 	} else {
 		ce(err)
 	}

@@ -67,7 +67,7 @@ func (s *Store) keyGet(
 		bs, c, err = get(key)
 	}, Kv, key)
 	if is(err, pebble.ErrNotFound) {
-		return we(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
+		return we.With(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	}
 	ce(err)
 	defer c.Close()

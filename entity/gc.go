@@ -45,7 +45,7 @@ func (_ Def) GC(
 		defer he(&err)
 
 		if len(roots) == 0 {
-			return we()(fmt.Errorf("no root"))
+			return we(fmt.Errorf("no root"))
 		}
 
 		var tapMark TapMarkKey

@@ -48,7 +48,7 @@ func (m *MemCache) CacheGet(key Key, fn func(sb.Proc) error) (err error) {
 	defer he(&err)
 	v, ok := m.cache.Get(key)
 	if !ok {
-		return we(e4.With(key))(ErrKeyNotFound)
+		return we.With(e4.With(key))(ErrKeyNotFound)
 	}
 	err = fn(sb.Decode(bytes.NewReader(v.([]byte))))
 	ce(err)

@@ -106,7 +106,7 @@ func (_ Def) Get(
 		bs, c, err := store.db.Get([]byte(key))
 		if err != nil {
 			if is(err, pebble.ErrNotFound) {
-				return we(
+				return we.With(
 					e4.With(&NotFound{Key: key}),
 				)(ErrNotFound)
 			}

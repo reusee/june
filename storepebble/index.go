@@ -88,12 +88,12 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 	defer i.begin()()
 
 	if entry.Type == nil {
-		return we(
+		return we.With(
 			e4.NewInfo("entry type is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 	if entry.Key == nil && entry.Path == nil {
-		return we(
+		return we.With(
 			e4.NewInfo("both entry key and path is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
