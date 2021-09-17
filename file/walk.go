@@ -18,12 +18,12 @@ func (_ Def) Walk() (walk Walk) {
 
 	walk = func(fn WalkFunc) Sink {
 		var sink Sink
-		sink = func(value any) (_ Sink, err error) {
+		sink = func(value *any) (_ Sink, err error) {
 			defer he(&err)
 			if value == nil {
 				return nil, nil
 			}
-			switch value := value.(type) {
+			switch value := (*value).(type) {
 
 			case FileInfo:
 				err := fn(value.Path, value.FileLike)

@@ -6,13 +6,14 @@ package file
 
 func dump() Sink {
 	var sink Sink
-	sink = func(v any) (Sink, error) {
+	sink = func(v *any) (Sink, error) {
 		if v == nil {
 			return nil, nil
 		}
-		if t, ok := v.(FileInfoThunk); ok {
+		if t, ok := (*v).(FileInfoThunk); ok {
 			t.Expand(true)
-			v = t.FileInfo
+			i := any(t.FileInfo)
+			v = &i
 		}
 		return sink, nil
 	}

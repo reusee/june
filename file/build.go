@@ -122,7 +122,7 @@ func (_ Def) Build(
 		}
 
 		var sink Sink
-		sink = func(v any) (_ Sink, err error) {
+		sink = func(v *any) (_ Sink, err error) {
 			defer he(&err)
 
 			// end of stream
@@ -143,12 +143,13 @@ func (_ Def) Build(
 			}
 
 		l1:
-			switch value := v.(type) {
+			switch value := (*v).(type) {
 
 			case FileInfoThunk:
 				// expand
 				value.Expand(true)
-				v = value.FileInfo
+				i := any(value.FileInfo)
+				v = &i
 				goto l1
 
 			case FileInfo:

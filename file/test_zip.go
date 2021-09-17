@@ -632,11 +632,11 @@ func TestZip(
 			},
 
 			22: {
-				A: pp.Seq(
+				A: Seq(
 					I("foo", D("foo")),
 					T("foo/bar", D("bar")),
 				),
-				B: pp.Seq(
+				B: Seq(
 					I("foo", D("foo")),
 				),
 				Expected: []ZipItem{
@@ -654,10 +654,10 @@ func TestZip(
 			},
 
 			23: {
-				A: pp.Seq(
+				A: Seq(
 					I("foo", D("foo")),
 				),
-				B: pp.Seq(
+				B: Seq(
 					I("foo", D("foo")),
 					T("foo/bar", D("bar")),
 				),
@@ -863,7 +863,7 @@ func TestZip(
 
 			32: {
 				A: iterFile(file1, nil),
-				B: pp.Seq(
+				B: Seq(
 					I("foo", D("foo")),
 					T("foo/bar", D("bar")),
 				),
@@ -882,7 +882,7 @@ func TestZip(
 			},
 
 			33: {
-				A: pp.Seq(
+				A: Seq(
 					I("foo", D("foo")),
 					T("foo/bar", D("bar")),
 				),
@@ -902,7 +902,7 @@ func TestZip(
 			},
 
 			34: {
-				A: pp.Seq(
+				A: Seq(
 					I("foo", D("foo")),
 					T("foo/1", D("1")),
 				),
@@ -928,7 +928,7 @@ func TestZip(
 
 			35: {
 				A: iterFile(file1, nil),
-				B: pp.Seq(
+				B: Seq(
 					I("foo", D("foo")),
 					T("foo/1", D("1")),
 				),
@@ -953,7 +953,7 @@ func TestZip(
 
 			36: {
 				A: iterFile(file1, nil),
-				B: pp.Seq(
+				B: Seq(
 					I("foo", D("foo")),
 					T("foo/z", D("z")),
 				),
@@ -977,7 +977,7 @@ func TestZip(
 			},
 
 			37: {
-				A: pp.Seq(
+				A: Seq(
 					I("foo", D("foo")),
 					T("foo/z", D("z")),
 				),
@@ -1081,11 +1081,11 @@ func TestZip(
 		}
 
 		var dump Sink
-		dump = func(v any) (Sink, error) {
+		dump = func(v *any) (Sink, error) {
 			if v == nil {
 				return nil, nil
 			}
-			item, ok := v.(ZipItem)
+			item, ok := (*v).(ZipItem)
 			if !ok {
 				panic(fmt.Errorf("expecting ZipItem, got %#v", v))
 			}
@@ -1102,7 +1102,7 @@ func TestZip(
 
 		check := func(expected []ZipItem) Sink {
 			var sink Sink
-			sink = func(v any) (Sink, error) {
+			sink = func(v *any) (Sink, error) {
 				if v == nil {
 					if len(expected) > 0 {
 						return nil, fmt.Errorf("expected %+v, got nil", expected[0])
@@ -1114,7 +1114,7 @@ func TestZip(
 					return nil, fmt.Errorf("unexpected %#v", v)
 				}
 				e := expected[0]
-				i := v.(ZipItem)
+				i := (*v).(ZipItem)
 				if filepath.ToSlash(e.Dir) != filepath.ToSlash(i.Dir) {
 					return nil, fmt.Errorf("expected path %s, got %s", e.Dir, i.Dir)
 				}
@@ -1208,30 +1208,30 @@ func TestZip(
 				b = v
 			}
 
-			var items pp.Values
-			var valuesA pp.Values
-			var valuesB pp.Values
-			err := pp.Copy(
+			var items Values
+			var valuesA Values
+			var valuesB Values
+			err := Copy(
 				zip(
 					pp.Tee(
 						a,
-						pp.CollectValues(&valuesA),
+						CollectValues(&valuesA),
 					),
 					pp.Tee(
 						b,
-						pp.CollectValues(&valuesB),
+						CollectValues(&valuesB),
 					),
 					nil,
 					predictExpand,
 				),
-				func(v any) (Sink, error) {
+				func(v *any) (Sink, error) {
 					// comment out to show dumps
 					return nil, nil
 					//pt("---------- %d -----------\n", i)
 					//return dump(v)
 				},
 				check(c.Expected),
-				pp.CollectValues(&items),
+				CollectValues(&items),
 			)
 			ce(err, func(err error) error {
 				pt("--- %d: A ---\n", i)
@@ -1246,8 +1246,8 @@ func TestZip(
 			})
 
 			res, err := equal(
-				valuesA.Iter(nil),
-				unzip(items.Iter(nil), func(item ZipItem) any {
+				IterValues(valuesA, nil),
+				unzip(IterValues(items, nil), func(item ZipItem) any {
 					return item.A
 				}, nil),
 				nil,
@@ -1258,8 +1258,8 @@ func TestZip(
 			}
 
 			res, err = equal(
-				valuesB.Iter(nil),
-				unzip(reverse(items.Iter(nil), nil), func(item ZipItem) any {
+				IterValues(valuesB, nil),
+				unzip(reverse(IterValues(items, nil), nil), func(item ZipItem) any {
 					return item.A
 				}, nil),
 				nil,
@@ -1374,7 +1374,7 @@ func TestZipFile(
 		n := 0
 		err = Copy(
 			left,
-			pp.Tap(func(v any) (err error) {
+			pp.Tap[any, Sink](func(v any) (err error) {
 				defer he(&err)
 				n++
 				if info, ok := v.(FileInfo); ok {
@@ -1404,10 +1404,10 @@ func TestZipFile(
 			},
 			nil,
 		)
-		var values pp.Values
+		var values Values
 		err = Copy(
 			left,
-			pp.CollectValues(&values),
+			CollectValues(&values),
 		)
 		ce(err)
 		if len(values) != numFiles {
@@ -1417,7 +1417,7 @@ func TestZipFile(
 		// build(collect(zip(disk, disk)))
 		root := new(File)
 		err = Copy(
-			values.Iter(nil),
+			IterValues(values, nil),
 			build(root, nil),
 		)
 		ce(err)
@@ -1437,7 +1437,7 @@ func TestZipFile(
 		// build(collect(zip(disk, disk))) : disk
 		file = new(File)
 		err = Copy(
-			values.Iter(nil),
+			IterValues(values, nil),
 			build(file, nil),
 		)
 		ce(err)

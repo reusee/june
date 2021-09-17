@@ -61,7 +61,7 @@ func (_ Def) Update(
 			}
 		}
 
-		return func() (_ any, _ Src, err error) {
+		return func() (_ *any, _ Src, err error) {
 			defer he(&err, e4.NewInfo("update %s", path))
 
 			dir := filepath.Dir(path)
