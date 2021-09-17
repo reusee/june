@@ -7,14 +7,12 @@ package filebase
 import (
 	"io"
 	"io/fs"
-
-	"github.com/reusee/pp"
 )
 
 type Handle struct {
 	io.ReadSeeker
 	file     *File
-	subsIter pp.Src
+	subsIter Src
 }
 
 var _ fs.File = new(Handle)
@@ -32,14 +30,14 @@ func (h *Handle) ReadDir(n int) (ret []fs.DirEntry, err error) {
 
 	if n <= 0 {
 		for {
-			v, err := h.subsIter.Next()
+			v, err := Get(&h.subsIter)
 			if err != nil {
 				return ret, err
 			}
 			if v == nil {
 				break
 			}
-			file := v.(*File)
+			file := (*v).(*File)
 			ret = append(ret, DirEntry{
 				file: file,
 			})
@@ -47,14 +45,14 @@ func (h *Handle) ReadDir(n int) (ret []fs.DirEntry, err error) {
 
 	} else {
 		for n > 0 {
-			v, err := h.subsIter.Next()
+			v, err := Get(&h.subsIter)
 			if err != nil {
 				return ret, err
 			}
 			if v == nil {
 				return ret, io.EOF
 			}
-			file := v.(*File)
+			file := (*v).(*File)
 			ret = append(ret, DirEntry{
 				file: file,
 			})
