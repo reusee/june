@@ -15,7 +15,6 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/reusee/e4"
 	"github.com/reusee/june/index"
-	"github.com/reusee/pp"
 	"github.com/reusee/sb"
 )
 
@@ -224,7 +223,7 @@ func (idx Index) Iter(
 	lower *sb.Tokens,
 	upper *sb.Tokens,
 	order index.Order,
-) (pp.Src, io.Closer, error) {
+) (ProcSrc, io.Closer, error) {
 	select {
 	case <-idx.ctx.Done():
 		return nil, nil, idx.ctx.Err()
@@ -340,7 +339,7 @@ func (p *indexIter) Close() (err error) {
 	return
 }
 
-func (p *indexIter) Iter() (any, pp.Src, error) {
+func (p *indexIter) Iter() (*sb.Proc, ProcSrc, error) {
 	if !p.ok {
 		return nil, nil, nil
 	}
@@ -369,5 +368,6 @@ func (p *indexIter) Iter() (any, pp.Src, error) {
 			p.ok = p.iter.Prev()
 		}
 	})
-	return tokens.Iter(), p.Iter, nil
+	proc := tokens.Iter()
+	return &proc, p.Iter, nil
 }

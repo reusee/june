@@ -26,6 +26,8 @@ type (
 	StoreIndex      = index.StoreIndex
 	IndexTapEntry   = index.TapEntry
 	IndexSaveOption = index.SaveOption
+	ProcSrc         = index.ProcSrc
+	ProcSink        = index.ProcSink
 )
 
 var (
