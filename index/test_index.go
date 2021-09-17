@@ -495,7 +495,7 @@ func (_ Def) TestIndex(
 							Count(&n),
 						))
 						if n != 1 {
-							t.Fatal()
+							t.Fatalf("got %d", n)
 						}
 
 						// count

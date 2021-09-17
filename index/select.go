@@ -319,9 +319,9 @@ func Iter(
 
 		// exact iter
 		if len(exactTokens) > 0 {
-			iter = pp.MapSrc(
+			iter = pp.MapFilterSrc(
 				iter,
-				func(proc sb.Proc) sb.Proc {
+				func(proc sb.Proc) *sb.Proc {
 					var tokens sb.Tokens
 					res := sb.MustCompare(
 						sb.Tee(
@@ -331,7 +331,8 @@ func Iter(
 						exactTokens.Iter(),
 					)
 					if res == 0 {
-						return tokens.Iter()
+						proc = tokens.Iter()
+						return &proc
 					}
 					return nil
 				},
@@ -342,16 +343,17 @@ func Iter(
 		// where
 		for _, fn := range where {
 			fn := fn
-			iter = pp.MapSrc(
+			iter = pp.MapFilterSrc(
 				iter,
-				func(proc sb.Proc) sb.Proc {
+				func(proc sb.Proc) *sb.Proc {
 					var tokens sb.Tokens
 					ce(sb.Copy(
 						proc,
 						sb.CollectTokens(&tokens),
 					))
 					if fn(tokens.Iter()) {
-						return tokens.Iter()
+						proc = tokens.Iter()
+						return &proc
 					}
 					return nil
 				},
