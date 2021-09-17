@@ -12,7 +12,6 @@ import (
 	"github.com/google/btree"
 	"github.com/reusee/e4"
 	"github.com/reusee/june/index"
-	"github.com/reusee/pp"
 	"github.com/reusee/sb"
 )
 
@@ -147,7 +146,7 @@ func (i Index) Iter(
 	upper *sb.Tokens,
 	order Order,
 ) (
-	_ pp.Src,
+	_ ProcSrc,
 	_ io.Closer,
 	err error,
 ) {
@@ -224,7 +223,7 @@ func extractIndex(s sb.Proc) (sb.Proc, error) {
 	return tokens.Iter(), nil
 }
 
-func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
+func (m *indexIter) Iter() (_ *sb.Proc, _ ProcSrc, err error) {
 	defer he(&err)
 
 	if m.order == Asc {
@@ -256,9 +255,9 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 		if n == 0 {
 			return nil, nil, nil
 		} else if n == 1 {
-			return s, nil, nil
+			return &s, nil, nil
 		} else {
-			return s, m.Iter, nil
+			return &s, m.Iter, nil
 		}
 
 	} else {
@@ -297,9 +296,9 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 		if n == 0 {
 			return nil, nil, nil
 		} else if n == 1 {
-			return s, nil, nil
+			return &s, nil, nil
 		} else {
-			return s, m.Iter, nil
+			return &s, m.Iter, nil
 		}
 
 	}

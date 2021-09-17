@@ -25,6 +25,8 @@ type (
 	IndexEntry    = index.Entry
 	StoreIndex    = index.StoreIndex
 	IndexTapEntry = index.TapEntry
+	ProcSrc       = index.ProcSrc
+	ProcSink      = index.ProcSink
 
 	StoreID = store.ID
 )
