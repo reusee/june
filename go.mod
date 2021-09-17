@@ -27,7 +27,7 @@ require (
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
-	github.com/reusee/pp v0.0.0-20210126104159-3dfd0eb5a99a
+	github.com/reusee/pp v0.0.0-20210911032233-ab6d18b1b8a0
 	github.com/reusee/pr v0.0.0-20210907085212-ce3985200e36
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
 	github.com/reusee/sb v0.0.0-20210906134411-af0e47edf3fa
