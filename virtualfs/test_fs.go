@@ -136,12 +136,12 @@ func (_ Def) TesetFS(
 				nil,
 			)
 			for {
-				v, err := iter.Next()
+				v, err := file.Get(&iter)
 				ce(err)
 				if v == nil {
 					break
 				}
-				item := v.(ZipItem)
+				item := (*v).(ZipItem)
 				if item.A == nil && item.B != nil {
 					t.Fatalf("B: %#v\n", item.B)
 				} else if item.A != nil && item.B == nil {
