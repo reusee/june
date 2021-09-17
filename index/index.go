@@ -22,13 +22,17 @@ type SaveOption interface {
 
 func (_ TapEntry) IsSaveOption() {}
 
+type ProcSrc func() (*sb.Proc, ProcSrc, error)
+
+type ProcSink func(*sb.Proc) (ProcSink, error)
+
 type Index interface {
 	Name() string
 	Iter(
 		lower *sb.Tokens, // inclusive in any order
 		upper *sb.Tokens, // exclusive in any order
 		order Order,
-	) (Src, io.Closer, error)
+	) (ProcSrc, io.Closer, error)
 	Save(entry Entry, options ...SaveOption) error
 	Delete(entry Entry) error
 }

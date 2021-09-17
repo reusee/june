@@ -13,7 +13,6 @@ import (
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
-	"github.com/reusee/pp"
 )
 
 var (
@@ -35,6 +34,4 @@ type (
 	Key = key.Key
 
 	TapKey = opts.TapKey
-
-	Src = pp.Src
 )

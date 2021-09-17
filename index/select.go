@@ -167,7 +167,7 @@ func Iter(
 	fn func(
 		index Index,
 	) (
-		Src,
+		ProcSrc,
 		io.Closer,
 		error,
 	),
@@ -176,7 +176,7 @@ func Iter(
 	fn = func(
 		index Index,
 	) (
-		iter Src,
+		iter ProcSrc,
 		closer io.Closer,
 		err error,
 	) {
@@ -321,11 +321,11 @@ func Iter(
 		if len(exactTokens) > 0 {
 			iter = pp.MapSrc(
 				iter,
-				func(v any) any {
+				func(proc sb.Proc) sb.Proc {
 					var tokens sb.Tokens
 					res := sb.MustCompare(
 						sb.Tee(
-							v.(sb.Proc),
+							proc,
 							sb.CollectTokens(&tokens),
 						),
 						exactTokens.Iter(),
@@ -344,10 +344,10 @@ func Iter(
 			fn := fn
 			iter = pp.MapSrc(
 				iter,
-				func(v any) any {
+				func(proc sb.Proc) sb.Proc {
 					var tokens sb.Tokens
 					ce(sb.Copy(
-						v.(sb.Proc),
+						proc,
 						sb.CollectTokens(&tokens),
 					))
 					if fn(tokens.Iter()) {
@@ -446,8 +446,7 @@ func Select(
 	var sinks []sb.Sink
 	ce(pp.Copy(
 		iter,
-		pp.Tap(func(v any) (err error) {
-			s := v.(sb.Proc)
+		pp.Tap[sb.Proc, ProcSink](func(proc sb.Proc) (err error) {
 			defer he(&err)
 
 			// check context
@@ -476,7 +475,7 @@ func Select(
 
 			// copy stream
 			if len(sinks) > 0 {
-				ce(sb.Copy(s, sinks...))
+				ce(sb.Copy(proc, sinks...))
 			}
 
 			// tap funcs

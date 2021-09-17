@@ -624,13 +624,12 @@ func (_ Def) TestIndex(
 						)
 						ce(err)
 						var toDelete []Entry
-						ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
-							s := v.(sb.Proc)
+						ce(pp.Copy(iter, pp.Tap[sb.Proc, ProcSink](func(proc sb.Proc) (err error) {
 							defer he(&err)
 							var entry *Entry
 							var preEntry *PreEntry
 							ce(sb.Copy(
-								s,
+								proc,
 								sb.AltSink(
 									sb.Unmarshal(&entry),
 									sb.Unmarshal(&preEntry),
@@ -652,7 +651,7 @@ func (_ Def) TestIndex(
 							Asc,
 						)
 						ce(err)
-						ce(pp.Copy(iter, pp.Tap(func(v any) error {
+						ce(pp.Copy(iter, pp.Tap[sb.Proc, ProcSink](func(proc sb.Proc) error {
 							// should all be deleted
 							t.Fatal()
 							return nil
