@@ -62,8 +62,7 @@ func (_ Def) DeleteIndex(
 			return nil
 		})
 
-		ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
-			proc := v.(sb.Proc)
+		ce(pp.Copy(iter, pp.Tap[sb.Proc, ProcSink](func(proc sb.Proc) (err error) {
 			defer he(&err)
 
 			tupleToken, err := proc.Next()

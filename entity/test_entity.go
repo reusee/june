@@ -362,14 +362,13 @@ func TestSave(
 		defer closer.Close()
 		indexes := make(map[Hash]IndexEntry)
 		n := 0
-		ce(pp.Copy(iter, pp.Tap(func(v any) (err error) {
-			s := v.(sb.Proc)
+		ce(pp.Copy(iter, pp.Tap[sb.Proc, ProcSink](func(proc sb.Proc) (err error) {
 			defer he(&err)
 			var entry *IndexEntry
 			var preEntry *IndexPreEntry
 			var h []byte
 			ce(sb.Copy(
-				s,
+				proc,
 				sb.AltSink(
 					sb.Unmarshal(&entry),
 					sb.Unmarshal(&preEntry),
@@ -415,13 +414,12 @@ func TestSave(
 			)
 			ce(err)
 			defer closer.Close()
-			ce(pp.Copy(iter, pp.Tap(func(v any) error {
-				s := v.(sb.Proc)
+			ce(pp.Copy(iter, pp.Tap[sb.Proc, ProcSink](func(proc sb.Proc) error {
 				var entry *IndexEntry
 				var preEntry *IndexPreEntry
 				var h []byte
 				if err := sb.Copy(
-					s,
+					proc,
 					sb.AltSink(
 						sb.Unmarshal(&entry),
 						sb.Unmarshal(&preEntry),

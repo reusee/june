@@ -33,6 +33,8 @@ type (
 	Limit         = index.Limit
 	Index         = index.Index
 	IndexManager  = index.IndexManager
+	ProcSrc       = index.ProcSrc
+	ProcSink      = index.ProcSink
 
 	TapEntry        = index.TapEntry
 	TapKey          = opts.TapKey

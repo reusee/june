@@ -13,6 +13,7 @@ import (
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/sys"
+	"github.com/reusee/pp"
 	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
@@ -109,28 +110,26 @@ func (_ Def) IndexGC(
 			defer closeMemSrc.Close()
 
 			next := func() (tokens sb.Tokens) {
-				v, err := src.Next()
+				proc, err := pp.Get[sb.Proc, ProcSrc](&src)
 				ce(err)
-				if v == nil {
+				if proc == nil {
 					return
 				}
-				proc := v.(sb.Proc)
 				ce(sb.Copy(
-					proc,
+					*proc,
 					sb.CollectTokens(&tokens),
 				))
 				return
 			}
 
 			memNext := func() (tokens sb.Tokens) {
-				v, err := memSrc.Next()
+				proc, err := pp.Get[sb.Proc, ProcSrc](&memSrc)
 				ce(err)
-				if v == nil {
+				if proc == nil {
 					return
 				}
-				proc := v.(sb.Proc)
 				ce(sb.Copy(
-					proc,
+					*proc,
 					sb.CollectTokens(&tokens),
 				))
 				return
