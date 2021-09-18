@@ -17,16 +17,15 @@ func (_ Def) Unzip() Unzip {
 		cont Src,
 	) Src {
 		var unzip Src
-		unzip = func() (*any, Src, error) {
-			v, err := Get(&src)
+		unzip = func() (any, Src, error) {
+			v, err := src.Next()
 			if err != nil {
 				return nil, nil, err
 			}
 			if v == nil {
 				return nil, cont, nil
 			}
-			i := any(fn((*v).(ZipItem)))
-			return &i, unzip, nil
+			return fn(v.(ZipItem)), unzip, nil
 		}
 		return unzip
 	}
@@ -37,18 +36,17 @@ type Reverse func(Src, Src) Src
 func (_ Def) Reverse() Reverse {
 	return func(src Src, cont Src) Src {
 		var rev Src
-		rev = func() (*any, Src, error) {
-			v, err := Get(&src)
+		rev = func() (any, Src, error) {
+			v, err := src.Next()
 			if err != nil {
 				return nil, nil, err
 			}
 			if v == nil {
 				return nil, cont, nil
 			}
-			item := (*v).(ZipItem)
+			item := v.(ZipItem)
 			item.A, item.B = item.B, item.A
-			i := any(item)
-			return &i, rev, nil
+			return item, rev, nil
 		}
 		return rev
 	}

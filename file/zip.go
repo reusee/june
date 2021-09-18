@@ -32,13 +32,13 @@ func (_ Def) Zip(
 
 	var zip func(a Src, b Src, cont Src, options ...ZipOption) Src
 	zip = func(a Src, b Src, cont Src, options ...ZipOption) Src {
-		return func() (*any, Src, error) {
+		return func() (any, Src, error) {
 
-			valueA, err := Get(&a)
+			valueA, err := a.Next()
 			if err != nil { // NOCOVER
 				return nil, nil, err
 			}
-			valueB, err := Get(&b)
+			valueB, err := b.Next()
 			if err != nil { // NOCOVER
 				return nil, nil, err
 			}
@@ -50,7 +50,7 @@ func (_ Def) Zip(
 			var dirA, dirB string
 
 			if valueA != nil {
-				switch valueA := (*valueA).(type) {
+				switch valueA := valueA.(type) {
 				case FileInfo:
 					dirA = valueA.Path
 					dirA = filepath.Dir(dirA)
@@ -64,7 +64,7 @@ func (_ Def) Zip(
 				}
 			}
 			if valueB != nil {
-				switch valueB := (*valueB).(type) {
+				switch valueB := valueB.(type) {
 				case FileInfo:
 					dirB = valueB.Path
 					dirB = filepath.Dir(dirB)
@@ -79,34 +79,31 @@ func (_ Def) Zip(
 			}
 
 			if valueB == nil {
-				if t, ok := (*valueA).(FileInfoThunk); ok {
+				if t, ok := valueA.(FileInfoThunk); ok {
 					t.Expand(false)
-				} else if t, ok := (*valueA).(PackThunk); ok {
+				} else if t, ok := valueA.(PackThunk); ok {
 					t.Expand(false)
 				}
-				i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-				return &i,
+				return ZipItem{A: valueA, B: nil, Dir: dirA},
 					zip(a, nil, cont, options...),
 					nil
 
 			} else if valueA == nil {
-				if t, ok := (*valueB).(FileInfoThunk); ok {
+				if t, ok := valueB.(FileInfoThunk); ok {
 					t.Expand(false)
-				} else if t, ok := (*valueB).(PackThunk); ok {
+				} else if t, ok := valueB.(PackThunk); ok {
 					t.Expand(false)
 				}
-				i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-				return &i,
+				return ZipItem{A: nil, B: valueB, Dir: dirB},
 					zip(nil, b, cont, options...),
 					nil
 			}
 
 			if isDeeper(dirA, dirB) {
-				i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-				return &i,
+				return ZipItem{A: valueA, B: nil, Dir: dirA},
 					zip(
 						a,
-						func() (*any, Src, error) {
+						func() (any, Src, error) {
 							return valueB, b, nil
 						},
 						cont,
@@ -115,10 +112,9 @@ func (_ Def) Zip(
 					nil
 
 			} else if isDeeper(dirB, dirA) {
-				i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-				return &i,
+				return ZipItem{A: nil, B: valueB, Dir: dirB},
 					zip(
-						func() (*any, Src, error) {
+						func() (any, Src, error) {
 							return valueA, a, nil
 						},
 						b,
@@ -128,23 +124,21 @@ func (_ Def) Zip(
 					nil
 			}
 
-			switch valueA := (*valueA).(type) {
+			switch valueA := valueA.(type) {
 
 			case FileInfo:
-				switch valueB := (*valueB).(type) {
+				switch valueB := valueB.(type) {
 
 				case FileInfo:
 					// (FileInfo, FileInfo)
 					nameA := valueA.GetName(scope)
 					nameB := valueB.GetName(scope)
 					if nameA < nameB {
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -152,12 +146,10 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB < nameA {
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -169,8 +161,7 @@ func (_ Def) Zip(
 					if dirA != dirB {
 						panic(fmt.Errorf("bad iter, expecting same path: %v %v", dirA, dirB))
 					}
-					i := any(ZipItem{A: valueA, B: valueB, Dir: dirA})
-					return &i,
+					return ZipItem{A: valueA, B: valueB, Dir: dirA},
 						zip(
 							a,
 							b,
@@ -184,13 +175,11 @@ func (_ Def) Zip(
 					nameA := valueA.GetName(scope)
 					nameB := valueB.FileInfo.GetName(scope)
 					if nameA < nameB {
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -199,12 +188,10 @@ func (_ Def) Zip(
 
 					} else if nameB < nameA {
 						valueB.Expand(false)
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -216,13 +203,11 @@ func (_ Def) Zip(
 					valueB.Expand(true)
 					return nil,
 						zip(
-							func() (*any, Src, error) {
-								i := any(valueA)
-								return &i, a, nil
+							func() (any, Src, error) {
+								return valueA, a, nil
 							},
-							func() (*any, Src, error) {
-								i := any(valueB.FileInfo)
-								return &i, b, nil
+							func() (any, Src, error) {
+								return valueB.FileInfo, b, nil
 							},
 							cont,
 							options...,
@@ -234,13 +219,11 @@ func (_ Def) Zip(
 					nameA := valueA.GetName(scope)
 
 					if nameA < valueB.Min {
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -249,12 +232,10 @@ func (_ Def) Zip(
 
 					} else if nameA > valueB.Max {
 						valueB.Expand(false)
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -267,9 +248,8 @@ func (_ Def) Zip(
 						valueB.Expand(true)
 						return nil,
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -281,7 +261,7 @@ func (_ Def) Zip(
 				}
 
 			case FileInfoThunk:
-				switch valueB := (*valueB).(type) {
+				switch valueB := valueB.(type) {
 
 				case FileInfoThunk:
 					// (FileInfoThunk, FileInfoThunk)
@@ -289,13 +269,11 @@ func (_ Def) Zip(
 					nameB := valueB.FileInfo.GetName(scope)
 					if nameA < nameB {
 						valueA.Expand(false)
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -304,12 +282,10 @@ func (_ Def) Zip(
 
 					} else if nameB < nameA {
 						valueB.Expand(false)
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -346,13 +322,11 @@ func (_ Def) Zip(
 						valueB.Expand(true)
 						return nil,
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA.FileInfo)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA.FileInfo, a, nil
 								},
-								func() (*any, Src, error) {
-									i := any(valueB.FileInfo)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB.FileInfo, b, nil
 								},
 								cont,
 								options...,
@@ -362,8 +336,7 @@ func (_ Def) Zip(
 					} else {
 						valueA.Expand(false)
 						valueB.Expand(false)
-						i := any(ZipItem{A: valueA, B: valueB, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: valueB, Dir: dirA},
 							zip(
 								a,
 								b,
@@ -379,13 +352,11 @@ func (_ Def) Zip(
 					nameB := valueB.GetName(scope)
 					if nameA < nameB {
 						valueA.Expand(false)
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -393,12 +364,10 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB < nameA {
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -410,13 +379,11 @@ func (_ Def) Zip(
 					valueA.Expand(true)
 					return nil,
 						zip(
-							func() (*any, Src, error) {
-								i := any(valueA.FileInfo)
-								return &i, a, nil
+							func() (any, Src, error) {
+								return valueA.FileInfo, a, nil
 							},
-							func() (*any, Src, error) {
-								i := any(valueB)
-								return &i, b, nil
+							func() (any, Src, error) {
+								return valueB, b, nil
 							},
 							cont,
 							options...,
@@ -429,13 +396,11 @@ func (_ Def) Zip(
 
 					if nameA < valueB.Min {
 						valueA.Expand(false)
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -444,12 +409,10 @@ func (_ Def) Zip(
 
 					} else if nameA > valueB.Max {
 						valueB.Expand(false)
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -462,9 +425,8 @@ func (_ Def) Zip(
 						valueB.Expand(true)
 						return nil,
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -476,7 +438,7 @@ func (_ Def) Zip(
 				}
 
 			case PackThunk:
-				switch valueB := (*valueB).(type) {
+				switch valueB := valueB.(type) {
 
 				case PackThunk:
 					// (PackThunk, PackThunk)
@@ -487,8 +449,7 @@ func (_ Def) Zip(
 						if dirA != dirB {
 							panic(fmt.Errorf("bad iter, expecting same path: %v %v", dirA, dirB))
 						}
-						i := any(ZipItem{A: valueA, B: valueB, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: valueB, Dir: dirA},
 							zip(
 								a,
 								b,
@@ -500,13 +461,11 @@ func (_ Def) Zip(
 
 					if valueA.Max < valueB.Min {
 						valueA.Expand(false)
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -515,12 +474,10 @@ func (_ Def) Zip(
 
 					} else if valueB.Max < valueA.Min {
 						valueB.Expand(false)
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -547,12 +504,10 @@ func (_ Def) Zip(
 					nameB := valueB.GetName(scope)
 
 					if nameB < valueA.Min {
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -562,13 +517,11 @@ func (_ Def) Zip(
 
 					} else if nameB > valueA.Max {
 						valueA.Expand(false)
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -581,9 +534,8 @@ func (_ Def) Zip(
 						return nil,
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -597,12 +549,10 @@ func (_ Def) Zip(
 
 					if nameB < valueA.Min {
 						valueB.Expand(false)
-						i := any(ZipItem{A: nil, B: valueB, Dir: dirB})
-						return &i,
+						return ZipItem{A: nil, B: valueB, Dir: dirB},
 							zip(
-								func() (*any, Src, error) {
-									i := any(valueA)
-									return &i, a, nil
+								func() (any, Src, error) {
+									return valueA, a, nil
 								},
 								b,
 								cont,
@@ -612,13 +562,11 @@ func (_ Def) Zip(
 
 					} else if nameB > valueA.Max {
 						valueA.Expand(false)
-						i := any(ZipItem{A: valueA, B: nil, Dir: dirA})
-						return &i,
+						return ZipItem{A: valueA, B: nil, Dir: dirA},
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -631,9 +579,8 @@ func (_ Def) Zip(
 						return nil,
 							zip(
 								a,
-								func() (*any, Src, error) {
-									i := any(valueB)
-									return &i, b, nil
+								func() (any, Src, error) {
+									return valueB, b, nil
 								},
 								cont,
 								options...,
@@ -669,11 +616,11 @@ cmp:
 
 func TapZipItem(fn func(ZipItem)) Sink {
 	var sink Sink
-	sink = func(v *any) (Sink, error) {
+	sink = func(v any) (Sink, error) {
 		if v == nil {
 			return nil, nil
 		}
-		fn((*v).(ZipItem))
+		fn(v.(ZipItem))
 		return sink, nil
 	}
 	return sink

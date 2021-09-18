@@ -168,7 +168,7 @@ func TestSave(
 		// iter
 		file2 := new(File)
 		err = Copy(
-			pp.Tee[any, Src, Sink](
+			pp.Tee(
 				iterFile(file, nil),
 			),
 			build(
@@ -257,7 +257,7 @@ func TestPack(
 	) {
 
 		var tap Sink
-		tap = func(v *any) (Sink, error) {
+		tap = func(v any) (Sink, error) {
 			if v == nil {
 				return nil, nil
 			}

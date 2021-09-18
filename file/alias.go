@@ -11,7 +11,6 @@ import (
 	"github.com/reusee/dscope"
 	"github.com/reusee/e4"
 	"github.com/reusee/june/entity"
-	"github.com/reusee/june/filebase"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/key"
@@ -24,11 +23,9 @@ type (
 
 	Key = key.Key
 
-	Values = pp.Values[any]
-
 	Scope = dscope.Scope
-	Src   = filebase.Src
-	Sink  = filebase.Sink
+	Src   = pp.Src
+	Sink  = pp.Sink
 
 	Limit = index.Limit
 
@@ -41,13 +38,10 @@ var (
 	ce = e4.CheckWithStacktrace
 	he = e4.Handle
 
-	PathSeparator = fsys.PathSeparator
+	Copy = pp.Copy
+	Seq  = pp.Seq
 
-	Get           = filebase.Get
-	Copy          = pp.Copy[any, Src, Sink]
-	Seq           = pp.Seq[any, Src]
-	CollectValues = pp.CollectValues[any, Sink]
-	IterValues    = pp.IterValues[any, Src]
+	PathSeparator = fsys.PathSeparator
 
 	Select     = index.Select
 	MatchEntry = index.MatchEntry

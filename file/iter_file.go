@@ -32,7 +32,7 @@ func (_ Def) IterFile(
 		loaded := false
 		var subs Subs
 		var src Src
-		src = func() (_ *any, _ Src, err error) {
+		src = func() (_ any, _ Src, err error) {
 			defer he(&err)
 			if !loaded {
 				err := fetch(pack.Key, &subs)
@@ -49,7 +49,7 @@ func (_ Def) IterFile(
 			}
 			if sub.Pack != nil {
 				next := invalid
-				thunk := any(PackThunk{
+				thunk := PackThunk{
 					Path: path,
 					Pack: *sub.Pack,
 					Expand: func(expand bool) {
@@ -59,8 +59,8 @@ func (_ Def) IterFile(
 							next = src
 						}
 					},
-				})
-				return &thunk, func() (*any, Src, error) {
+				}
+				return thunk, func() (any, Src, error) {
 					return nil, next, nil
 				}, nil
 			}
@@ -70,14 +70,14 @@ func (_ Def) IterFile(
 	}
 
 	iterFile = func(dir string, file *File, cont Src) Src {
-		return func() (*any, Src, error) {
+		return func() (any, Src, error) {
 			path := filepath.Join(dir, file.Name)
 			if ignore(path, file) {
 				return nil, cont, nil
 			}
 			if file.IsDir {
 				next := invalid
-				thunk := any(FileInfoThunk{
+				thunk := FileInfoThunk{
 					Path: path,
 					FileInfo: FileInfo{
 						Path:     path,
@@ -90,16 +90,16 @@ func (_ Def) IterFile(
 							next = cont
 						}
 					},
-				})
-				return &thunk, func() (*any, Src, error) {
+				}
+				return thunk, func() (any, Src, error) {
 					return nil, next, nil
 				}, nil
 			} else {
-				info := any(FileInfo{
+				info := FileInfo{
 					FileLike: file,
 					Path:     path,
-				})
-				return &info, cont, nil
+				}
+				return info, cont, nil
 			}
 		}
 	}
@@ -107,7 +107,7 @@ func (_ Def) IterFile(
 	iterSubs = func(path string, file *File, cont Src) Src {
 		subs := file.Subs
 		var src Src
-		src = func() (*any, Src, error) {
+		src = func() (any, Src, error) {
 			if len(subs) == 0 {
 				return nil, cont, nil
 			}
@@ -118,7 +118,7 @@ func (_ Def) IterFile(
 			}
 			if sub.Pack != nil {
 				next := invalid
-				thunk := any(PackThunk{
+				thunk := PackThunk{
 					Path: path,
 					Pack: *sub.Pack,
 					Expand: func(expand bool) {
@@ -128,8 +128,8 @@ func (_ Def) IterFile(
 							next = src
 						}
 					},
-				})
-				return &thunk, func() (*any, Src, error) {
+				}
+				return thunk, func() (any, Src, error) {
 					return nil, next, nil
 				}, nil
 			}
@@ -139,7 +139,7 @@ func (_ Def) IterFile(
 	}
 
 	iterKey = func(dir string, key Key, cont Src) Src {
-		return func() (_ *any, _ Src, err error) {
+		return func() (_ any, _ Src, err error) {
 			defer he(&err)
 			var file File
 			err = fetch(key, &file)

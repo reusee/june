@@ -16,7 +16,7 @@ type PackThunk struct {
 	Pack   // relative path of dir
 }
 
-func invalid() (*any, Src, error) {
+func invalid() (any, Src, error) {
 	panic("invalid")
 }
 
@@ -33,19 +33,18 @@ func (_ Def) DefaultIgnore() Ignore {
 
 func ExpandAll(src Src) Src {
 	var ret Src
-	ret = func() (*any, Src, error) {
-		v, err := Get(&src)
+	ret = func() (any, Src, error) {
+		v, err := src.Next()
 		if err != nil {
 			return nil, nil, err
 		}
 		if v == nil {
 			return nil, nil, nil
 		}
-		if t, ok := (*v).(FileInfoThunk); ok {
-			i := any(t.FileInfo)
-			v = &i
+		if t, ok := v.(FileInfoThunk); ok {
+			v = t.FileInfo
 			t.Expand(true)
-		} else if t, ok := (*v).(PackThunk); ok {
+		} else if t, ok := v.(PackThunk); ok {
 			v = nil
 			t.Expand(true)
 		}
@@ -56,17 +55,16 @@ func ExpandAll(src Src) Src {
 
 func ExpandFileInfoThunk(src Src) Src {
 	var ret Src
-	ret = func() (*any, Src, error) {
-		v, err := Get(&src)
+	ret = func() (any, Src, error) {
+		v, err := src.Next()
 		if err != nil {
 			return nil, nil, err
 		}
 		if v == nil {
 			return nil, nil, nil
 		}
-		if t, ok := (*v).(FileInfoThunk); ok {
-			i := any(t.FileInfo)
-			v = &i
+		if t, ok := v.(FileInfoThunk); ok {
+			v = t.FileInfo
 			t.Expand(true)
 		}
 		return v, ret, nil

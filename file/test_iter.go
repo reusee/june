@@ -29,12 +29,12 @@ func TestIterIgnore(
 
 		var count Sink
 		n := 0
-		count = func(v *any) (Sink, error) {
+		count = func(v any) (Sink, error) {
 			if v == nil {
 				return nil, nil
 			}
 			n++
-			if t, ok := (*v).(FileInfoThunk); ok {
+			if t, ok := v.(FileInfoThunk); ok {
 				t.Expand(true)
 			}
 			return count, nil
@@ -77,9 +77,9 @@ func TestIterDiskCancelWaitTree(
 	}).Call(func(
 		iterDisk IterDiskFile,
 	) {
-		err := Copy(
+		err := pp.Copy(
 			iterDisk(".", nil),
-			pp.Discard[any, Sink],
+			pp.Discard,
 		)
 		if !is(err, context.Canceled) {
 			t.Fatal()
