@@ -37,13 +37,15 @@ func (_ Def) Equal(
 			return false, err
 		}
 
-		if valueA.PackThunk != nil {
-			valueA.PackThunk.Expand(true)
-			goto l1
-		} else if valueA.FileInfoThunk != nil {
-			valueA.FileInfoThunk.Expand(true)
-			valueA.FileInfo = &valueA.FileInfoThunk.FileInfo
-			valueA.FileInfoThunk = nil
+		if valueA != nil {
+			if valueA.PackThunk != nil {
+				valueA.PackThunk.Expand(true)
+				goto l1
+			} else if valueA.FileInfoThunk != nil {
+				valueA.FileInfoThunk.Expand(true)
+				valueA.FileInfo = &valueA.FileInfoThunk.FileInfo
+				valueA.FileInfoThunk = nil
+			}
 		}
 
 	l2:
@@ -51,13 +53,15 @@ func (_ Def) Equal(
 		if err != nil {
 			return false, err
 		}
-		if valueB.PackThunk != nil {
-			valueB.PackThunk.Expand(true)
-			goto l2
-		} else if valueB.FileInfoThunk != nil {
-			valueB.FileInfoThunk.Expand(true)
-			valueB.FileInfo = &valueB.FileInfoThunk.FileInfo
-			valueB.FileInfoThunk = nil
+		if valueB != nil {
+			if valueB.PackThunk != nil {
+				valueB.PackThunk.Expand(true)
+				goto l2
+			} else if valueB.FileInfoThunk != nil {
+				valueB.FileInfoThunk.Expand(true)
+				valueB.FileInfo = &valueB.FileInfoThunk.FileInfo
+				valueB.FileInfoThunk = nil
+			}
 		}
 
 		if valueA == nil && valueB == nil {
