@@ -15,8 +15,6 @@ import (
 
 type Src func() (*any, Src, error)
 
-type Sink func(*any) (Sink, error)
-
 var Get = pp.Get[any, Src]
 
 type IterSubs func(subs Subs, cont Src) Src
