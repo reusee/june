@@ -8,7 +8,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/reusee/pp"
 	"github.com/reusee/pr"
 )
 
@@ -29,17 +28,17 @@ func TestIterIgnore(
 
 		var count Sink
 		n := 0
-		count = func(v any) (Sink, error) {
+		count = func(v *IterItem) (Sink, error) {
 			if v == nil {
 				return nil, nil
 			}
 			n++
-			if t, ok := v.(FileInfoThunk); ok {
-				t.Expand(true)
+			if v.FileInfoThunk != nil {
+				v.FileInfoThunk.Expand(true)
 			}
 			return count, nil
 		}
-		if err := pp.Copy(
+		if err := Copy(
 			iter(
 				Virtual{
 					IsDir: true,
@@ -77,9 +76,9 @@ func TestIterDiskCancelWaitTree(
 	}).Call(func(
 		iterDisk IterDiskFile,
 	) {
-		err := pp.Copy(
+		err := Copy(
 			iterDisk(".", nil),
-			pp.Discard,
+			Discard,
 		)
 		if !is(err, context.Canceled) {
 			t.Fatal()

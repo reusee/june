@@ -18,29 +18,28 @@ func (_ Def) Walk() (walk Walk) {
 
 	walk = func(fn WalkFunc) Sink {
 		var sink Sink
-		sink = func(value any) (_ Sink, err error) {
+		sink = func(value *IterItem) (_ Sink, err error) {
 			defer he(&err)
 			if value == nil {
 				return nil, nil
 			}
-			switch value := value.(type) {
 
-			case FileInfo:
-				err := fn(value.Path, value.FileLike)
-				ce(err)
-
-			case FileInfoThunk:
+			if value.FileInfo != nil {
 				err := fn(value.FileInfo.Path, value.FileInfo.FileLike)
 				ce(err)
-				value.Expand(true)
 
-			case PackThunk:
-				value.Expand(true)
+			} else if value.FileInfoThunk != nil {
+				err := fn(value.FileInfoThunk.FileInfo.Path, value.FileInfoThunk.FileInfo.FileLike)
+				ce(err)
+				value.FileInfoThunk.Expand(true)
 
-			default:
-				panic(fmt.Errorf("unknown type %T", value))
+			} else if value.PackThunk != nil {
+				value.PackThunk.Expand(true)
 
+			} else {
+				ce(fmt.Errorf("unknown type %T", value))
 			}
+
 			return sink, nil
 		}
 		return sink

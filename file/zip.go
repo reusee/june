@@ -16,12 +16,6 @@ type Zip func(
 	options ...ZipOption,
 ) Src
 
-type ZipItem struct {
-	A   any
-	B   any
-	Dir string
-}
-
 type ZipOption interface {
 	IsZipOption()
 }
@@ -32,13 +26,13 @@ func (_ Def) Zip(
 
 	var zip func(a Src, b Src, cont Src, options ...ZipOption) Src
 	zip = func(a Src, b Src, cont Src, options ...ZipOption) Src {
-		return func() (any, Src, error) {
+		return func() (*IterItem, Src, error) {
 
-			valueA, err := a.Next()
+			valueA, err := Get(&a)
 			if err != nil { // NOCOVER
 				return nil, nil, err
 			}
-			valueB, err := b.Next()
+			valueB, err := Get(&b)
 			if err != nil { // NOCOVER
 				return nil, nil, err
 			}
@@ -50,60 +44,61 @@ func (_ Def) Zip(
 			var dirA, dirB string
 
 			if valueA != nil {
-				switch valueA := valueA.(type) {
-				case FileInfo:
-					dirA = valueA.Path
+				if valueA.FileInfo != nil {
+					dirA = valueA.FileInfo.Path
 					dirA = filepath.Dir(dirA)
-				case FileInfoThunk:
-					dirA = valueA.Path
+				} else if valueA.FileInfoThunk != nil {
+					dirA = valueA.FileInfoThunk.Path
 					dirA = filepath.Dir(dirA)
-				case PackThunk:
-					dirA = valueA.Path
-				default:
-					panic(fmt.Errorf("unknown type %T", valueA))
+				} else if valueA.PackThunk != nil {
+					dirA = valueA.PackThunk.Path
+				} else {
+					panic(we(fmt.Errorf("unknown type %T", valueA)))
 				}
 			}
 			if valueB != nil {
-				switch valueB := valueB.(type) {
-				case FileInfo:
-					dirB = valueB.Path
+				if valueB.FileInfo != nil {
+					dirB = valueB.FileInfo.Path
 					dirB = filepath.Dir(dirB)
-				case FileInfoThunk:
-					dirB = valueB.Path
+				} else if valueB.FileInfoThunk != nil {
+					dirB = valueB.FileInfoThunk.Path
 					dirB = filepath.Dir(dirB)
-				case PackThunk:
-					dirB = valueB.Path
-				default:
-					panic(fmt.Errorf("unknown type %T", valueB))
+				} else if valueB.PackThunk != nil {
+					dirB = valueB.PackThunk.Path
+				} else {
+					panic(we(fmt.Errorf("unknown type %T", valueB)))
 				}
 			}
 
 			if valueB == nil {
-				if t, ok := valueA.(FileInfoThunk); ok {
-					t.Expand(false)
-				} else if t, ok := valueA.(PackThunk); ok {
-					t.Expand(false)
+				if valueA.FileInfoThunk != nil {
+					valueA.FileInfoThunk.Expand(false)
+				} else if valueA.PackThunk != nil {
+					valueA.PackThunk.Expand(false)
 				}
-				return ZipItem{A: valueA, B: nil, Dir: dirA},
-					zip(a, nil, cont, options...),
+				return &IterItem{
+						ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+					}, zip(a, nil, cont, options...),
 					nil
 
 			} else if valueA == nil {
-				if t, ok := valueB.(FileInfoThunk); ok {
-					t.Expand(false)
-				} else if t, ok := valueB.(PackThunk); ok {
-					t.Expand(false)
+				if valueB.FileInfoThunk != nil {
+					valueB.FileInfoThunk.Expand(false)
+				} else if valueB.PackThunk != nil {
+					valueB.PackThunk.Expand(false)
 				}
-				return ZipItem{A: nil, B: valueB, Dir: dirB},
-					zip(nil, b, cont, options...),
+				return &IterItem{
+						ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+					}, zip(nil, b, cont, options...),
 					nil
 			}
 
 			if isDeeper(dirA, dirB) {
-				return ZipItem{A: valueA, B: nil, Dir: dirA},
-					zip(
+				return &IterItem{
+						ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+					}, zip(
 						a,
-						func() (any, Src, error) {
+						func() (*IterItem, Src, error) {
 							return valueB, b, nil
 						},
 						cont,
@@ -112,9 +107,10 @@ func (_ Def) Zip(
 					nil
 
 			} else if isDeeper(dirB, dirA) {
-				return ZipItem{A: nil, B: valueB, Dir: dirB},
-					zip(
-						func() (any, Src, error) {
+				return &IterItem{
+						ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+					}, zip(
+						func() (*IterItem, Src, error) {
 							return valueA, a, nil
 						},
 						b,
@@ -124,20 +120,18 @@ func (_ Def) Zip(
 					nil
 			}
 
-			switch valueA := valueA.(type) {
+			if valueA.FileInfo != nil {
 
-			case FileInfo:
-				switch valueB := valueB.(type) {
-
-				case FileInfo:
+				if valueB.FileInfo != nil {
 					// (FileInfo, FileInfo)
-					nameA := valueA.GetName(scope)
-					nameB := valueB.GetName(scope)
+					nameA := valueA.FileInfo.GetName(scope)
+					nameB := valueB.FileInfo.GetName(scope)
 					if nameA < nameB {
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
+								func() (*IterItem, Src, error) {
 									return valueB, b, nil
 								},
 								cont,
@@ -146,9 +140,10 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB < nameA {
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
 									return valueA, a, nil
 								},
 								b,
@@ -161,8 +156,9 @@ func (_ Def) Zip(
 					if dirA != dirB {
 						panic(fmt.Errorf("bad iter, expecting same path: %v %v", dirA, dirB))
 					}
-					return ZipItem{A: valueA, B: valueB, Dir: dirA},
-						zip(
+					return &IterItem{
+							ZipItem: &ZipItem{A: valueA, B: valueB, Dir: dirA},
+						}, zip(
 							a,
 							b,
 							cont,
@@ -170,15 +166,16 @@ func (_ Def) Zip(
 						),
 						nil
 
-				case FileInfoThunk:
+				} else if valueB.FileInfoThunk != nil {
 					// (FileInfo, FileInfoThunk)
-					nameA := valueA.GetName(scope)
-					nameB := valueB.FileInfo.GetName(scope)
+					nameA := valueA.FileInfo.GetName(scope)
+					nameB := valueB.FileInfoThunk.FileInfo.GetName(scope)
 					if nameA < nameB {
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
+								func() (*IterItem, Src, error) {
 									return valueB, b, nil
 								},
 								cont,
@@ -187,10 +184,11 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB < nameA {
-						valueB.Expand(false)
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
+						valueB.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
 									return valueA, a, nil
 								},
 								b,
@@ -200,29 +198,32 @@ func (_ Def) Zip(
 							nil
 					}
 
-					valueB.Expand(true)
+					valueB.FileInfoThunk.Expand(true)
 					return nil,
 						zip(
-							func() (any, Src, error) {
+							func() (*IterItem, Src, error) {
 								return valueA, a, nil
 							},
-							func() (any, Src, error) {
-								return valueB.FileInfo, b, nil
+							func() (*IterItem, Src, error) {
+								return &IterItem{
+									FileInfo: &valueB.FileInfoThunk.FileInfo,
+								}, b, nil
 							},
 							cont,
 							options...,
 						),
 						nil
 
-				case PackThunk:
+				} else if valueB.PackThunk != nil {
 					// (FileInfo, PackThunk)
-					nameA := valueA.GetName(scope)
+					nameA := valueA.FileInfo.GetName(scope)
 
 					if nameA < valueB.Min {
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
+								func() (*IterItem, Src, error) {
 									return valueB, b, nil
 								},
 								cont,
@@ -231,10 +232,11 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameA > valueB.Max {
-						valueB.Expand(false)
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
+						valueB.PackThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
 									return valueA, a, nil
 								},
 								b,
@@ -245,10 +247,10 @@ func (_ Def) Zip(
 
 					} else {
 						// unpack
-						valueB.Expand(true)
+						valueB.PackThunk.Expand(true)
 						return nil,
 							zip(
-								func() (any, Src, error) {
+								func() (*IterItem, Src, error) {
 									return valueA, a, nil
 								},
 								b,
@@ -260,19 +262,19 @@ func (_ Def) Zip(
 
 				}
 
-			case FileInfoThunk:
-				switch valueB := valueB.(type) {
+			} else if valueA.FileInfoThunk != nil {
 
-				case FileInfoThunk:
+				if valueB.FileInfoThunk != nil {
 					// (FileInfoThunk, FileInfoThunk)
-					nameA := valueA.FileInfo.GetName(scope)
-					nameB := valueB.FileInfo.GetName(scope)
+					nameA := valueA.FileInfoThunk.FileInfo.GetName(scope)
+					nameB := valueB.FileInfoThunk.FileInfo.GetName(scope)
 					if nameA < nameB {
-						valueA.Expand(false)
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						valueA.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
+								func() (*IterItem, Src, error) {
 									return valueB, b, nil
 								},
 								cont,
@@ -281,10 +283,11 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB < nameA {
-						valueB.Expand(false)
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
+						valueB.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
 									return valueA, a, nil
 								},
 								b,
@@ -309,7 +312,7 @@ func (_ Def) Zip(
 					}
 					expand := true
 					if predictExpand != nil {
-						res, err := predictExpand(valueA, valueB)
+						res, err := predictExpand(*valueA.FileInfoThunk, *valueB.FileInfoThunk)
 						if err != nil {
 							return nil, nil, err
 						}
@@ -318,15 +321,19 @@ func (_ Def) Zip(
 
 					if expand {
 						// iter subs
-						valueA.Expand(true)
-						valueB.Expand(true)
+						valueA.FileInfoThunk.Expand(true)
+						valueB.FileInfoThunk.Expand(true)
 						return nil,
 							zip(
-								func() (any, Src, error) {
-									return valueA.FileInfo, a, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfo: valueA.FileInfo,
+									}, a, nil
 								},
-								func() (any, Src, error) {
-									return valueB.FileInfo, b, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfo: valueB.FileInfo,
+									}, b, nil
 								},
 								cont,
 								options...,
@@ -334,10 +341,11 @@ func (_ Def) Zip(
 							nil
 
 					} else {
-						valueA.Expand(false)
-						valueB.Expand(false)
-						return ZipItem{A: valueA, B: valueB, Dir: dirA},
-							zip(
+						valueA.FileInfoThunk.Expand(false)
+						valueB.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: valueB, Dir: dirA},
+							}, zip(
 								a,
 								b,
 								cont,
@@ -346,16 +354,17 @@ func (_ Def) Zip(
 							nil
 					}
 
-				case FileInfo:
+				} else if valueB.FileInfo != nil {
 					// (FileInfoThunk, FileInfo)
-					nameA := valueA.FileInfo.GetName(scope)
-					nameB := valueB.GetName(scope)
+					nameA := valueA.FileInfoThunk.FileInfo.GetName(scope)
+					nameB := valueB.FileInfo.GetName(scope)
 					if nameA < nameB {
-						valueA.Expand(false)
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						valueA.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
+								func() (*IterItem, Src, error) {
 									return valueB, b, nil
 								},
 								cont,
@@ -364,9 +373,10 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB < nameA {
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
 									return valueA, a, nil
 								},
 								b,
@@ -376,31 +386,38 @@ func (_ Def) Zip(
 							nil
 					}
 
-					valueA.Expand(true)
+					valueA.FileInfoThunk.Expand(true)
 					return nil,
 						zip(
-							func() (any, Src, error) {
-								return valueA.FileInfo, a, nil
+							func() (*IterItem, Src, error) {
+								return &IterItem{
+									FileInfo: valueA.FileInfo,
+								}, a, nil
 							},
-							func() (any, Src, error) {
-								return valueB, b, nil
+							func() (*IterItem, Src, error) {
+								return &IterItem{
+									FileInfo: valueB.FileInfo,
+								}, b, nil
 							},
 							cont,
 							options...,
 						),
 						nil
 
-				case PackThunk:
+				} else if valueB.PackThunk != nil {
 					// (FileInfoThunk, PackThunk)
-					nameA := valueA.FileInfo.GetName(scope)
+					nameA := valueA.FileInfoThunk.FileInfo.GetName(scope)
 
 					if nameA < valueB.Min {
-						valueA.Expand(false)
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						valueA.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
-									return valueB, b, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										PackThunk: valueB.PackThunk,
+									}, b, nil
 								},
 								cont,
 								options...,
@@ -408,11 +425,14 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameA > valueB.Max {
-						valueB.Expand(false)
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
-									return valueA, a, nil
+						valueB.PackThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfoThunk: valueA.FileInfoThunk,
+									}, a, nil
 								},
 								b,
 								cont,
@@ -422,11 +442,13 @@ func (_ Def) Zip(
 
 					} else {
 						// unpack
-						valueB.Expand(true)
+						valueB.PackThunk.Expand(true)
 						return nil,
 							zip(
-								func() (any, Src, error) {
-									return valueA, a, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfoThunk: valueA.FileInfoThunk,
+									}, a, nil
 								},
 								b,
 								cont,
@@ -437,20 +459,20 @@ func (_ Def) Zip(
 
 				}
 
-			case PackThunk:
-				switch valueB := valueB.(type) {
+			} else if valueA.PackThunk != nil {
 
-				case PackThunk:
+				if valueB.PackThunk != nil {
 					// (PackThunk, PackThunk)
 					if valueA.Pack == valueB.Pack {
 						// same, do not unpack
-						valueA.Expand(false)
-						valueB.Expand(false)
+						valueA.PackThunk.Expand(false)
+						valueB.PackThunk.Expand(false)
 						if dirA != dirB {
 							panic(fmt.Errorf("bad iter, expecting same path: %v %v", dirA, dirB))
 						}
-						return ZipItem{A: valueA, B: valueB, Dir: dirA},
-							zip(
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: valueB, Dir: dirA},
+							}, zip(
 								a,
 								b,
 								cont,
@@ -460,12 +482,15 @@ func (_ Def) Zip(
 					}
 
 					if valueA.Max < valueB.Min {
-						valueA.Expand(false)
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						valueA.PackThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
-									return valueB, b, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										PackThunk: valueB.PackThunk,
+									}, b, nil
 								},
 								cont,
 								options...,
@@ -473,11 +498,14 @@ func (_ Def) Zip(
 							nil
 
 					} else if valueB.Max < valueA.Min {
-						valueB.Expand(false)
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
-									return valueA, a, nil
+						valueB.PackThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										PackThunk: valueA.PackThunk,
+									}, a, nil
 								},
 								b,
 								cont,
@@ -487,8 +515,8 @@ func (_ Def) Zip(
 
 					} else {
 						// unpack
-						valueA.Expand(true)
-						valueB.Expand(true)
+						valueA.PackThunk.Expand(true)
+						valueB.PackThunk.Expand(true)
 						return nil,
 							zip(
 								a,
@@ -499,60 +527,18 @@ func (_ Def) Zip(
 							nil
 					}
 
-				case FileInfo:
+				} else if valueB.FileInfo != nil {
 					// (PackThunk, FileInfo)
-					nameB := valueB.GetName(scope)
-
-					if nameB < valueA.Min {
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
-									return valueA, a, nil
-								},
-								b,
-								cont,
-								options...,
-							),
-							nil
-
-					} else if nameB > valueA.Max {
-						valueA.Expand(false)
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
-								a,
-								func() (any, Src, error) {
-									return valueB, b, nil
-								},
-								cont,
-								options...,
-							),
-							nil
-
-					} else {
-						// unpack
-						valueA.Expand(true)
-						return nil,
-							zip(
-								a,
-								func() (any, Src, error) {
-									return valueB, b, nil
-								},
-								cont,
-								options...,
-							),
-							nil
-					}
-
-				case FileInfoThunk:
-					// (PackThunk, FileInfoThunk)
 					nameB := valueB.FileInfo.GetName(scope)
 
 					if nameB < valueA.Min {
-						valueB.Expand(false)
-						return ZipItem{A: nil, B: valueB, Dir: dirB},
-							zip(
-								func() (any, Src, error) {
-									return valueA, a, nil
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										PackThunk: valueA.PackThunk,
+									}, a, nil
 								},
 								b,
 								cont,
@@ -561,12 +547,15 @@ func (_ Def) Zip(
 							nil
 
 					} else if nameB > valueA.Max {
-						valueA.Expand(false)
-						return ZipItem{A: valueA, B: nil, Dir: dirA},
-							zip(
+						valueA.PackThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
 								a,
-								func() (any, Src, error) {
-									return valueB, b, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfo: valueB.FileInfo,
+									}, b, nil
 								},
 								cont,
 								options...,
@@ -575,12 +564,67 @@ func (_ Def) Zip(
 
 					} else {
 						// unpack
-						valueA.Expand(true)
+						valueA.PackThunk.Expand(true)
 						return nil,
 							zip(
 								a,
-								func() (any, Src, error) {
-									return valueB, b, nil
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfo: valueB.FileInfo,
+									}, b, nil
+								},
+								cont,
+								options...,
+							),
+							nil
+					}
+
+				} else if valueB.FileInfoThunk != nil {
+					// (PackThunk, FileInfoThunk)
+					nameB := valueB.FileInfoThunk.FileInfo.GetName(scope)
+
+					if nameB < valueA.Min {
+						valueB.FileInfoThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: nil, B: valueB, Dir: dirB},
+							}, zip(
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										PackThunk: valueA.PackThunk,
+									}, a, nil
+								},
+								b,
+								cont,
+								options...,
+							),
+							nil
+
+					} else if nameB > valueA.Max {
+						valueA.PackThunk.Expand(false)
+						return &IterItem{
+								ZipItem: &ZipItem{A: valueA, B: nil, Dir: dirA},
+							}, zip(
+								a,
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfoThunk: valueB.FileInfoThunk,
+									}, b, nil
+								},
+								cont,
+								options...,
+							),
+							nil
+
+					} else {
+						// unpack
+						valueA.PackThunk.Expand(true)
+						return nil,
+							zip(
+								a,
+								func() (*IterItem, Src, error) {
+									return &IterItem{
+										FileInfoThunk: valueB.FileInfoThunk,
+									}, b, nil
 								},
 								cont,
 								options...,
@@ -589,6 +633,7 @@ func (_ Def) Zip(
 					}
 
 				}
+
 			}
 
 			panic(fmt.Errorf("not zippable %T %T", valueA, valueB)) // NOCOVER
@@ -616,11 +661,11 @@ cmp:
 
 func TapZipItem(fn func(ZipItem)) Sink {
 	var sink Sink
-	sink = func(v any) (Sink, error) {
+	sink = func(v *IterItem) (Sink, error) {
 		if v == nil {
 			return nil, nil
 		}
-		fn(v.(ZipItem))
+		fn(*v.ZipItem)
 		return sink, nil
 	}
 	return sink

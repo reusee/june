@@ -62,7 +62,7 @@ func (_ Def) IterDiskFile(
 		var src Src
 		var file *os.File
 		var names []string
-		src = func() (_ any, _ Src, err error) {
+		src = func() (_ *IterItem, _ Src, err error) {
 			filePath := filepath.Join(base, rel)
 			defer he(&err, e4.NewInfo("iter subs %s", filePath))
 
@@ -132,7 +132,7 @@ func (_ Def) IterDiskFile(
 		cont Src,
 	) Src {
 
-		return func() (_ any, _ Src, err error) {
+		return func() (_ *IterItem, _ Src, err error) {
 
 			select {
 			case <-wt.Ctx.Done():
@@ -203,21 +203,25 @@ func (_ Def) IterDiskFile(
 						}
 					},
 				}
-				return thunk, func() (any, Src, error) {
-					return nil, next, nil
-				}, nil
+				return &IterItem{
+						FileInfoThunk: &thunk,
+					}, func() (*IterItem, Src, error) {
+						return nil, next, nil
+					}, nil
 			} else {
 				info := FileInfo{
 					Path:     rel,
 					FileLike: diskFile,
 				}
-				return info, cont, nil
+				return &IterItem{
+					FileInfo: &info,
+				}, cont, nil
 			}
 		}
 	}
 
 	return func(path string, cont Src, options ...IterDiskFileOption) Src {
-		return func() (_ any, _ Src, err error) {
+		return func() (_ *IterItem, _ Src, err error) {
 			defer he(&err, e4.NewInfo("iter %s", path))
 
 			abs, err := fsys.RealPath(path)

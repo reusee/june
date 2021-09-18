@@ -32,29 +32,32 @@ func (_ Def) Equal(
 	l0:
 
 	l1:
-		valueA, err := a.Next()
+		valueA, err := Get(&a)
 		if err != nil {
 			return false, err
 		}
-		if t, ok := valueA.(PackThunk); ok {
-			t.Expand(true)
+
+		if valueA.PackThunk != nil {
+			valueA.PackThunk.Expand(true)
 			goto l1
-		} else if t, ok := valueA.(FileInfoThunk); ok {
-			valueA = t.FileInfo
-			t.Expand(true)
+		} else if valueA.FileInfoThunk != nil {
+			valueA.FileInfoThunk.Expand(true)
+			valueA.FileInfo = &valueA.FileInfoThunk.FileInfo
+			valueA.FileInfoThunk = nil
 		}
 
 	l2:
-		valueB, err := b.Next()
+		valueB, err := Get(&b)
 		if err != nil {
 			return false, err
 		}
-		if t, ok := valueB.(PackThunk); ok {
-			t.Expand(true)
+		if valueB.PackThunk != nil {
+			valueB.PackThunk.Expand(true)
 			goto l2
-		} else if t, ok := valueB.(FileInfoThunk); ok {
-			valueB = t.FileInfo
-			t.Expand(true)
+		} else if valueB.FileInfoThunk != nil {
+			valueB.FileInfoThunk.Expand(true)
+			valueB.FileInfo = &valueB.FileInfoThunk.FileInfo
+			valueB.FileInfoThunk = nil
 		}
 
 		if valueA == nil && valueB == nil {
@@ -72,8 +75,9 @@ func (_ Def) Equal(
 			return false, nil
 		}
 
-		if aInfo, ok := valueA.(FileInfo); ok {
-			bInfo := valueB.(FileInfo)
+		if valueA.FileInfo != nil {
+			aInfo := *valueA.FileInfo
+			bInfo := *valueB.FileInfo
 			if a, b := aInfo.GetIsDir(scope), bInfo.GetIsDir(scope); a != b {
 				cb("dir not match: %v %v", a, b)
 				return false, nil

@@ -10,10 +10,9 @@ import (
 
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/key"
-	"github.com/reusee/pp"
 )
 
-type IterSubs func(subs Subs, cont pp.Src) pp.Src
+type IterSubs func(subs Subs, cont Src) Src
 
 type FindFileInSubs func(subs Subs, parts []string) (*File, error)
 
@@ -39,9 +38,9 @@ func (_ Def) Funcs(
 		return subs, nil
 	}
 
-	iterSubs = func(subs Subs, cont pp.Src) pp.Src {
-		var src pp.Src
-		src = func() (_ any, _ pp.Src, err error) {
+	iterSubs = func(subs Subs, cont Src) Src {
+		var src Src
+		src = func() (_ *IterItem, _ Src, err error) {
 			defer he(&err)
 			if len(subs) == 0 {
 				return nil, cont, nil
@@ -49,7 +48,9 @@ func (_ Def) Funcs(
 			sub := subs[0]
 			subs = subs[1:]
 			if sub.File != nil {
-				return sub.File, src, nil
+				return &IterItem{
+					File: sub.File,
+				}, src, nil
 			} else if sub.Pack != nil {
 				childSubs, err := fetchSubs(sub.Pack.Key)
 				ce(err)

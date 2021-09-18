@@ -7,26 +7,9 @@ package file
 import (
 	"io"
 	"os"
-	"time"
 
 	"github.com/reusee/e4"
 )
-
-type FileLike interface {
-	// basic infos
-	GetIsDir(Scope) bool
-	GetName(Scope) string
-	GetSize(Scope) int64
-	GetMode(Scope) os.FileMode
-	GetModTime(Scope) time.Time
-	GetDevice(Scope) uint64
-
-	// content
-	WithReader(
-		Scope,
-		func(io.Reader) error,
-	) error
-}
 
 func writeFileLikeToDisk(scope Scope, value FileLike, path string) (err error) {
 	defer he(&err, e4.NewInfo("write to %s", path))

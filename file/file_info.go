@@ -3,8 +3,3 @@
 // that can be found in the LICENSE file.
 
 package file
-
-type FileInfo struct {
-	FileLike
-	Path string // relative path of file
-}

@@ -61,29 +61,29 @@ func (_ Def) Update(
 			}
 		}
 
-		return func() (_ any, _ Src, err error) {
+		return func() (_ *IterItem, _ Src, err error) {
 			defer he(&err, e4.NewInfo("update %s", path))
 
 			dir := filepath.Dir(path)
-			selectFile := func(item ZipItem) any {
+			selectFile := func(item ZipItem) *IterItem {
 				// A is existed file
 				// B is new file
 
 				// delete
 				if item.B == nil {
-					switch v := item.A.(type) {
-					case FileInfo:
+					if item.A.FileInfo != nil {
 						if tapDelete != nil {
-							tapDelete(v)
+							tapDelete(*item.A.FileInfo)
 						}
-					case FileInfoThunk:
-						v.Expand(false)
+					} else if item.A.FileInfoThunk != nil {
+						item.A.FileInfoThunk.Expand(false)
 						if tapDelete != nil {
-							tapDelete(v.FileInfo)
+							tapDelete(item.A.FileInfoThunk.FileInfo)
 						}
-					case PackThunk:
-						v.Expand(false)
+					} else if item.A.PackThunk != nil {
+						item.A.PackThunk.Expand(false)
 					}
+
 					return nil
 				}
 
@@ -91,20 +91,23 @@ func (_ Def) Update(
 
 				// new
 				if item.A == nil {
-					switch v := item.B.(type) {
-					case FileInfo:
+					if item.B.FileInfo != nil {
 						if tapAdd != nil {
-							tapAdd(v)
+							tapAdd(*item.B.FileInfo)
 						}
-					case FileInfoThunk:
+					} else if item.B.FileInfoThunk != nil {
 						if tapAdd != nil {
-							tapAdd(v.FileInfo)
+							tapAdd(item.B.FileInfoThunk.FileInfo)
 						}
-						v.Expand(true)
-						return v.FileInfo
-					case PackThunk:
-						v.Expand(true)
-						return v.Pack
+						item.B.FileInfoThunk.Expand(true)
+						return &IterItem{
+							FileInfo: &item.B.FileInfoThunk.FileInfo,
+						}
+					} else if item.B.PackThunk != nil {
+						item.B.PackThunk.Expand(true)
+						return &IterItem{
+							Pack: &item.B.PackThunk.Pack,
+						}
 					}
 					return item.B
 				}
@@ -112,35 +115,41 @@ func (_ Def) Update(
 				// both item.A and item.B is not null from here
 
 				// handle FileInfoThunk
-				if thunkA, ok := item.A.(FileInfoThunk); ok {
-					if thunkB, ok := item.B.(FileInfoThunk); ok {
-						thunkPath := filepath.Join(dir, thunkA.Path)
+				if item.A.FileInfoThunk != nil {
+					if item.B.FileInfoThunk != nil {
+						thunkPath := filepath.Join(dir, item.A.FileInfoThunk.Path)
 						if watcher != nil {
 							notChanged, err := watcher.PathNotChanged(thunkPath, fromTime)
 							ce(err)
 							if notChanged {
 								// not changed
-								thunkA.Expand(false)
-								thunkB.Expand(false)
-								return thunkA.FileInfo
+								item.A.FileInfoThunk.Expand(false)
+								item.B.FileInfoThunk.Expand(false)
+								return &IterItem{
+									FileInfo: &item.A.FileInfoThunk.FileInfo,
+								}
 							}
 						}
 					}
 				}
 
-				if t, ok := item.A.(FileInfoThunk); ok {
-					t.Expand(true)
-					item.A = t.FileInfo
+				if item.A.FileInfoThunk != nil {
+					item.A.FileInfoThunk.Expand(true)
+					item.A.FileInfo = &item.A.FileInfoThunk.FileInfo
+					item.A.FileInfoThunk = nil
 				}
-				if t, ok := item.B.(FileInfoThunk); ok {
-					t.Expand(true)
-					item.B = t.FileInfo
+				if item.B.FileInfoThunk != nil {
+					item.B.FileInfoThunk.Expand(true)
+					item.B.FileInfo = &item.B.FileInfoThunk.FileInfo
+					item.B.FileInfoThunk = nil
 				}
 
 				// both item.A and item.B is not FileInfoThunk from here
 
-				if infoA, ok := item.A.(FileInfo); ok {
-					if infoB, ok := item.B.(FileInfo); ok {
+				if item.A.FileInfo != nil {
+					if item.B.FileInfo != nil {
+						infoA := *item.A.FileInfo
+						infoB := *item.B.FileInfo
 						aIsDir := infoA.GetIsDir(scope)
 						bIsDir := infoB.GetIsDir(scope)
 						if bIsDir {

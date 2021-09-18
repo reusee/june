@@ -32,7 +32,7 @@ func (_ Def) IterFile(
 		loaded := false
 		var subs Subs
 		var src Src
-		src = func() (_ any, _ Src, err error) {
+		src = func() (_ *IterItem, _ Src, err error) {
 			defer he(&err)
 			if !loaded {
 				err := fetch(pack.Key, &subs)
@@ -60,9 +60,11 @@ func (_ Def) IterFile(
 						}
 					},
 				}
-				return thunk, func() (any, Src, error) {
-					return nil, next, nil
-				}, nil
+				return &IterItem{
+						PackThunk: &thunk,
+					}, func() (*IterItem, Src, error) {
+						return nil, next, nil
+					}, nil
 			}
 			return nil, src, nil
 		}
@@ -70,7 +72,7 @@ func (_ Def) IterFile(
 	}
 
 	iterFile = func(dir string, file *File, cont Src) Src {
-		return func() (any, Src, error) {
+		return func() (*IterItem, Src, error) {
 			path := filepath.Join(dir, file.Name)
 			if ignore(path, file) {
 				return nil, cont, nil
@@ -91,15 +93,19 @@ func (_ Def) IterFile(
 						}
 					},
 				}
-				return thunk, func() (any, Src, error) {
-					return nil, next, nil
-				}, nil
+				return &IterItem{
+						FileInfoThunk: &thunk,
+					}, func() (*IterItem, Src, error) {
+						return nil, next, nil
+					}, nil
 			} else {
 				info := FileInfo{
 					FileLike: file,
 					Path:     path,
 				}
-				return info, cont, nil
+				return &IterItem{
+					FileInfo: &info,
+				}, cont, nil
 			}
 		}
 	}
@@ -107,7 +113,7 @@ func (_ Def) IterFile(
 	iterSubs = func(path string, file *File, cont Src) Src {
 		subs := file.Subs
 		var src Src
-		src = func() (any, Src, error) {
+		src = func() (*IterItem, Src, error) {
 			if len(subs) == 0 {
 				return nil, cont, nil
 			}
@@ -129,9 +135,11 @@ func (_ Def) IterFile(
 						}
 					},
 				}
-				return thunk, func() (any, Src, error) {
-					return nil, next, nil
-				}, nil
+				return &IterItem{
+						PackThunk: &thunk,
+					}, func() (*IterItem, Src, error) {
+						return nil, next, nil
+					}, nil
 			}
 			return nil, src, nil
 		}
@@ -139,7 +147,7 @@ func (_ Def) IterFile(
 	}
 
 	iterKey = func(dir string, key Key, cont Src) Src {
-		return func() (_ any, _ Src, err error) {
+		return func() (_ *IterItem, _ Src, err error) {
 			defer he(&err)
 			var file File
 			err = fetch(key, &file)

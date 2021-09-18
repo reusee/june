@@ -141,7 +141,7 @@ func (_ Def) TesetFS(
 				if v == nil {
 					break
 				}
-				item := (*v).(ZipItem)
+				item := v.ZipItem
 				if item.A == nil && item.B != nil {
 					t.Fatalf("B: %#v\n", item.B)
 				} else if item.A != nil && item.B == nil {

@@ -44,7 +44,7 @@ func (_ Def) IterVirtual(
 		var iterSubs func(dir string, file Virtual, cont Src) Src
 
 		iterFile = func(dir string, file Virtual, cont Src) Src {
-			return func() (any, Src, error) {
+			return func() (*IterItem, Src, error) {
 				path := filepath.Join(dir, file.Name)
 				if ignore(path, file) {
 					return nil, cont, nil
@@ -65,15 +65,19 @@ func (_ Def) IterVirtual(
 							}
 						},
 					}
-					return thunk, func() (any, Src, error) {
-						return nil, next, nil
-					}, nil
+					return &IterItem{
+							FileInfoThunk: &thunk,
+						}, func() (*IterItem, Src, error) {
+							return nil, next, nil
+						}, nil
 				} else {
 					info := FileInfo{
 						FileLike: file,
 						Path:     path,
 					}
-					return info, cont, nil
+					return &IterItem{
+						FileInfo: &info,
+					}, cont, nil
 				}
 			}
 		}
@@ -86,7 +90,7 @@ func (_ Def) IterVirtual(
 				})
 			}
 			var src Src
-			src = func() (any, Src, error) {
+			src = func() (*IterItem, Src, error) {
 				if len(subs) == 0 {
 					return nil, cont, nil
 				}

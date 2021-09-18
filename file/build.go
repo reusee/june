@@ -122,7 +122,7 @@ func (_ Def) Build(
 		}
 
 		var sink Sink
-		sink = func(v any) (_ Sink, err error) {
+		sink = func(v *IterItem) (_ Sink, err error) {
 			defer he(&err)
 
 			// end of stream
@@ -143,16 +143,15 @@ func (_ Def) Build(
 			}
 
 		l1:
-			switch value := v.(type) {
-
-			case FileInfoThunk:
+			if v.FileInfoThunk != nil {
 				// expand
-				value.Expand(true)
-				v = value.FileInfo
+				v.FileInfoThunk.Expand(true)
+				v.FileInfo = &v.FileInfoThunk.FileInfo
+				v.FileInfoThunk = nil
 				goto l1
 
-			case FileInfo:
-
+			} else if v.FileInfo != nil {
+				value := *v.FileInfo
 				// unwind
 				parentDir := filepath.Dir(value.Path)
 				for stack[len(stack)-1].Path != parentDir {
@@ -234,8 +233,8 @@ func (_ Def) Build(
 
 				}
 
-			case PackThunk:
-
+			} else if v.PackThunk != nil {
+				value := *v.PackThunk
 				// merge manually
 				value.Expand(false)
 
@@ -261,8 +260,8 @@ func (_ Def) Build(
 					parent.Subs = packed
 				}
 
-			default: // NOCOVER
-				return nil, fmt.Errorf("unknown type: %#v", v)
+			} else {
+				return nil, we(fmt.Errorf("unknown type: %#v", v))
 			}
 
 			return sink, nil

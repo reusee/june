@@ -20,7 +20,6 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
-	"github.com/reusee/pp"
 )
 
 func TestSave(
@@ -168,7 +167,7 @@ func TestSave(
 		// iter
 		file2 := new(File)
 		err = Copy(
-			pp.Tee(
+			Tee(
 				iterFile(file, nil),
 			),
 			build(
@@ -257,7 +256,7 @@ func TestPack(
 	) {
 
 		var tap Sink
-		tap = func(v any) (Sink, error) {
+		tap = func(v *IterItem) (Sink, error) {
 			if v == nil {
 				return nil, nil
 			}
@@ -265,7 +264,7 @@ func TestPack(
 		}
 		file := new(File)
 		err := Copy(
-			pp.Tee(
+			Tee(
 				iter(Virtual{
 					Name:  "root",
 					IsDir: true,
