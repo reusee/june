@@ -11,6 +11,8 @@ import (
 	"io/fs"
 	"strings"
 	"sync"
+
+	"github.com/reusee/pp"
 )
 
 var ErrNotDir = errors.New("not a dir")
@@ -55,7 +57,7 @@ func (f *FS) Open(name string) (_ fs.File, err error) {
 	ce(err)
 
 	var r io.ReadSeeker
-	var iter Src
+	var iter pp.Src
 
 	if file.IsDir {
 		iter = f.iterSubs(file.Subs, nil)
