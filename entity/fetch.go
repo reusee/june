@@ -80,6 +80,6 @@ func (_ Def) Fetch(
 			return nil
 		}
 
-		return we(e4.With(key))(ErrKeyNotFound)
+		return we.With(e4.With(key))(ErrKeyNotFound)
 	}
 }

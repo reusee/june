@@ -111,7 +111,7 @@ func (o OnionCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
 			id := ids[i]
 			codec, ok := o.decoders[id]
 			if !ok {
-				return nil, nil, we(
+				return nil, nil, we.With(
 					e4.NewInfo("no such codec: %s", id),
 				)(ErrCodecNotFound)
 			}

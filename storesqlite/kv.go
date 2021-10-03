@@ -70,7 +70,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	v, ok := s.mem.Load(key)
 	if ok {
 		if v == nil {
-			return we(
+			return we.With(
 				e4.With(storekv.StringKey(key)),
 			)(storekv.ErrKeyNotFound)
 		} else {
@@ -88,7 +88,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 		key,
 	).Scan(&data)
 	if errors.Is(err, sql.ErrNoRows) {
-		return we(
+		return we.With(
 			e4.With(storekv.StringKey(key)),
 		)(storekv.ErrKeyNotFound)
 	}

@@ -64,7 +64,7 @@ var _ sb.SBUnmarshaler = new(Content)
 func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	return func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
-			return nil, we(
+			return nil, we.With(
 				e4.With(sb.ExpectingValue),
 			)(sb.UnmarshalError)
 		}
@@ -75,7 +75,7 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 			var sink sb.Sink
 			sink = func(token *sb.Token) (sb.Sink, error) {
 				if token == nil {
-					return nil, we(
+					return nil, we.With(
 						e4.With(sb.ExpectingValue),
 					)(sb.UnmarshalError)
 				}
@@ -85,13 +85,13 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 					*c = append(*c, Content(token.Value.([]byte))...)
 					return sink, nil
 				}
-				return nil, we(
+				return nil, we.With(
 					e4.With(sb.BadTokenKind),
 				)(sb.UnmarshalError)
 			}
 			return sink, nil
 		}
-		return nil, we(
+		return nil, we.With(
 			e4.With(sb.BadTokenKind),
 		)(sb.UnmarshalError)
 	}

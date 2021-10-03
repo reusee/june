@@ -15,9 +15,9 @@ type Logger struct{}
 var _ pebble.Logger = new(Logger)
 
 func (l *Logger) Infof(format string, args ...any) {
-	print(we()(fmt.Errorf(format, args...)).Error())
+	print(we(fmt.Errorf(format, args...)).Error())
 }
 
 func (l *Logger) Fatalf(format string, args ...any) {
-	ce(we()(fmt.Errorf(format, args...)))
+	ce(we(fmt.Errorf(format, args...)))
 }

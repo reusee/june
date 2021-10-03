@@ -26,7 +26,7 @@ func (_ Def) NewFileFS(
 ) NewFileFS {
 	return func(file *File) (fs.FS, error) {
 		if !file.IsDir {
-			return nil, we()(ErrNotDir)
+			return nil, we(ErrNotDir)
 		}
 		return &FS{
 			file: file,
