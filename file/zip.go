@@ -53,7 +53,7 @@ func (_ Def) Zip(
 				} else if valueA.PackThunk != nil {
 					dirA = valueA.PackThunk.Path
 				} else {
-					panic(we(fmt.Errorf("unknown type %T", valueA)))
+					panic(we(fmt.Errorf("unknown type %#v", valueA)))
 				}
 			}
 			if valueB != nil {
@@ -66,7 +66,7 @@ func (_ Def) Zip(
 				} else if valueB.PackThunk != nil {
 					dirB = valueB.PackThunk.Path
 				} else {
-					panic(we(fmt.Errorf("unknown type %T", valueB)))
+					panic(we(fmt.Errorf("unknown type %#v", valueB)))
 				}
 			}
 
