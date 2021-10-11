@@ -18,7 +18,6 @@ import (
 type Summary struct {
 	Key         Key
 	Indexes     *[]IndexEntry // IndexEntry without Key in Tuple
-	RawIndexes  *[]IndexEntry // deprecated
 	Subs        []*Summary
 	ReferedKeys []Key // all in NSEntity
 
@@ -26,6 +25,12 @@ type Summary struct {
 	// 如果增加了字段，也应修改如下方法
 	// clean
 	// checkRef
+}
+
+var _ sb.HasDeprecatedFields = Summary{}
+
+func (s Summary) SBDeprecatedFields() []string {
+	return []string{"RawIndexes"}
 }
 
 var NSSummary = key.Namespace{'c', '-', 's', 'u', 'm', 'a', 'r', 'y'}
