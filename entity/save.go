@@ -87,9 +87,10 @@ func (_ Def) Save(
 		var cur *Summary
 		referedKeys := make(map[Key]struct{})
 		fn := func(ctx sb.Ctx, value reflect.Value, cont sb.Proc) sb.Proc {
+			valueType := value.Type()
 
 			// referenced key
-			if value.Type() == keyType {
+			if valueType == keyType {
 				referedKeys[value.Interface().(Key)] = struct{}{}
 			}
 
@@ -97,7 +98,7 @@ func (_ Def) Save(
 			cur = new(Summary)
 
 			// index
-			if value.Type().Implements(hasIndexType) {
+			if valueType.Implements(hasIndexType) {
 				indexes, version, err := value.Interface().(HasIndex).EntityIndexes()
 				if err != nil {
 					return func() (*sb.Token, sb.Proc, error) {
@@ -112,6 +113,28 @@ func (_ Def) Save(
 						}
 					}
 				}
+			}
+
+			// slot
+			if valueType.Implements(hasSlotKeysType) {
+				keys, err := value.Interface().(HasSlotKeys).SlotKeys()
+				if err != nil {
+					return func() (*sb.Token, sb.Proc, error) {
+						return nil, nil, err
+					}
+				}
+				var hash []byte
+				if err := sb.Copy(
+					sb.Marshal(keys),
+					sb.Hash(newHashState, &hash, nil),
+				); err != nil {
+					return func() (*sb.Token, sb.Proc, error) {
+						return nil, nil, err
+					}
+				}
+				var h Hash
+				copy(h[:], hash)
+				cur.SlotHash = &h
 			}
 
 			return sb.MarshalValue(ctx, value, cont)

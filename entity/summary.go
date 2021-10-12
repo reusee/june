@@ -17,6 +17,7 @@ import (
 
 type Summary struct {
 	Key         Key
+	SlotHash    *Hash
 	Indexes     *[]IndexEntry // IndexEntry without Key in Tuple
 	Subs        []*Summary
 	ReferedKeys []Key // all in NSEntity
@@ -47,6 +48,11 @@ func (s Summary) Valid() bool {
 }
 
 func (s *Summary) clean() (ok bool) {
+
+	// SlotHash
+	if s.SlotHash != nil {
+		ok = true
+	}
 
 	// Indexes
 	if s.Indexes != nil && len(*s.Indexes) > 0 {
@@ -270,6 +276,8 @@ func (_ Def) SaveSummary(
 		unlock := locks.Lock(s.Key)
 		defer unlock()
 
+		//TODO lock slot
+
 		// options
 		var tapKey []TapKey
 		var indexSaveOptions []IndexSaveOption
@@ -322,6 +330,8 @@ func (_ Def) SaveSummary(
 				ce(store.Delete([]Key{oldKey}))
 			}
 		}
+
+		//TODO also remove old slot entities
 
 		// update indexes
 		if len(oldSummaryKeys) > 0 {
@@ -407,6 +417,8 @@ func (_ Def) DeleteSummary(
 
 		unlock := locks.Lock(summary.Key)
 		defer unlock()
+
+		//TODO lock slot
 
 		// indexes
 		tuples, err := onDel(summary, summaryKey)
