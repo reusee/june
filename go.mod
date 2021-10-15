@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/cockroachdb/errors v1.8.6 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20210930201120-c73841491dd5
+	github.com/cockroachdb/pebble v0.0.0-20211013210608-e95e73745ce8
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -30,14 +30,14 @@ require (
 	github.com/reusee/pp v0.0.0-20211003125005-d93fee3792f3
 	github.com/reusee/pr v0.0.0-20211003125556-3e6e9c7537ae
 	github.com/reusee/qa v0.0.0-20210413131534-5cab38434e4a
-	github.com/reusee/sb v0.0.0-20211011162533-a0461cb305de
+	github.com/reusee/sb v0.0.0-20211013023636-c521ec7cac82
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rs/xid v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/exp v0.0.0-20210916165020-5cb4fee858ee // indirect
-	golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6 // indirect
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
-	golang.org/x/sys v0.0.0-20211003122950-b1ebd4e1001c
+	golang.org/x/exp v0.0.0-20211012155715-ffe10e552389 // indirect
+	golang.org/x/net v0.0.0-20211014222326-fd004c51d1d6 // indirect
+	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
+	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.3
 	google.golang.org/appengine v1.6.7 // indirect
