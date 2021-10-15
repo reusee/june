@@ -204,7 +204,7 @@ func TestGCWithEmptyIndex(
 	}
 
 	indexManager := newMemStore(wt)
-	scope.Sub(func() index.IndexManager {
+	scope.Fork(func() index.IndexManager {
 		return indexManager
 	}).Call(func(
 		gc GC,

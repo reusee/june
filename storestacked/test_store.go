@@ -33,7 +33,7 @@ func TestStore(
 
 			t.Run(fmt.Sprintf("%v / %v", readPolicy, writePolicy), func(t *testing.T) {
 				with := func(fn func(store.Store), defs ...any) {
-					scope.Sub(defs...).Call(func(
+					scope.Fork(defs...).Call(func(
 						newMem storemem.New,
 						newKV storekv.New,
 						newStore New,

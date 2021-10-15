@@ -15,7 +15,7 @@ func TestSet(
 ) {
 
 	threshold := PackThreshold(4)
-	scope.Sub(&threshold).Call(func(
+	scope.Fork(&threshold).Call(func(
 		add Add,
 		iter Iter,
 		has Has,

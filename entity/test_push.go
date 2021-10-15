@@ -26,7 +26,7 @@ func TestPush(
 	mem1 := newMem(wt)
 	store1, err := newKV(mem1, "foo")
 	ce(err)
-	scope.Sub(func() Store {
+	scope.Fork(func() Store {
 		return store1
 	}).Call(func(
 		saveEntity SaveEntity,
@@ -74,7 +74,7 @@ func TestPush(
 				t.Fatal()
 			}
 
-			scope.Sub(func() Store {
+			scope.Fork(func() Store {
 				return store2
 			}).Call(func(
 				checkRef CheckRef,
@@ -121,7 +121,7 @@ func TestPush(
 				t.Fatal()
 			}
 
-			scope.Sub(func() Store {
+			scope.Fork(func() Store {
 				return store2
 			}).Call(func(
 				checkRef CheckRef,
@@ -168,7 +168,7 @@ func TestPush(
 				t.Fatal()
 			}
 
-			scope.Sub(func() Store {
+			scope.Fork(func() Store {
 				return store2
 			}).Call(func(
 				checkRef CheckRef,
@@ -218,7 +218,7 @@ func TestPush(
 				t.Fatal()
 			}
 
-			scope.Sub(func() Store {
+			scope.Fork(func() Store {
 				return store2
 			}).Call(func(
 				checkRef CheckRef,

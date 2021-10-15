@@ -34,7 +34,7 @@ func (_ Def) TestKV(
 
 		withStore := func(storeFunc func(store.Store), provides ...any) {
 			with(func(kv KV, prefix string) {
-				scope.Sub(provides...).Call(func(
+				scope.Fork(provides...).Call(func(
 					newStore New,
 					codec Codec,
 				) {
@@ -52,7 +52,7 @@ func (_ Def) TestKV(
 		// cache
 		withStore = func(storeFunc func(store.Store), provides ...any) {
 			with(func(kv KV, prefix string) {
-				scope.Sub(provides...).Call(func(
+				scope.Fork(provides...).Call(func(
 					newStore New,
 					codec Codec,
 					newMemCache store.NewMemCache,
@@ -80,7 +80,7 @@ func (_ Def) TestKV(
 					offloadStore, err := newStore(offloadKV, "offload")
 					ce(err)
 					with(func(kv KV, prefix string) {
-						scope.Sub(provides...).Call(func(
+						scope.Fork(provides...).Call(func(
 							newStore New,
 							codec Codec,
 						) {

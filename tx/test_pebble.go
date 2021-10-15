@@ -31,7 +31,7 @@ func TestPebbleTx(
 	peb, err := newPeb(wt, nil, dir)
 	ce(err)
 
-	scope.Sub(
+	scope.Fork(
 		func() KVToStore {
 			return func(kv storekv.KV) (store.Store, error) {
 				return newKV(kv, "foo")
@@ -193,7 +193,7 @@ func TestPebbleTxEntityDelete(
 	peb, err := newPeb(wt, nil, dir)
 	ce(err)
 
-	scope.Sub(
+	scope.Fork(
 		func() KVToStore {
 			return func(kv storekv.KV) (store.Store, error) {
 				return newKV(kv, "foo")

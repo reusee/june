@@ -17,7 +17,7 @@ func TestIterIgnore(
 	scope Scope,
 ) {
 
-	scope.Sub(
+	scope.Fork(
 		func() Ignore {
 			return func(path string, file FileLike) bool {
 				return file.GetName(scope) == "foo"
@@ -72,7 +72,7 @@ func TestIterDiskCancelWaitTree(
 ) {
 	wt := pr.NewWaitTree(parentWt)
 	wt.Cancel()
-	scope.Sub(func() *pr.WaitTree {
+	scope.Fork(func() *pr.WaitTree {
 		return wt
 	}).Call(func(
 		iterDisk IterDiskFile,

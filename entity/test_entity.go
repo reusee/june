@@ -52,7 +52,7 @@ func TestSave(
 	var err error
 	var summary *Summary
 	var bytesWritten, keysWritten int64
-	scope.Sub(func(
+	scope.Fork(func(
 		newTap storetap.New,
 	) Store {
 		return newTap(store, storetap.Funcs{
@@ -390,7 +390,7 @@ func TestSave(
 		manager := IndexManager(newMemStore(wt))
 		storeID, err := store.ID()
 		ce(err)
-		scope.Sub(
+		scope.Fork(
 			&storeID,
 			&manager,
 		).Call(func(

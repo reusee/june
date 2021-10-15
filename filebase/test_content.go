@@ -30,7 +30,7 @@ func TestContent(
 	chunkThreshold := ChunkThreshold(256)
 	maxChunkSize := MaxChunkSize(1024)
 
-	scope.Sub(&chunkThreshold, &maxChunkSize).Call(func(
+	scope.Fork(&chunkThreshold, &maxChunkSize).Call(func(
 		to ToContents,
 		write WriteContents,
 		newReader NewContentReader,

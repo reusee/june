@@ -33,7 +33,7 @@ func TestSave(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	scope.Sub(
+	scope.Fork(
 		func() Ignore {
 			return func(path string, file FileLike) bool {
 				// ignore .git dir
@@ -246,7 +246,7 @@ func TestPack(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	scope.Sub(
+	scope.Fork(
 		func() PackThreshold {
 			return 2
 		},

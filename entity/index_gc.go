@@ -68,7 +68,7 @@ func (_ Def) IndexGC(
 
 		// rebuild summary in mem store
 		memStore := newMem(wt)
-		memScope := scope.Sub(func() (Store, IndexManager) {
+		memScope := scope.Fork(func() (Store, IndexManager) {
 			kv, err := newKV(memStore, "index-gc", storekv.WithCodec(
 				blackholeCodec{},
 			))

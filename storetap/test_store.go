@@ -27,7 +27,7 @@ func TestStore(
 		fn func(store.Store),
 		defs ...any,
 	) {
-		scope.Sub(defs...).Call(func(
+		scope.Fork(defs...).Call(func(
 			newMem storemem.New,
 			newKV storekv.New,
 			newStore New,

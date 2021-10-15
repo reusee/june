@@ -39,7 +39,7 @@ func UsePebbleTx(
 			return err
 		})
 
-		scope.Sub(
+		scope.Fork(
 			func() Store {
 				kv, err := kvToStore(batch)
 				ce(err)

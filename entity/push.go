@@ -84,7 +84,7 @@ func (_ Def) Push(
 				return toIndex
 			})
 		}
-		toScope := scope.Sub(toDecls...)
+		toScope := scope.Fork(toDecls...)
 
 		// func to check summary key existence
 		var keyExisted func(summaryKey Key) (bool, error)

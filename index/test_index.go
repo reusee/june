@@ -68,7 +68,7 @@ func (_ Def) TestIndex(
 
 					id := StoreID(fmt.Sprintf("%d", rand.Int63()))
 
-					scope.Sub(&id, &indexManager).Call(func(
+					scope.Fork(&id, &indexManager).Call(func(
 						index Index,
 						selIndex SelectIndex,
 					) {

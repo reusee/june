@@ -25,7 +25,7 @@ func TestStore(
 	defer he(nil, e4.TestingFatal(t))
 
 	with := func(fn func(store.Store), defs ...any) {
-		scope.Sub(defs...).Call(func(
+		scope.Fork(defs...).Call(func(
 			newMem storemem.New,
 			newKV storekv.New,
 			newStore New,

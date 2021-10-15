@@ -60,7 +60,7 @@ func TestPushFile(
 		},
 	))
 
-	scope.Sub(func() Store {
+	scope.Fork(func() Store {
 		return kv
 	}).Call(func(
 		fetch entity.Fetch,

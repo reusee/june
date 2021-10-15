@@ -124,7 +124,7 @@ func runTest(
 				return waitTree
 			},
 		)
-		scope := dscope.New(spec.Defs...).Sub(
+		scope := dscope.New(spec.Defs...).Fork(
 			func() sys.Testing {
 				return true
 			},
@@ -154,7 +154,7 @@ func runTest(
 							return waitTree
 						},
 					)
-					scope := dscope.New(spec.Defs...).Sub(
+					scope := dscope.New(spec.Defs...).Fork(
 						func() sys.Testing {
 							return true
 						},

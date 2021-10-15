@@ -24,7 +24,7 @@ func TestZip(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	scope.Sub(
+	scope.Fork(
 		func() PackThreshold {
 			return 2
 		},

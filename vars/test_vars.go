@@ -18,7 +18,7 @@ func TestVars(
 ) {
 	defer he(nil, e4.TestingFatal(t))
 
-	scope.Sub(func() VarsSpec {
+	scope.Fork(func() VarsSpec {
 		return func() (string, *pr.WaitTree) {
 			return t.TempDir(), wt
 		}

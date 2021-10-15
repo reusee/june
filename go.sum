@@ -471,6 +471,8 @@ github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqn
 github.com/reusee/dscope v0.0.0-20210406042911-7228063ab887/go.mod h1:VKlvkUcHsW9T2FVIA/oGFDlk3hBKZUICZVb1DewhbX4=
 github.com/reusee/dscope v0.0.0-20210927163816-996990a3ac8a h1:qHHZresPbG+a+osw6SBfprz+3GHO8LHUzIhqDzKQof4=
 github.com/reusee/dscope v0.0.0-20210927163816-996990a3ac8a/go.mod h1:tTsasuEX+yrz/+3Ldde74CT9thEbH1Rwwjgulrs8kbc=
+github.com/reusee/dscope v0.0.0-20211015105639-252ab40cda9b h1:eSu82OXXkWQoSgSEQejsOdUaMpQlJwOqSZn34mtPwHw=
+github.com/reusee/dscope v0.0.0-20211015105639-252ab40cda9b/go.mod h1:tTsasuEX+yrz/+3Ldde74CT9thEbH1Rwwjgulrs8kbc=
 github.com/reusee/e4 v0.0.0-20210220140921-dc464f80154d/go.mod h1:Zfo0mBaNabtnbCtT4+HG9734x9G1VDT3Dwrqhp4wMfE=
 github.com/reusee/e4 v0.0.0-20210402104900-6d2655a0545c/go.mod h1:Zfo0mBaNabtnbCtT4+HG9734x9G1VDT3Dwrqhp4wMfE=
 github.com/reusee/e4 v0.0.0-20210710045002-e0d2a4069a09/go.mod h1:tn7INLQH/YwWai6I0MV227/HgZgagrroPgzfUTLV8No=

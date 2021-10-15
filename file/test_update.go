@@ -31,7 +31,7 @@ func TestUpdate(
 	store, err := newKV(newMem(wt), "test")
 	ce(err)
 
-	scope.Sub(func() Store {
+	scope.Fork(func() Store {
 		return store
 	}).Call(func(
 		build Build,

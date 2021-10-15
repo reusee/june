@@ -31,7 +31,7 @@ func TestQA(t *testing.T) {
 	// pa
 	defs = append(defs, qa.AnalyzersToDefs(pa.Analyzers)...)
 
-	dscope.New(defs...).Sub(func() qa.Args {
+	dscope.New(defs...).Fork(func() qa.Args {
 		return []string{"./..."}
 	}).Call(func(
 		check qa.CheckFunc,
