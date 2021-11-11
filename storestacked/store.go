@@ -61,12 +61,12 @@ func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 			delete(backingKeys, key)
 			ce(
 				fn(key),
-				func(err error) error {
+				e4.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						isBreak = true
 					}
 					return err
-				},
+				}),
 			)
 			return nil
 		}))
@@ -76,12 +76,12 @@ func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 		for key := range backingKeys {
 			ce(
 				fn(key),
-				func(err error) error {
+				e4.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						return nil
 					}
 					return err
-				},
+				}),
 			)
 		}
 		return nil
@@ -117,12 +117,12 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 			delete(backingKeys, key)
 			ce(
 				fn(key),
-				func(err error) error {
+				e4.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						isBreak = true
 					}
 					return err
-				},
+				}),
 			)
 			return nil
 		}))
@@ -132,12 +132,12 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 		for key := range backingKeys {
 			ce(
 				fn(key),
-				func(err error) error {
+				e4.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						return nil
 					}
 					return err
-				},
+				}),
 			)
 		}
 		return nil

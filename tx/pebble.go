@@ -32,12 +32,12 @@ func UsePebbleTx(
 
 		batch, err := newBatch(wt, peb)
 		ce(err)
-		defer he(&err, func(err error) error {
+		defer he(&err, e4.WrapFunc(func(err error) error {
 			if e := batch.Abort(); e != nil {
 				return e4.MakeErr(e, err)
 			}
 			return err
-		})
+		}))
 
 		scope.Fork(
 			func() Store {

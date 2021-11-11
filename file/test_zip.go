@@ -1233,7 +1233,7 @@ func TestZip(
 				check(c.Expected),
 				pp.CollectValues(&items),
 			)
-			ce(err, func(err error) error {
+			ce(err, e4.WrapFunc(func(err error) error {
 				pt("--- %d: A ---\n", i)
 				for _, v := range valuesA {
 					pt("%#v\n", v)
@@ -1243,7 +1243,7 @@ func TestZip(
 					pt("%#v\n", v)
 				}
 				return err
-			})
+			}))
 
 			res, err := equal(
 				valuesA.Iter(nil),

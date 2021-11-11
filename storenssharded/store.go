@@ -11,6 +11,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/reusee/e4"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
@@ -112,12 +113,12 @@ func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 		}
 		ce(
 			fn(key),
-			func(err error) error {
+			e4.WrapFunc(func(err error) error {
 				if is(err, store.Break) {
 					atomic.CompareAndSwapInt64(&stop, 0, 1)
 				}
 				return err
-			},
+			}),
 		)
 		return nil
 	}); err != nil {

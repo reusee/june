@@ -473,6 +473,8 @@ github.com/reusee/dscope v0.0.0-20210406042911-7228063ab887/go.mod h1:VKlvkUcHsW
 github.com/reusee/dscope v0.0.0-20210927163816-996990a3ac8a/go.mod h1:tTsasuEX+yrz/+3Ldde74CT9thEbH1Rwwjgulrs8kbc=
 github.com/reusee/dscope v0.0.0-20211015165530-41bdbb36de38 h1:Oa/FKz+Qv1JgCZKAwOiruVUdsRo8qufu8MghwIQagGk=
 github.com/reusee/dscope v0.0.0-20211015165530-41bdbb36de38/go.mod h1:tTsasuEX+yrz/+3Ldde74CT9thEbH1Rwwjgulrs8kbc=
+github.com/reusee/dscope v0.0.0-20211111113332-bbeb6693242f h1:FBUFrNNavH9FS3e5q9Mw+mTFB/jihHGchHTS9UMEDVE=
+github.com/reusee/dscope v0.0.0-20211111113332-bbeb6693242f/go.mod h1:6/3UYy/Wh9bHV9+DjF3yP+CHiPqALKT1DPIu5o1WAdE=
 github.com/reusee/e4 v0.0.0-20210220140921-dc464f80154d/go.mod h1:Zfo0mBaNabtnbCtT4+HG9734x9G1VDT3Dwrqhp4wMfE=
 github.com/reusee/e4 v0.0.0-20210402104900-6d2655a0545c/go.mod h1:Zfo0mBaNabtnbCtT4+HG9734x9G1VDT3Dwrqhp4wMfE=
 github.com/reusee/e4 v0.0.0-20210710045002-e0d2a4069a09/go.mod h1:tn7INLQH/YwWai6I0MV227/HgZgagrroPgzfUTLV8No=
@@ -481,6 +483,8 @@ github.com/reusee/e4 v0.0.0-20210916142410-92e608583aff/go.mod h1:tn7INLQH/YwWai
 github.com/reusee/e4 v0.0.0-20210929160631-f5ffcca999a5/go.mod h1:tn7INLQH/YwWai6I0MV227/HgZgagrroPgzfUTLV8No=
 github.com/reusee/e4 v0.0.0-20211101154434-4a06b784ca7f h1:NtkYVHPJLis3VabzYqc1OQzkQMfPqR/oWUEzd6E/dO0=
 github.com/reusee/e4 v0.0.0-20211101154434-4a06b784ca7f/go.mod h1:tn7INLQH/YwWai6I0MV227/HgZgagrroPgzfUTLV8No=
+github.com/reusee/e4 v0.0.0-20211111112921-a1e3637d4313 h1:NdolWZRwyEnTsDfOy+bjFhm9jUH6HMgXU5kKbp9v5js=
+github.com/reusee/e4 v0.0.0-20211111112921-a1e3637d4313/go.mod h1:tn7INLQH/YwWai6I0MV227/HgZgagrroPgzfUTLV8No=
 github.com/reusee/e4qa v0.0.0-20210413061912-3faa8fbddd5d/go.mod h1:vidc0yrUFs8XWkRFLlQOebuKd5nD7srCvdFxu60rd/8=
 github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f h1:NgNq9CyuSi+6JmiBmQzStZacwKsxXmRSsqKKfJXuPpM=
 github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f/go.mod h1:vidc0yrUFs8XWkRFLlQOebuKd5nD7srCvdFxu60rd/8=
