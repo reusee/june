@@ -6,7 +6,6 @@ package store
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 
 	"github.com/reusee/june/key"
@@ -50,10 +49,9 @@ func (_ Def) Scrub(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(wt.Ctx)
-		defer cancel()
-
-		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) error {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) error {
 			key := v.(Key)
 			if tapKey != nil {
 				tapKey(key)

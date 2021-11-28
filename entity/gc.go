@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"sync"
 
@@ -74,10 +73,10 @@ func (_ Def) GC(
 		// mark
 		var reachable sync.Map // Key: struct{}
 
-		ctx, cancel := context.WithCancel(wt.Ctx)
-		defer cancel()
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
 		var put pr.Put
-		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {
+		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
 			defer he(&err)
 
 			key := v.(Key)
@@ -118,7 +117,7 @@ func (_ Def) GC(
 
 		// collect dead objects
 		deadObjects := make([][]DeadObject, int(parallel))
-		put, wait = pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {
+		put, wait = pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
 			defer he(&err)
 
 			key := v.(Key)
@@ -168,7 +167,7 @@ func (_ Def) GC(
 
 		// delete
 		batchKeys := make([][]Key, int(parallel))
-		put, wait = pr.Consume(ctx, int(parallel), func(proc int, v any) (err error) {
+		put, wait = pr.Consume(wt, int(parallel), func(proc int, v any) (err error) {
 			defer he(&err)
 
 			obj := v.(DeadObject)

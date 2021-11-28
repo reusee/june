@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -193,9 +192,9 @@ func (_ Def) Push(
 		type Proc func() error
 
 		// workers
-		ctx, cancel := context.WithCancel(wt.Ctx)
-		defer cancel()
-		put, wait := pr.Consume(ctx, p, func(_ int, v any) error {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, p, func(_ int, v any) error {
 			proc := v.(Proc)
 			if proc == nil {
 				return nil

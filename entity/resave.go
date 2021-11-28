@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 
@@ -54,10 +53,10 @@ func (_ Def) Resave(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(wt.Ctx)
-		defer cancel()
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
 		put, wait := pr.Consume(
-			ctx,
+			wt,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()

@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/reusee/june/sys"
@@ -53,9 +52,9 @@ func (_ Def) DeleteIndex(
 		ce(err)
 		defer closer.Close()
 
-		ctx, cancel := context.WithCancel(wt.Ctx)
-		defer cancel()
-		put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)
 			entry := v.(IndexEntry)
 			ce(index.Delete(entry))

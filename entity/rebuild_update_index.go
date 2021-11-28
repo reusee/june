@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"sync"
@@ -67,10 +66,9 @@ func (_ Def) IndexFuncs(
 			}
 		}
 
-		ctx, cancel := context.WithCancel(wt.Ctx)
-		defer cancel()
-
-		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
 			defer he(&err)
 
 			key := v.(Key)

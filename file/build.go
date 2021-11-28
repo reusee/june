@@ -5,7 +5,6 @@
 package file
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -84,9 +83,9 @@ func (_ Def) Build(
 		}
 
 		// async jobs
-		ctx, cancel := context.WithCancel(wt.Ctx)
+		wt := pr.NewWaitTree(wt)
 		putFn, wait := pr.Consume(
-			ctx,
+			wt,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()
@@ -137,7 +136,7 @@ func (_ Def) Build(
 					ce(unwind())
 				}
 
-				cancel()
+				wt.Cancel()
 
 				return cont, nil
 			}
