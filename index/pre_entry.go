@@ -6,6 +6,7 @@ package index
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 
 	"github.com/reusee/sb"
@@ -79,7 +80,7 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	var unmarshalTyped sb.Sink
 	unmarshalTyped = func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
-			return nil, we(sb.ExpectingValue)
+			return nil, we(io.ErrUnexpectedEOF)
 		}
 		if token.Kind == sb.KindTupleEnd {
 			*e = entry
@@ -100,7 +101,7 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	var unmarshalUnknown sb.Sink
 	unmarshalUnknown = func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
-			return nil, we(sb.ExpectingValue)
+			return nil, we(io.ErrUnexpectedEOF)
 		}
 		if token.Kind == sb.KindTupleEnd {
 			*e = entry

@@ -36,7 +36,7 @@ type TapPushSave func(summaryKey Key, summary *Summary)
 func (_ TapPushSave) IsPushOption() {}
 
 func (_ Def) Push(
-	scope dscope.DependentScope,
+	scope dscope.Scope,
 	selIndex index.SelectIndex,
 	store Store,
 	wt *pr.WaitTree,

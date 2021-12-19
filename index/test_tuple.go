@@ -5,6 +5,7 @@
 package index
 
 import (
+	"io"
 	"reflect"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestTuple(
 		}.Iter(),
 		sb.Unmarshal(&tuple),
 	)
-	if !is(err, sb.ExpectingValue) {
+	if !is(err, io.ErrUnexpectedEOF) {
 		t.Fatal()
 	}
 
@@ -35,7 +36,7 @@ func TestTuple(
 		}.Iter(),
 		sb.Unmarshal(&tuple),
 	)
-	if !is(err, sb.ExpectingValue) {
+	if !is(err, io.ErrUnexpectedEOF) {
 		t.Fatal()
 	}
 

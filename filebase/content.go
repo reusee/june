@@ -65,7 +65,7 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	return func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
 			return nil, we.With(
-				e4.With(sb.ExpectingValue),
+				e4.With(io.ErrUnexpectedEOF),
 			)(sb.UnmarshalError)
 		}
 		if token.Kind == sb.KindBytes {
@@ -76,7 +76,7 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 			sink = func(token *sb.Token) (sb.Sink, error) {
 				if token == nil {
 					return nil, we.With(
-						e4.With(sb.ExpectingValue),
+						e4.With(io.ErrUnexpectedEOF),
 					)(sb.UnmarshalError)
 				}
 				if token.Kind == sb.KindArrayEnd {

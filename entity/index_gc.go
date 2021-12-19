@@ -43,7 +43,7 @@ func (_ blackholeCodec) ID() string {
 func (_ Def) IndexGC(
 	store Store,
 	newMem storemem.New,
-	scope dscope.DependentScope,
+	scope dscope.Scope,
 	newKV storekv.New,
 	fetch Fetch,
 	index Index,

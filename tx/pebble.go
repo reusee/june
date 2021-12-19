@@ -24,7 +24,7 @@ func UsePebbleTx(
 	kvToStore KVToStore,
 	peb *storepebble.Store,
 	newBatch storepebble.NewBatch,
-	scope dscope.DependentScope,
+	scope dscope.Scope,
 ) PebbleTx {
 
 	return func(wt *pr.WaitTree, fn any) (err error) {
