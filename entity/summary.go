@@ -87,7 +87,7 @@ type OnSummaryIndexAdd func(
 	err error,
 )
 
-var _ dscope.Reducer = OnSummaryIndexAdd(nil)
+var _ dscope.CustomReducer = OnSummaryIndexAdd(nil)
 
 func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Value {
 	var fns []OnSummaryIndexAdd
@@ -121,7 +121,7 @@ type OnSummaryIndexDelete func(
 	err error,
 )
 
-var _ dscope.Reducer = OnSummaryIndexDelete(nil)
+var _ dscope.CustomReducer = OnSummaryIndexDelete(nil)
 
 func (o OnSummaryIndexDelete) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Value {
 	var fns []OnSummaryIndexDelete
