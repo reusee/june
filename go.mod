@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/DataDog/zstd v1.5.0 // indirect
 	github.com/cockroachdb/errors v1.8.6 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20211222161641-06e42cfa82c0
+	github.com/cockroachdb/pebble v0.0.0-20220104202420-350954933e24
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -16,12 +16,12 @@ require (
 	github.com/klauspost/compress v1.13.6
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
-	github.com/mattn/go-sqlite3 v1.14.9
+	github.com/mattn/go-sqlite3 v1.14.10
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.19
+	github.com/minio/minio-go/v7 v7.0.20
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.4
-	github.com/reusee/dscope v0.0.0-20211225193311-a42114edef51
+	github.com/reusee/dscope v0.0.0-20220105151844-cd14bc703f85
 	github.com/reusee/e4 v0.0.0-20211111112921-a1e3637d4313
 	github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
@@ -30,12 +30,12 @@ require (
 	github.com/reusee/pp v0.0.0-20211111065340-3380cad016fa
 	github.com/reusee/pr v0.0.0-20211219085637-0e1ddac0e236
 	github.com/reusee/qa v0.0.0-20211225193548-f3656b4dc706
-	github.com/reusee/sb v0.0.0-20211214142515-c9cbed185b71
+	github.com/reusee/sb v0.0.0-20211229022642-c56103cb09e8
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/rs/xid v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
-	golang.org/x/exp v0.0.0-20211221223016-e29036178569 // indirect
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/exp v0.0.0-20220104160115-025e73f80486 // indirect
+	golang.org/x/net v0.0.0-20220105145211-5b0dc2dfae98 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 	golang.org/x/text v0.3.7 // indirect
@@ -51,6 +51,7 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/sentry-go v0.6.1-cockroachdb.2 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/emicklei/dot v0.16.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
