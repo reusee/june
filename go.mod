@@ -1,6 +1,6 @@
 module github.com/reusee/june
 
-go 1.17
+go 1.18
 
 require (
 	github.com/DataDog/zstd v1.5.0 // indirect
