@@ -75,11 +75,10 @@ func (_ Def) GC(
 
 		wt := pr.NewWaitTree(wt)
 		defer wt.Cancel()
-		var put pr.Put
-		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
+		var put pr.Put[Key]
+		put, wait := pr.Consume(wt, int(parallel), func(i int, key Key) (err error) {
 			defer he(&err)
 
-			key := v.(Key)
 			if _, ok := reachable.Load(key); ok {
 				return nil
 			}
@@ -117,10 +116,9 @@ func (_ Def) GC(
 
 		// collect dead objects
 		deadObjects := make([][]DeadObject, int(parallel))
-		put, wait = pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
+		put, wait = pr.Consume(wt, int(parallel), func(i int, key Key) (err error) {
 			defer he(&err)
 
-			key := v.(Key)
 			if tapIter != nil {
 				tapIter(key)
 			}
@@ -167,10 +165,10 @@ func (_ Def) GC(
 
 		// delete
 		batchKeys := make([][]Key, int(parallel))
-		put, wait = pr.Consume(wt, int(parallel), func(proc int, v any) (err error) {
+		var putDeadObject pr.Put[DeadObject]
+		putDeadObject, wait = pr.Consume(wt, int(parallel), func(proc int, obj DeadObject) (err error) {
 			defer he(&err)
 
-			obj := v.(DeadObject)
 			if obj.Key.Namespace == NSSummary {
 				ce(deleteSummary(obj.Summary, obj.Key))
 			} else {
@@ -186,7 +184,7 @@ func (_ Def) GC(
 			return nil
 		})
 		for _, obj := range objs {
-			put(obj)
+			putDeadObject(obj)
 		}
 		ce(wait(true))
 		for _, keys := range batchKeys {
