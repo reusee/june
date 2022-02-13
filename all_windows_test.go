@@ -2,6 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
+//go:build !step1 || !step2 || windows
 // +build !step1 !step2 windows
 
 package june

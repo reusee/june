@@ -18,6 +18,7 @@ import (
 	"github.com/reusee/june/storedisk"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/storemonotree"
 	"github.com/reusee/june/storenssharded"
 	"github.com/reusee/june/storeonedrive"
 	"github.com/reusee/june/storepebble"
@@ -44,6 +45,7 @@ var Defs = dscope.Methods(
 	storedisk.Def{},
 	storekv.Def{},
 	storemem.Def{},
+	storemonotree.Def{},
 	storenssharded.Def{},
 	storeonedrive.Def{},
 	storepebble.Def{},

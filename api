@@ -14,7 +14,7 @@ entity.Delete
 	func(key key.Key) (err error)
 
 entity.DeleteIndex
-	func(predict func(sb.Stream) (*index.Entry, error), options ...entity.DeleteIndexOption) error
+	func(predict func(*sb.Proc) (*index.Entry, error), options ...entity.DeleteIndexOption) error
 
 entity.DeleteSummary
 	func(summary *entity.Summary, summaryKey key.Key) (err error)
@@ -230,6 +230,9 @@ storekv.TestKV
 storemem.New
 	func(parentWt *pr.WaitTree) *storemem.Store
 
+storemonotree.New
+	func(upstream store.Store) (tree *storemonotree.Tree, err error)
+
 storenssharded.New
 	func(shards map[key.Namespace]store.Store, def store.Store) (*storenssharded.Store, error)
 
@@ -272,9 +275,6 @@ vars.Get
 
 vars.Set
 	func(key string, value interface{}) error
-
-virtualfs.NewProjectedFS
-	func(rootFS fs.FS, destDir string) (close func(), err error)
 
 virtualfs.TestFS
 	func(t *testing.T, with func(rootFS fs.FS, dir string, fn func()))

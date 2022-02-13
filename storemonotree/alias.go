@@ -2,12 +2,11 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
-package entity
+package storemonotree
 
-import "reflect"
+import "github.com/reusee/e4"
 
-type HasSlotKeys interface {
-	SlotKeys() (any, error)
-}
-
-var hasSlotKeysType = reflect.TypeOf((*HasSlotKeys)(nil)).Elem()
+var (
+	ce = e4.Check.With(e4.WrapStacktrace)
+	he = e4.Handle
+)

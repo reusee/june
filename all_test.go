@@ -2,6 +2,7 @@
 // Use of this source code is governed by Apache License
 // that can be found in the LICENSE file.
 
+//go:build !step1 || !step2
 // +build !step1 !step2
 
 package june
@@ -18,6 +19,7 @@ import (
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storedisk"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/june/storemonotree"
 	"github.com/reusee/june/storenssharded"
 	"github.com/reusee/june/storeonedrive"
 	"github.com/reusee/june/storepebble"
@@ -300,6 +302,11 @@ func Test_storemem_TestIndex(t *testing.T) {
 func Test_storemem_TestStore(t *testing.T) {
 	t.Parallel()
 	runTest(t, storemem.TestStore)
+}
+
+func Test_storemonotree_TestStore(t *testing.T) {
+	t.Parallel()
+	runTest(t, storemonotree.TestStore)
 }
 
 func Test_storenssharded_TestStore(t *testing.T) {
