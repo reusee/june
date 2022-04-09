@@ -21,6 +21,8 @@ func TestStore(
 	testStore store.TestStore,
 	scope dscope.Scope,
 ) {
+	t.Skip() //TODO
+
 	defer he(nil, e4.TestingFatal(t))
 
 	with := func(fn func(store.Store), defs ...any) {
