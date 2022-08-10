@@ -9,7 +9,6 @@ import (
 	"io"
 	"sync/atomic"
 
-	"github.com/google/btree"
 	"github.com/reusee/e4"
 	"github.com/reusee/june/index"
 	"github.com/reusee/pp"
@@ -232,8 +231,8 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 		var s sb.Stream
 		m.store.RLock()
 		defer m.store.RUnlock()
-		m.store.index.AscendGreaterOrEqual(Item{m.current}, func(item btree.Item) bool {
-			tokens := item.(Item).Tokens
+		m.store.index.AscendGreaterOrEqual(Item{m.current}, func(item Item) bool {
+			tokens := item.Tokens
 			if sb.MustCompare(
 				tokens.Iter(),
 				m.upper.Iter(),
@@ -266,8 +265,8 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 		var s sb.Stream
 		m.store.RLock()
 		defer m.store.RUnlock()
-		m.store.index.DescendLessOrEqual(Item{m.current}, func(item btree.Item) bool {
-			tokens := item.(Item).Tokens
+		m.store.index.DescendLessOrEqual(Item{m.current}, func(item Item) bool {
+			tokens := item.Tokens
 			if sb.MustCompare(
 				tokens.Iter(),
 				m.upper.Iter(),
