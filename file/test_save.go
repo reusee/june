@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
@@ -31,7 +31,7 @@ func TestSave(
 	fetch entity.Fetch,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	scope.Fork(
 		func() Ignore {
@@ -222,7 +222,7 @@ func TestSymlink(
 	build Build,
 	iterDiskfile IterDiskFile,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	if runtime.GOOS == "windows" {
 		t.Skip()
@@ -244,7 +244,7 @@ func TestPack(
 	t *testing.T,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	scope.Fork(
 		func() PackThreshold {

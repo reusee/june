@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 )
 
@@ -77,7 +77,7 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 		ctx, cancel := context.WithTimeout(s.Ctx, defaultTimeout)
 		err := s.req(ctx, "DELETE", path, nil, "", nil)
 		cancel()
-		ce(err, e4.NewInfo("delete %s %s", key, path))
+		ce(err, e5.NewInfo("delete %s %s", key, path))
 	}
 	return nil
 }
@@ -89,7 +89,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 	default:
 	}
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	path := s.keyToDrivePath(key, "")
 	ctx, cancel := context.WithTimeout(s.Ctx, defaultTimeout)
@@ -98,7 +98,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 	if is(err, ErrNotFound) {
 		return false, nil
 	}
-	ce(err, e4.NewInfo("path %s", path))
+	ce(err, e5.NewInfo("path %s", path))
 	return true, nil
 }
 
@@ -109,14 +109,14 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	default:
 	}
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	path := s.keyToDrivePath(key, "content")
 	resp, err := s.request(s.Ctx, "GET", path, nil, "")
-	ce(err, e4.NewInfo("path %s", path))
+	ce(err, e5.NewInfo("path %s", path))
 	defer resp.Body.Close()
 	if resp.StatusCode == 404 {
-		return we.With(e4.With(storekv.StringKey(key)))(storekv.ErrKeyNotFound)
+		return we.With(e5.With(storekv.StringKey(key)))(storekv.ErrKeyNotFound)
 	}
 	return fn(resp.Body)
 }
@@ -130,7 +130,7 @@ func (s *Store) iterFiles(
 		return ErrClosed
 	default:
 	}
-	defer he(&err, e4.NewInfo("dir %s", dir))
+	defer he(&err, e5.NewInfo("dir %s", dir))
 
 	p := s.relToDrivePath(dir, "children")
 
@@ -148,7 +148,7 @@ do:
 	if is(err, ErrNotFound) {
 		return nil
 	}
-	ce(err, e4.NewInfo("path %s", p))
+	ce(err, e5.NewInfo("path %s", p))
 
 	for _, row := range data.Value {
 		isDir := row.Folder != nil
@@ -186,7 +186,7 @@ func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 		}
 		key := s.shardedRelPathToKey(filePath)
 		err = fn(key)
-		ce(err, e4.NewInfo("key %s", key))
+		ce(err, e5.NewInfo("key %s", key))
 		return nil
 	})
 }
@@ -241,7 +241,7 @@ func (s *Store) ensureDir(dir string) (err error) {
 	if is(err, ErrExisted) {
 		return nil
 	}
-	ce(err, e4.NewInfo("create", parent))
+	ce(err, e5.NewInfo("create", parent))
 	s.idByPath.Store(dir, data.ID)
 	s.dirOK.Store(dir, struct{}{})
 
@@ -255,7 +255,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	default:
 	}
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	if err := s.ensureDir(
 		path.Dir(s.keyToShardedRelPath(key)),

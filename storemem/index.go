@@ -9,7 +9,7 @@ import (
 	"io"
 	"sync/atomic"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/pp"
 	"github.com/reusee/sb"
@@ -46,12 +46,12 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 
 	if entry.Type == nil {
 		return we.With(
-			e4.NewInfo("entry type is nil: %+v", entry),
+			e5.NewInfo("entry type is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 	if entry.Key == nil && entry.Path == nil {
 		return we.With(
-			e4.NewInfo("both entry key and path is nil: %+v", entry),
+			e5.NewInfo("both entry key and path is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 

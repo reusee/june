@@ -12,7 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/sys"
@@ -70,8 +70,8 @@ func (_ Def) New(
 		options ...NewOption,
 	) (_ *Store, err error) {
 		defer he(&err,
-			e4.NewInfo("dir: %s", dir),
-			e4.With(NewOptions(options)),
+			e5.NewInfo("dir: %s", dir),
+			e5.With(NewOptions(options)),
 		)
 
 		err = ensureDir(dir)

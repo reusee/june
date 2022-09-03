@@ -7,7 +7,7 @@ package keyset
 import (
 	"errors"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 )
 
@@ -25,7 +25,7 @@ func (_ Def) Iter(
 	) (err error) {
 		return ce(
 			set.iter(fetch, fn),
-			e4.Ignore(Break),
+			e5.Ignore(Break),
 		)
 	}
 }

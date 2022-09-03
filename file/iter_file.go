@@ -7,7 +7,7 @@ package file
 import (
 	"path/filepath"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 )
 
@@ -36,7 +36,7 @@ func (_ Def) IterFile(
 			defer he(&err)
 			if !loaded {
 				err := fetch(pack.Key, &subs)
-				ce(err, e4.NewInfo("fetch pack %s %s", path, pack.Key))
+				ce(err, e5.NewInfo("fetch pack %s %s", path, pack.Key))
 				loaded = true
 			}
 			if len(subs) == 0 {
@@ -143,7 +143,7 @@ func (_ Def) IterFile(
 			defer he(&err)
 			var file File
 			err = fetch(key, &file)
-			ce(err, e4.NewInfo("iter %s %s", dir, key))
+			ce(err, e5.NewInfo("iter %s %s", dir, key))
 			return nil, iterFile(dir, &file, cont), nil
 		}
 	}

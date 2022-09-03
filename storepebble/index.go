@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/pp"
 	"github.com/reusee/sb"
@@ -90,12 +90,12 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 
 	if entry.Type == nil {
 		return we.With(
-			e4.NewInfo("entry type is nil: %+v", entry),
+			e5.NewInfo("entry type is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 	if entry.Key == nil && entry.Path == nil {
 		return we.With(
-			e4.NewInfo("both entry key and path is nil: %+v", entry),
+			e5.NewInfo("both entry key and path is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 
@@ -332,7 +332,7 @@ func (p *indexIter) Close() (err error) {
 		}
 		p.withRLock(func() {
 			err = p.iter.Error()
-			ce(err, e4.Close(p.iter))
+			ce(err, e5.Close(p.iter))
 			err = p.iter.Close()
 			ce(err)
 		})

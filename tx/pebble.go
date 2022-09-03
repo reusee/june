@@ -6,7 +6,7 @@ package tx
 
 import (
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storepebble"
@@ -32,9 +32,9 @@ func UsePebbleTx(
 
 		batch, err := newBatch(wt, peb)
 		ce(err)
-		defer he(&err, e4.WrapFunc(func(err error) error {
+		defer he(&err, e5.WrapFunc(func(err error) error {
 			if e := batch.Abort(); e != nil {
-				return e4.MakeErr(e, err)
+				return e5.Chain(e, err)
 			}
 			return err
 		}))

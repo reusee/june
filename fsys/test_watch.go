@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/pr"
 )
 
@@ -23,7 +23,7 @@ func TestWatch(
 	watch Watch,
 	shuffle ShuffleDir,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	// temp file
 	dir := t.TempDir()

@@ -21,7 +21,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/vars"
 	"golang.org/x/sys/windows"
@@ -247,7 +247,7 @@ func (_ Def) NewProjectedFS(
 						))
 						ce(err)
 						content, err := io.ReadAll(f)
-						ce(err, e4.Close(f))
+						ce(err, e5.Close(f))
 						ce(f.Close())
 						target := string(content)
 						extInfo.SymlinkTargetName, err = windows.UTF16PtrFromString(target)

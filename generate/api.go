@@ -16,14 +16,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/go/packages"
 )
 
 var (
 	pt = fmt.Printf
-	ce = e4.CheckWithStacktrace
+	ce = e5.CheckWithStacktrace
 )
 
 //TODO generate Is*Option docs

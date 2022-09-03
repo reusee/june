@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
@@ -25,7 +25,7 @@ func TestPebbleTx(
 	newKV storekv.New,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 	peb, err := newPeb(wt, nil, dir)
@@ -187,7 +187,7 @@ func TestPebbleTxEntityDelete(
 	newKV storekv.New,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 	peb, err := newPeb(wt, nil, dir)

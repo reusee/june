@@ -5,7 +5,7 @@
 package storekv
 
 import (
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
 )
@@ -17,7 +17,7 @@ func (s *Store) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 	if err := s.Read(key, func(s sb.Stream) error {
 		return fn(s)
 	}); is(err, ErrKeyNotFound) {
-		return we.With(e4.With(key))(err)
+		return we.With(e5.With(key))(err)
 	} else {
 		ce(err)
 	}

@@ -7,7 +7,7 @@ package entity
 import (
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 )
 
@@ -31,7 +31,7 @@ func TestFetch(
 	save SaveEntity,
 	store store.Store,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	summary, err := save(testFetch{
 		Foo: testFetch1(42),

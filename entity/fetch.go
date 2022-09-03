@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
@@ -80,6 +80,6 @@ func (_ Def) Fetch(
 			return nil
 		}
 
-		return we.With(e4.With(key))(ErrKeyNotFound)
+		return we.With(e5.With(key))(ErrKeyNotFound)
 	}
 }

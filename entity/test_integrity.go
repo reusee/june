@@ -7,7 +7,7 @@ package entity
 import (
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 func TestIntegrity(
@@ -15,7 +15,7 @@ func TestIntegrity(
 	saveEntity SaveEntity,
 	store Store,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	type Foo int
 	type Bar struct {

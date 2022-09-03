@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
@@ -23,7 +23,7 @@ func TestBatchKV(
 	newStore New,
 	newBatch NewBatch,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
@@ -43,7 +43,7 @@ func TestBatchIndex(
 	newBatch NewBatch,
 	test index.TestIndex,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	dir, err := os.MkdirTemp(t.TempDir(), "")
 	ce(err)
 	s, err := newStore(wt, nil, dir)

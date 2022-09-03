@@ -9,7 +9,7 @@ import (
 	"hash/fnv"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/sb"
 )
@@ -18,7 +18,7 @@ func TestSummary(
 	t *testing.T,
 	save SaveEntity,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	summary, err := save(testSummary{
 		I:  42,
@@ -84,7 +84,7 @@ func TestSummaryUpdate(
 	cleanIndex CleanIndex,
 	indexGC IndexGC,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	var summaryKey1 Key
 	summary1, err := save(

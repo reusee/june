@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
@@ -46,9 +46,9 @@ var (
 	is = errors.Is
 	as = errors.As
 
-	ce = e4.CheckWithStacktrace
-	he = e4.Handle
-	we = e4.WrapWithStacktrace
+	ce = e5.CheckWithStacktrace
+	he = e5.Handle
+	we = e5.WrapWithStacktrace
 
 	Select        = index.Select
 	Desc          = index.Desc

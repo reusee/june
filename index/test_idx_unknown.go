@@ -7,7 +7,7 @@ package index
 import (
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/sb"
 )
 
@@ -16,7 +16,7 @@ type idxFoo struct{}
 func TestIdxUnknown(
 	t *testing.T,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	var tokens sb.Tokens
 	ce(sb.Copy(

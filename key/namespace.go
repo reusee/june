@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 type Namespace [8]byte
@@ -25,7 +25,7 @@ func (n Namespace) String() string {
 
 func NamespaceFromString(s string) (ns Namespace, err error) {
 	if len(s) > len(ns) {
-		err = we.With(e4.With(fmt.Errorf("string: %s", s)))(ErrTooLong)
+		err = we.With(e5.With(fmt.Errorf("string: %s", s)))(ErrTooLong)
 		return
 	}
 	copy(ns[:], []byte(s))

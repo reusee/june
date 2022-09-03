@@ -22,8 +22,7 @@ require (
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5
 	github.com/reusee/dscope v0.0.0-20220902145320-812615378c9c
-	github.com/reusee/e4 v0.0.0-20220624024633-9eab321f05d6
-	github.com/reusee/e4qa v0.0.0-20210606065910-e8c76b457e8f
+	github.com/reusee/e4 v0.0.0-20220624024633-9eab321f05d6 // indirect
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
@@ -45,6 +44,8 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
+require github.com/reusee/e5 v0.0.0-20220902143513-42365073754d
+
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
@@ -61,7 +62,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/reusee/e5 v0.0.0-20220902143513-42365073754d // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

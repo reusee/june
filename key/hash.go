@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"hash"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/sb"
 )
 
@@ -34,7 +34,7 @@ func HashFromString(str string) (hash Hash, err error) {
 	bs, err = hex.DecodeString(str)
 	ce(err)
 	if len(bs) > len(hash) {
-		ce(ErrTooLong, e4.With(fmt.Errorf("string: %s", str)))
+		ce(ErrTooLong, e5.With(fmt.Errorf("string: %s", str)))
 	}
 	copy(hash[:], bs)
 	return

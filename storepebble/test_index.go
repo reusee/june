@@ -7,7 +7,7 @@ package storepebble
 import (
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/pr"
 )
@@ -18,7 +18,7 @@ func TestIndex(
 	newStore New,
 	test index.TestIndex,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 

@@ -16,7 +16,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/pr"
 )
 
@@ -264,7 +264,7 @@ func (w *Watcher) initPath(
 		return
 	}
 	ce(err,
-		e4.NewInfo("add %s", path),
+		e5.NewInfo("add %s", path),
 	)
 
 	if stat.IsDir() {
@@ -275,7 +275,7 @@ func (w *Watcher) initPath(
 			return
 		}
 		ce(err,
-			e4.NewInfo("open %s", path),
+			e5.NewInfo("open %s", path),
 		)
 		var latestL sync.Mutex
 		for {
@@ -284,7 +284,7 @@ func (w *Watcher) initPath(
 				if is(err, io.EOF) {
 					break
 				}
-				ce(err, e4.Close(f))
+				ce(err, e5.Close(f))
 			}
 			var wg sync.WaitGroup
 			errCh := make(chan error, 1)

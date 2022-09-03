@@ -7,7 +7,7 @@ package codec
 import (
 	"errors"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/sb"
 )
 
@@ -112,7 +112,7 @@ func (o OnionCodec) Decode(stream sb.Stream, options ...Option) sb.Stream {
 			codec, ok := o.decoders[id]
 			if !ok {
 				return nil, nil, we.With(
-					e4.NewInfo("no such codec: %s", id),
+					e5.NewInfo("no such codec: %s", id),
 				)(ErrCodecNotFound)
 			}
 			s := codec.Decode(cur, options...)

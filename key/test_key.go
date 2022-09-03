@@ -10,11 +10,11 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 func TestKeyJSON(t *testing.T) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	j, err := json.Marshal(Key{
 		Namespace: Namespace{'a', 'b', 'c'},
 		Hash:      Hash{1, 2, 3},
@@ -29,7 +29,7 @@ func TestKeyJSON(t *testing.T) {
 }
 
 func TestNamespaceFromString(t *testing.T) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	for i := 0; i < 128; i++ {
 		var ns Namespace
 		rand.Read(ns[:rand.Intn(len(ns))+1])
@@ -43,7 +43,7 @@ func TestNamespaceFromString(t *testing.T) {
 }
 
 func TestHashFromString(t *testing.T) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	for i := 0; i < 128; i++ {
 		var hash Hash
 		rand.Read(hash[:rand.Intn(len(hash))+1])
@@ -57,7 +57,7 @@ func TestHashFromString(t *testing.T) {
 }
 
 func TestKeyFromString(t *testing.T) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	for i := 0; i < 128; i++ {
 		var key Key
 	gen:

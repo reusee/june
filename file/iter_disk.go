@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/pr"
 )
@@ -64,7 +64,7 @@ func (_ Def) IterDiskFile(
 		var names []string
 		src = func() (_ any, _ Src, err error) {
 			filePath := filepath.Join(base, rel)
-			defer he(&err, e4.NewInfo("iter subs %s", filePath))
+			defer he(&err, e5.NewInfo("iter subs %s", filePath))
 
 			if file == nil {
 				// open file lazily
@@ -142,7 +142,7 @@ func (_ Def) IterDiskFile(
 			}
 
 			diskPath := filepath.Join(base, rel)
-			defer he(&err, e4.NewInfo("iter file %s", diskPath))
+			defer he(&err, e5.NewInfo("iter file %s", diskPath))
 
 			ok, err := isRestrictedPath(diskPath)
 			ce(err)
@@ -218,7 +218,7 @@ func (_ Def) IterDiskFile(
 
 	return func(path string, cont Src, options ...IterDiskFileOption) Src {
 		return func() (_ any, _ Src, err error) {
-			defer he(&err, e4.NewInfo("iter %s", path))
+			defer he(&err, e5.NewInfo("iter %s", path))
 
 			abs, err := fsys.RealPath(path)
 			ce(err)

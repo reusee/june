@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
@@ -35,8 +35,8 @@ type (
 var (
 	pt = fmt.Printf
 	is = errors.Is
-	ce = e4.CheckWithStacktrace
-	he = e4.Handle
+	ce = e5.CheckWithStacktrace
+	he = e5.Handle
 
 	Copy = pp.Copy
 	Seq  = pp.Seq

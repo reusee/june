@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/sb"
 )
@@ -56,7 +56,7 @@ func (s *Store) keyGet(
 	fn func(io.Reader) error,
 ) (err error) {
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	defer add()()
 	defer catchErr(&err, pebble.ErrClosed)
@@ -67,7 +67,7 @@ func (s *Store) keyGet(
 		bs, c, err = get(key)
 	}, Kv, key)
 	if is(err, pebble.ErrNotFound) {
-		return we.With(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
+		return we.With(e5.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	}
 	ce(err)
 	defer c.Close()
@@ -90,7 +90,7 @@ func (s *Store) keyPut(
 	r io.Reader,
 ) (err error) {
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	defer add()()
 	defer catchErr(&err, pebble.ErrClosed)
@@ -137,7 +137,7 @@ func (s *Store) keyIter(
 	withRLock func(func()),
 	fn func(key string) error,
 ) (err error) {
-	defer he(&err, e4.NewInfo("prefix %s", prefix))
+	defer he(&err, e5.NewInfo("prefix %s", prefix))
 	defer add()()
 
 	var lowerBytes, upperBytes []byte
@@ -195,7 +195,7 @@ func (s *Store) keyIter(
 		if is(err, Break) {
 			return nil
 		}
-		ce(err, e4.NewInfo("key %s", key))
+		ce(err, e5.NewInfo("key %s", key))
 		withRLock(func() {
 			ok = iter.Next()
 		})
@@ -225,7 +225,7 @@ func (s *Store) keyDelete(
 			err = del(key, nil)
 		}, Kv, key)
 		ce(err,
-			e4.NewInfo("key %s", key),
+			e5.NewInfo("key %s", key),
 		)
 	}
 

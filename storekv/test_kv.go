@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 )
 
@@ -30,7 +30,7 @@ func (_ Def) TestKV(
 			kvFunc func(kv KV, prefix string),
 		),
 	) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 
 		withStore := func(storeFunc func(store.Store), provides ...any) {
 			with(func(kv KV, prefix string) {

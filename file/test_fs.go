@@ -12,7 +12,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/filebase"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
@@ -25,7 +25,7 @@ func TestFileFS(
 	newFileFS filebase.NewFileFS,
 	shuffleDir fsys.ShuffleDir,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 	for i := 0; i < 64; i++ {

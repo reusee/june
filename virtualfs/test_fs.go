@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/file"
 	"github.com/reusee/june/filebase"
@@ -46,7 +46,7 @@ func (_ Def) TesetFS(
 			fn func(),
 		),
 	) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 
 		dataDir := t.TempDir()
 		for i := 0; i < 64; i++ {

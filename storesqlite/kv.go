@@ -11,7 +11,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 )
 
@@ -71,7 +71,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	if ok {
 		if v == nil {
 			return we.With(
-				e4.With(storekv.StringKey(key)),
+				e5.With(storekv.StringKey(key)),
 			)(storekv.ErrKeyNotFound)
 		} else {
 			return fn(bytes.NewReader(v.([]byte)))
@@ -89,7 +89,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	).Scan(&data)
 	if errors.Is(err, sql.ErrNoRows) {
 		return we.With(
-			e4.With(storekv.StringKey(key)),
+			e5.With(storekv.StringKey(key)),
 		)(storekv.ErrKeyNotFound)
 	}
 	ce(err)
@@ -123,7 +123,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 		var tx *sql.Tx
 		tx, err = s.DB.Begin()
 		ce(err)
-		defer he(&err, e4.Do(func() {
+		defer he(&err, e5.Do(func() {
 			tx.Rollback()
 		}))
 		ce(s.put(tx, key, bs))
@@ -157,7 +157,7 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 		var tx *sql.Tx
 		tx, err = s.DB.Begin()
 		ce(err)
-		defer he(&err, e4.Do(func() {
+		defer he(&err, e5.Do(func() {
 			tx.Rollback()
 		}))
 		for _, key := range keys {

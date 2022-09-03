@@ -8,7 +8,7 @@ import (
 	"bytes"
 
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/sb"
 )
@@ -48,7 +48,7 @@ func (m *MemCache) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 	defer he(&err)
 	v, ok := m.cache.Get(key)
 	if !ok {
-		return we.With(e4.With(key))(ErrKeyNotFound)
+		return we.With(e5.With(key))(ErrKeyNotFound)
 	}
 	err = fn(sb.Decode(bytes.NewReader(v.([]byte))))
 	ce(err)

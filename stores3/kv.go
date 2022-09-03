@@ -10,7 +10,7 @@ import (
 	"io"
 
 	"github.com/minio/minio-go/v7"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 )
 
@@ -33,20 +33,20 @@ func (k *KV) KeyExists(key string) (_ bool, err error) {
 func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	defer k.Add()()
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
 	defer cancel()
 	obj, err := k.client.GetObject(ctx, k.bucket, key, minio.GetObjectOptions{})
 	var resp minio.ErrorResponse
 	if as(err, &resp) && resp.Code == "NoSuchKey" {
-		return we.With(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
+		return we.With(e5.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	}
 	ce(err)
 	defer obj.Close()
 	if fn != nil {
 		if err := fn(obj); as(err, &resp) && resp.Code == "NoSuchKey" {
-			return we.With(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
+			return we.With(e5.With(storekv.StringKey(key)))(ErrKeyNotFound)
 		} else {
 			ce(err)
 		}
@@ -57,7 +57,7 @@ func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
 func (k *KV) KeyPut(key string, r io.Reader) (err error) {
 	defer k.Add()()
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
 	defer cancel()
@@ -83,7 +83,7 @@ func (k *KV) KeyPut(key string, r io.Reader) (err error) {
 
 func (k *KV) KeyIter(prefix string, fn func(string) error) (err error) {
 	defer k.Add()()
-	defer he(&err, e4.NewInfo("prefix %s", prefix))
+	defer he(&err, e5.NewInfo("prefix %s", prefix))
 
 	marker := ""
 loop:

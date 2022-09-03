@@ -4,8 +4,8 @@
 
 package naming
 
-import "github.com/reusee/e4"
+import "github.com/reusee/e5"
 
 var (
-	ce, he = e4.CheckWithStacktrace, e4.Handle
+	ce, he = e5.CheckWithStacktrace, e5.Handle
 )

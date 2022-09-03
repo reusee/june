@@ -16,7 +16,7 @@ import (
 	"testing"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storedisk"
@@ -178,7 +178,7 @@ var indexManagerDefs = []any{
 		newPebble storepebble.New,
 		wt *pr.WaitTree,
 	) index.IndexManager {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
 		return peb
@@ -191,7 +191,7 @@ var indexManagerDefs = []any{
 		wt *pr.WaitTree,
 		newBatch storepebble.NewBatch,
 	) index.IndexManager {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
 		batch, err := newBatch(wt, peb)
@@ -215,7 +215,7 @@ var storeDefs = []any{
 		newKV storekv.New,
 		wt *pr.WaitTree,
 	) store.Store {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		peb, err := newPebble(wt, storepebble.NewMemFS(), "peb")
 		ce(err)
 		s, err := newKV(peb, "foo")
@@ -230,7 +230,7 @@ var storeDefs = []any{
 		newKV storekv.New,
 		wt *pr.WaitTree,
 	) store.Store {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		dir := t.TempDir()
 		s, err := newDiskStore(wt, dir)
 		ce(err)
@@ -250,7 +250,7 @@ var storeDefs = []any{
 		newBatch storepebble.NewBatch,
 		newKV storekv.New,
 	) store.Store {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
 		batch, err := newBatch(wt, peb)

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/sb"
 )
@@ -17,7 +17,7 @@ func TestLock(
 	t *testing.T,
 	newHashState key.NewHashState,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	locks := newEntityLocks()
 	var wg sync.WaitGroup

@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storemem"
@@ -28,7 +28,7 @@ func TestGC(
 	index Index,
 	deleteSummary DeleteSummary,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	type Root struct {
 		Key Key
@@ -181,7 +181,7 @@ func TestGCWithEmptyIndex(
 	scope Scope,
 	gc GC,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	res, err := save(NSEntity, 42)
 	ce(err)

@@ -7,7 +7,7 @@ package file
 import (
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
@@ -31,7 +31,7 @@ func TestPushFile(
 	iterFile IterFile,
 	shuffleDir fsys.ShuffleDir,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 	for i := 0; i < 64; i++ {

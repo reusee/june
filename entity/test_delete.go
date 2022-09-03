@@ -7,7 +7,7 @@ package entity
 import (
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 )
 
@@ -19,7 +19,7 @@ func TestDelete(
 	checkRef CheckRef,
 	sel index.SelectIndex,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	var summary1 *Summary
 	var summaryKey1 Key

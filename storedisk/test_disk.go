@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
 )
@@ -19,7 +19,7 @@ func TestStore(
 	test storekv.TestKV,
 	newStore New,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
@@ -36,7 +36,7 @@ func TestStoreSoftDelete(
 	test storekv.TestKV,
 	newStore New,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)

@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 )
 
@@ -55,7 +55,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 	default:
 	}
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	path := s.keyToPath(key)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -73,12 +73,12 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	default:
 	}
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	path := s.keyToPath(key)
 	f, err := os.Open(path)
 	if os.IsNotExist(err) {
-		return we.With(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
+		return we.With(e5.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	} else {
 		ce(err)
 	}
@@ -93,7 +93,7 @@ func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 	default:
 	}
 	defer he(&err,
-		e4.NewInfo("prefix: %s", prefix),
+		e5.NewInfo("prefix: %s", prefix),
 	)
 
 	parts := strings.Split(prefix, "/")
@@ -149,9 +149,9 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 	defer he(
 		&err,
-		e4.NewInfo("path: %s", path),
-		e4.NewInfo("dir: %s", dir),
-		e4.With(storekv.StringKey(key)),
+		e5.NewInfo("path: %s", path),
+		e5.NewInfo("dir: %s", dir),
+		e5.With(storekv.StringKey(key)),
 	)
 
 	if _, ok := s.dirOK.Load(dir); !ok {
@@ -175,7 +175,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 		}
 	}()
 	_, err = io.Copy(f, r)
-	ce(err, e4.Close(f))
+	ce(err, e5.Close(f))
 	if !s.noSync {
 		err = f.Sync()
 		ce(err)
@@ -232,14 +232,14 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 		if s.softDelete {
 			err := os.Rename(path, path+".deleted")
 			ce(err,
-				e4.With(storekv.StringKey(key)),
-				e4.NewInfo("path: %s", path),
+				e5.With(storekv.StringKey(key)),
+				e5.NewInfo("path: %s", path),
 			)
 		} else {
 			err := os.Remove(path)
 			ce(err,
-				e4.With(storekv.StringKey(key)),
-				e4.NewInfo("path: %s", path),
+				e5.With(storekv.StringKey(key)),
+				e5.NewInfo("path: %s", path),
 			)
 		}
 	}

@@ -7,7 +7,7 @@ package entity
 import (
 	"fmt"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
@@ -83,8 +83,8 @@ func (s *Summary) checkRef(store Store) (err error) {
 			}
 		}
 		return we.With(
-			e4.NewInfo("lost key: %s", s.Key),
-			e4.NewInfo("entity type: %s", typeName),
+			e5.NewInfo("lost key: %s", s.Key),
+			e5.NewInfo("entity type: %s", typeName),
 		)(
 			ErrKeyNotFound,
 		)
@@ -96,9 +96,9 @@ func (s *Summary) checkRef(store Store) (err error) {
 		ce(err)
 		if !ok {
 			return we.With(
-				e4.NewInfo("entity key: %s", s.Key),
-				e4.NewInfo("index tuple: %+v", idx),
-				e4.NewInfo("lost key: %s", key),
+				e5.NewInfo("entity key: %s", s.Key),
+				e5.NewInfo("index tuple: %+v", idx),
+				e5.NewInfo("lost key: %s", key),
 			)(
 				ErrKeyNotFound,
 			)
@@ -135,7 +135,7 @@ func (s *Summary) checkRef(store Store) (err error) {
 		ok, err := store.Exists(key)
 		ce(err)
 		if !ok {
-			return we.With(e4.With(key))(ErrKeyNotFound)
+			return we.With(e5.With(key))(ErrKeyNotFound)
 		}
 	}
 

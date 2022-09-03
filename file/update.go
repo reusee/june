@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 )
 
@@ -62,7 +62,7 @@ func (_ Def) Update(
 		}
 
 		return func() (_ any, _ Src, err error) {
-			defer he(&err, e4.NewInfo("update %s", path))
+			defer he(&err, e5.NewInfo("update %s", path))
 
 			dir := filepath.Dir(path)
 			selectFile := func(item ZipItem) any {

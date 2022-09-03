@@ -8,13 +8,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/file"
 	"github.com/reusee/june/key"
 )
 
 var (
-	ce, he = e4.CheckWithStacktrace, e4.Handle
+	ce, he = e5.CheckWithStacktrace, e5.Handle
 	as     = errors.As
 	pt     = fmt.Printf
 	is     = errors.Is

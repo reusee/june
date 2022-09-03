@@ -8,7 +8,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/fastcdc-go"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/sb"
@@ -65,7 +65,7 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 	return func(token *sb.Token) (sb.Sink, error) {
 		if token == nil {
 			return nil, we.With(
-				e4.With(io.ErrUnexpectedEOF),
+				e5.With(io.ErrUnexpectedEOF),
 			)(sb.UnmarshalError)
 		}
 		if token.Kind == sb.KindBytes {
@@ -76,7 +76,7 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 			sink = func(token *sb.Token) (sb.Sink, error) {
 				if token == nil {
 					return nil, we.With(
-						e4.With(io.ErrUnexpectedEOF),
+						e5.With(io.ErrUnexpectedEOF),
 					)(sb.UnmarshalError)
 				}
 				if token.Kind == sb.KindArrayEnd {
@@ -86,13 +86,13 @@ func (c *Content) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 					return sink, nil
 				}
 				return nil, we.With(
-					e4.With(sb.BadTokenKind),
+					e5.With(sb.BadTokenKind),
 				)(sb.UnmarshalError)
 			}
 			return sink, nil
 		}
 		return nil, we.With(
-			e4.With(sb.BadTokenKind),
+			e5.With(sb.BadTokenKind),
 		)(sb.UnmarshalError)
 	}
 }
@@ -118,7 +118,7 @@ func (_ Def) WriteContents(
 		for _, key := range keys {
 			var content Content
 			err = fetch(key, &content)
-			ce(err, e4.NewInfo("fetch content %s", key))
+			ce(err, e5.NewInfo("fetch content %s", key))
 			_, err := w.Write(content)
 			ce(err)
 		}

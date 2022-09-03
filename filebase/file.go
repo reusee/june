@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/sb"
 )
 
@@ -139,7 +139,7 @@ func (f *File) WithReader(scope Scope, fn func(io.Reader) error) (err error) {
 		r = bytes.NewReader(f.ContentBytes)
 	}
 	err = fn(r)
-	ce(err, e4.NewInfo("read %+v", f))
+	ce(err, e5.NewInfo("read %+v", f))
 	return nil
 }
 

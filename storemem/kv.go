@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 )
 
@@ -36,11 +36,11 @@ func (s *Store) KeyGet(key string, fn func(r io.Reader) error) (err error) {
 	default:
 	}
 	defer he(&err,
-		e4.With(storekv.StringKey(key)),
+		e5.With(storekv.StringKey(key)),
 	)
 	v, ok := s.values.Load(key)
 	if !ok {
-		return we.With(e4.With(storekv.StringKey(key)))(ErrKeyNotFound)
+		return we.With(e5.With(storekv.StringKey(key)))(ErrKeyNotFound)
 	}
 	if fn != nil {
 		err := fn(bytes.NewReader(v.([]byte)))

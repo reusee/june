@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storemem"
@@ -47,7 +47,7 @@ func TestSave(
 	resave Resave,
 	indexGC IndexGC,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	var err error
 	var summary *Summary
@@ -171,7 +171,7 @@ func TestSave(
 	}
 
 	t.Run("same data", func(t *testing.T) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		summary, err = save(testSaveFoo(42))
 		ce(err)
 
@@ -239,7 +239,7 @@ func TestSave(
 	})
 
 	t.Run("new data", func(t *testing.T) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		summary, err = save(testSaveFoo(43))
 		ce(err)
 
@@ -309,7 +309,7 @@ func TestSave(
 	})
 
 	t.Run("reindex", func(t *testing.T) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		var before int
 		ce(Select(
 			index,
@@ -351,7 +351,7 @@ func TestSave(
 	})
 
 	t.Run("index from summary", func(t *testing.T) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 
 		iter, closer, err := index.Iter(
 			nil,
@@ -451,12 +451,12 @@ func TestSave(
 	})
 
 	t.Run("index gc", func(t *testing.T) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		ce(indexGC())
 	})
 
 	t.Run("index clean", func(t *testing.T) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 		ce(cleanIndex())
 	})
 

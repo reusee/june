@@ -11,7 +11,7 @@ import (
 	"runtime"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/storepebble"
 	"github.com/reusee/pr"
@@ -107,7 +107,7 @@ func (_ Def) Get(
 		if err != nil {
 			if is(err, pebble.ErrNotFound) {
 				return we.With(
-					e4.With(&NotFound{Key: key}),
+					e5.With(&NotFound{Key: key}),
 				)(ErrNotFound)
 			}
 			return err

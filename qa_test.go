@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4qa"
 	"github.com/reusee/june/juneqa"
 	"github.com/reusee/pa"
 	"github.com/reusee/qa"
@@ -27,8 +26,6 @@ func TestQA(t *testing.T) {
 	defs := dscope.Methods(new(qa.Def))
 	// juneqa
 	defs = append(defs, dscope.Methods(new(juneqa.Def))...)
-	// e4qa
-	defs = append(defs, dscope.Methods(new(e4qa.Def))...)
 	// pa
 	defs = append(defs, qa.AnalyzersToDefs(pa.Analyzers)...)
 

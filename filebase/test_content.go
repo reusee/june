@@ -15,7 +15,7 @@ import (
 	"testing/iotest"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/index"
 	"github.com/reusee/sb"
@@ -25,7 +25,7 @@ func TestContent(
 	t *testing.T,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	chunkThreshold := ChunkThreshold(256)
 	maxChunkSize := MaxChunkSize(1024)

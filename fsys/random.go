@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 type ShuffleDir func(string) (
@@ -73,7 +73,7 @@ func (_ Def) ShuffleDir() ShuffleDir {
 					ce(err)
 					path1 = f.Name()
 					_, err = io.CopyN(f, crand.Reader, int64(rand.Intn(128)))
-					ce(err, e4.Close(f))
+					ce(err, e5.Close(f))
 					ce(f.Close())
 					return
 				} else {
@@ -105,7 +105,7 @@ func (_ Def) ShuffleDir() ShuffleDir {
 			f, err := os.Create(path)
 			ce(err)
 			_, err = io.CopyN(f, crand.Reader, int64(rand.Intn(128)))
-			ce(err, e4.Close(f))
+			ce(err, e5.Close(f))
 			ce(f.Close())
 			return nil
 		}

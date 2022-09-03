@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 type Key struct {
@@ -62,7 +62,7 @@ func KeyFromString(str string) (key Key, err error) {
 	defer he(&err)
 	parts := strings.Split(str, ":")
 	if len(parts) != 2 {
-		ce(ErrBadKey, e4.With(fmt.Errorf("key: %s", str)))
+		ce(ErrBadKey, e5.With(fmt.Errorf("key: %s", str)))
 	}
 	var ns Namespace
 	ns, err = NamespaceFromString(parts[0])

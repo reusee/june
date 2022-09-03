@@ -12,7 +12,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storemem"
@@ -150,7 +150,7 @@ func (s *Store) sync() {
 
 		tx, err := s.DB.Begin()
 		ce(err)
-		defer he(&err, e4.Do(func() {
+		defer he(&err, e5.Do(func() {
 			tx.Rollback()
 		}))
 

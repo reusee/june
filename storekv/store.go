@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
@@ -152,10 +152,10 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 			exists, err := s.Exists(key)
 			ce(err)
 			if !exists {
-				return we.With(e4.With(key))(ErrKeyNotFound)
+				return we.With(e5.With(key))(ErrKeyNotFound)
 			}
 			err = fn(stream)
-			ce(err, e4.With(ErrRead), e4.With(key))
+			ce(err, e5.With(ErrRead), e5.With(key))
 			return nil
 		}); is(err, ErrKeyNotFound) {
 			// skip
@@ -219,10 +219,10 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 		}
 
 		if !bytes.Equal(key.Hash[:], sum) {
-			return we.With(e4.With(key))(ErrKeyNotMatch)
+			return we.With(e5.With(key))(ErrKeyNotMatch)
 		}
 		err = fn(tokens.Iter())
-		ce(err, e4.With(ErrRead), e4.With(key))
+		ce(err, e5.With(ErrRead), e5.With(key))
 		return nil
 	})
 

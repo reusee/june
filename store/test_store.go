@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/codec"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
@@ -42,7 +42,7 @@ func (_ Def) TestStore(
 		),
 		t *testing.T,
 	) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 
 		ns := key.Namespace{'f', 'o', 'o'}
 
@@ -61,7 +61,7 @@ func (_ Def) TestStore(
 			})
 
 			t.Run("read", func(t *testing.T) {
-				defer he(nil, e4.TestingFatal(t))
+				defer he(nil, e5.TestingFatal(t))
 				if err := store.Read(res.Key, func(s sb.Stream) (err error) {
 					defer he(&err)
 					var i int
@@ -100,7 +100,7 @@ func (_ Def) TestStore(
 			})
 
 			t.Run("exists", func(t *testing.T) {
-				defer he(nil, e4.TestingFatal(t))
+				defer he(nil, e5.TestingFatal(t))
 				ok, err := store.Exists(res.Key)
 				ce(err)
 				if !ok {
@@ -212,7 +212,7 @@ func (_ Def) TestStore(
 			})
 
 			t.Run("namespace", func(t *testing.T) {
-				defer he(nil, e4.TestingFatal(t))
+				defer he(nil, e5.TestingFatal(t))
 				nsBar := key.Namespace{'b', 'a', 'r'}
 				res, err := store.Write(nsBar, sb.Marshal(42))
 				ce(err)
@@ -255,7 +255,7 @@ func (_ Def) TestStore(
 			})
 
 			t.Run("options", func(t *testing.T) {
-				defer he(nil, e4.TestingFatal(t))
+				defer he(nil, e5.TestingFatal(t))
 				withKeyOK := false
 				withResultOK := false
 				_, err := store.Write(
@@ -277,7 +277,7 @@ func (_ Def) TestStore(
 			})
 
 			t.Run("delete", func(t *testing.T) {
-				defer he(nil, e4.TestingFatal(t))
+				defer he(nil, e5.TestingFatal(t))
 				res1, err := store.Write(
 					ns, sb.Marshal(rand.Int63()),
 				)

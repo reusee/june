@@ -8,11 +8,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 func TestTypeName(t *testing.T) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	type S string
 	name := Type(reflect.TypeOf((*S)(nil)).Elem())

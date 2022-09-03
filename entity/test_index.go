@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
@@ -25,7 +25,7 @@ func TestIndex(
 	index Index,
 	indexGC IndexGC,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	// save
 	var keys []Key
@@ -166,7 +166,7 @@ func TestEmbeddingSameObject(
 	updateIndex UpdateIndex,
 	sel index.SelectIndex,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	type Foo struct {
 		N int

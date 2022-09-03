@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 type FileLike interface {
@@ -29,7 +29,7 @@ type FileLike interface {
 }
 
 func writeFileLikeToDisk(scope Scope, value FileLike, path string) (err error) {
-	defer he(&err, e4.NewInfo("write to %s", path))
+	defer he(&err, e5.NewInfo("write to %s", path))
 	f, err := os.OpenFile(
 		path,
 		os.O_RDWR|os.O_CREATE,

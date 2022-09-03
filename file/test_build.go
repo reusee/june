@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
 )
@@ -18,7 +18,7 @@ func TestBuild(
 	scope Scope,
 	shuffleDir fsys.ShuffleDir,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	scope.Fork(
 		func() PackThreshold {
@@ -136,7 +136,7 @@ func TestBuildMerge(
 		equal Equal,
 		iterFile IterFile,
 	) {
-		defer he(nil, e4.TestingFatal(t))
+		defer he(nil, e5.TestingFatal(t))
 
 		vd := func(name string, subs ...Virtual) Virtual {
 			return Virtual{

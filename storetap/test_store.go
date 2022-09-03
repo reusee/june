@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
@@ -21,7 +21,7 @@ func TestStore(
 	testStore store.TestStore,
 	scope dscope.Scope,
 ) {
-	defer e4.Handle(nil, e4.TestingFatal(t))
+	defer e5.Handle(nil, e5.TestingFatal(t))
 
 	with := func(
 		fn func(store.Store),

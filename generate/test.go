@@ -16,13 +16,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"golang.org/x/tools/go/packages"
 )
 
 var (
 	pt     = fmt.Printf
-	ce, he = e4.CheckWithStacktrace, e4.Handle
+	ce, he = e5.CheckWithStacktrace, e5.Handle
 )
 
 func main() {

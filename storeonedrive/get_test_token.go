@@ -11,7 +11,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/oauth"
 	"github.com/reusee/sb"
 	"golang.org/x/oauth2"
@@ -61,6 +61,6 @@ func main() {
 }
 
 var (
-	ce = e4.CheckWithStacktrace
+	ce = e5.CheckWithStacktrace
 	pt = fmt.Printf
 )

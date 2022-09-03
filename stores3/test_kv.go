@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/pelletier/go-toml"
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
 )
@@ -23,7 +23,7 @@ func TestKV(
 	testKV storekv.TestKV,
 	newKV New,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	//TODO
 	t.Skip()

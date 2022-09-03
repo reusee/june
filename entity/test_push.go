@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/pr"
@@ -21,7 +21,7 @@ func TestPush(
 	newKV storekv.New,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	mem1 := newMem(wt)
 	store1, err := newKV(mem1, "foo")

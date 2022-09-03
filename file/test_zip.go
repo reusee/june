@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
 )
@@ -22,7 +22,7 @@ func TestZip(
 	t *testing.T,
 	scope Scope,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	scope.Fork(
 		func() PackThreshold {
@@ -1233,7 +1233,7 @@ func TestZip(
 				check(c.Expected),
 				pp.CollectValues(&items),
 			)
-			ce(err, e4.WrapFunc(func(err error) error {
+			ce(err, e5.WrapFunc(func(err error) error {
 				pt("--- %d: A ---\n", i)
 				for _, v := range valuesA {
 					pt("%#v\n", v)
@@ -1285,7 +1285,7 @@ func TestZipFile(
 	iterFile IterFile,
 	shuffleDir fsys.ShuffleDir,
 ) {
-	defer he(nil, e4.TestingFatal(t))
+	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 	for i := 0; i < 64; i++ {

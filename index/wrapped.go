@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 )
 
 func (_ Def) Index(
@@ -51,7 +51,7 @@ func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 
 	if entry.Type == nil {
 		return we.With(
-			e4.NewInfo("entry type is nil: %v", entry),
+			e5.NewInfo("entry type is nil: %v", entry),
 		)(ErrInvalidEntry)
 	}
 
@@ -59,20 +59,20 @@ func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 	v, ok := specsByType.Load(t)
 	if !ok {
 		return we.With(
-			e4.NewInfo("unknown index type: %T", entry.Type),
+			e5.NewInfo("unknown index type: %T", entry.Type),
 		)(ErrInvalidEntry)
 	}
 	spec := v.(Spec)
 
 	if entry.Key == nil {
 		return we.With(
-			e4.NewInfo("entry has no Key"),
+			e5.NewInfo("entry has no Key"),
 		)(ErrInvalidEntry)
 	}
 
 	if len(entry.Tuple) != len(spec.Fields) {
 		return we.With(
-			e4.NewInfo(
+			e5.NewInfo(
 				"%s is expecting %d elements, but got %d",
 				spec.Name,
 				len(spec.Fields),
@@ -90,7 +90,7 @@ func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 				entry.Tuple[i] = reflect.ValueOf(entry.Tuple[i]).Convert(typ).Interface()
 			} else {
 				return we.With(
-					e4.NewInfo("param %d of %s should be %v", i, spec.Name, typ.String()),
+					e5.NewInfo("param %d of %s should be %v", i, spec.Name, typ.String()),
 				)(ErrInvalidEntry)
 			}
 		}

@@ -4,9 +4,9 @@
 
 package storemonotree
 
-import "github.com/reusee/e4"
+import "github.com/reusee/e5"
 
 var (
-	ce = e4.Check.With(e4.WrapStacktrace)
-	he = e4.Handle
+	ce = e5.Check.With(e5.WrapStacktrace)
+	he = e5.Handle
 )

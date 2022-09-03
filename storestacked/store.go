@@ -5,7 +5,7 @@
 package storestacked
 
 import (
-	"github.com/reusee/e4"
+	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
@@ -61,7 +61,7 @@ func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 			delete(backingKeys, key)
 			ce(
 				fn(key),
-				e4.WrapFunc(func(err error) error {
+				e5.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						isBreak = true
 					}
@@ -76,7 +76,7 @@ func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 		for key := range backingKeys {
 			ce(
 				fn(key),
-				e4.WrapFunc(func(err error) error {
+				e5.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						return nil
 					}
@@ -117,7 +117,7 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 			delete(backingKeys, key)
 			ce(
 				fn(key),
-				e4.WrapFunc(func(err error) error {
+				e5.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						isBreak = true
 					}
@@ -132,7 +132,7 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 		for key := range backingKeys {
 			ce(
 				fn(key),
-				e4.WrapFunc(func(err error) error {
+				e5.WrapFunc(func(err error) error {
 					if is(err, Break) {
 						return nil
 					}
@@ -227,7 +227,7 @@ func (s *Store) Write(
 		ce(err)
 		if !ignore {
 			if res1.Key != res2.Key {
-				return res, we.With(e4.With(res1.Key))(ErrKeyNotMatch)
+				return res, we.With(e5.With(res1.Key))(ErrKeyNotMatch)
 			}
 		}
 		return store.WriteResult{
