@@ -22,13 +22,12 @@ require (
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5
 	github.com/reusee/dscope v0.0.0-20220902145320-812615378c9c
-	github.com/reusee/e4 v0.0.0-20220624024633-9eab321f05d6 // indirect
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20211111065340-3380cad016fa
 	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
-	github.com/reusee/qa v0.0.0-20211225193548-f3656b4dc706
+	github.com/reusee/qa v0.0.0-20220903101203-26c9396a6dd0
 	github.com/reusee/sb v0.0.0-20220902150420-e7a4550aa30a
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
@@ -38,7 +37,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.12
+	golang.org/x/tools v0.1.13-0.20220809203119-6fa767d87cd9
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
