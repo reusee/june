@@ -73,7 +73,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 	)
 	ce(err)
 	i.store.Lock()
-	i.store.index.ReplaceOrInsert(Item{tokens})
+	i.store.index.ReplaceOrInsert(tokens)
 	i.store.Unlock()
 
 	if entry.Key != nil {
@@ -89,7 +89,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 		)
 		ce(err)
 		i.store.Lock()
-		i.store.index.ReplaceOrInsert(Item{preTokens})
+		i.store.index.ReplaceOrInsert(preTokens)
 		i.store.Unlock()
 	}
 
@@ -110,7 +110,7 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	)
 	ce(err)
 	i.store.Lock()
-	i.store.index.Delete(Item{tokens})
+	i.store.index.Delete(tokens)
 	i.store.Unlock()
 
 	if entry.Key != nil {
@@ -126,7 +126,7 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 		)
 		ce(err)
 		i.store.Lock()
-		i.store.index.Delete(Item{preTokens})
+		i.store.index.Delete(preTokens)
 		i.store.Unlock()
 	}
 
@@ -231,8 +231,7 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 		var s sb.Stream
 		m.store.RLock()
 		defer m.store.RUnlock()
-		m.store.index.AscendGreaterOrEqual(Item{m.current}, func(item Item) bool {
-			tokens := item.Tokens
+		m.store.index.AscendGreaterOrEqual(m.current, func(tokens sb.Tokens) bool {
 			if sb.MustCompare(
 				tokens.Iter(),
 				m.upper.Iter(),
@@ -265,8 +264,7 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 		var s sb.Stream
 		m.store.RLock()
 		defer m.store.RUnlock()
-		m.store.index.DescendLessOrEqual(Item{m.current}, func(item Item) bool {
-			tokens := item.Tokens
+		m.store.index.DescendLessOrEqual(m.current, func(tokens sb.Tokens) bool {
 			if sb.MustCompare(
 				tokens.Iter(),
 				m.upper.Iter(),

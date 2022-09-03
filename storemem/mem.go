@@ -17,7 +17,7 @@ import (
 type Store struct {
 	*pr.WaitTree
 	name   string
-	index  *btree.BTreeG[Item]
+	index  *btree.BTreeG[sb.Tokens]
 	values sync.Map
 	sync.RWMutex
 }
@@ -33,8 +33,8 @@ func (_ Def) New() New {
 		return &Store{
 			WaitTree: parentWt,
 			name:     fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),
-			index: btree.NewG(2, func(a, b Item) bool {
-				return sb.MustCompare(a.Tokens.Iter(), b.Tokens.Iter()) < 0
+			index: btree.NewG(2, func(a, b sb.Tokens) bool {
+				return sb.MustCompare(a.Iter(), b.Iter()) < 0
 			}),
 		}
 	}
