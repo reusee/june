@@ -94,7 +94,7 @@ func (s *Store) req(
 		return ErrClosed
 	default:
 	}
-	defer he(&err, e5.NewInfo("request %s %s", method, path))
+	defer he(&err, e5.Info("request %s %s", method, path))
 
 	resp, err := s.request(ctx, method, path, body, contentType)
 	ce(err)
@@ -108,7 +108,7 @@ func (s *Store) req(
 	}
 	if len(content) > 0 {
 		err := json.Unmarshal(content, &data)
-		ce(err, e5.NewInfo("json %s", content))
+		ce(err, e5.Info("json %s", content))
 	}
 	if data.Error != nil {
 		switch resp.StatusCode {
@@ -125,7 +125,7 @@ func (s *Store) req(
 	}
 	if target != nil {
 		err := json.Unmarshal(content, target)
-		ce(err, e5.NewInfo("json %s", content))
+		ce(err, e5.Info("json %s", content))
 	}
 	return nil
 }

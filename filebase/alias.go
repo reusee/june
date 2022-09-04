@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e5"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/key"
 )
 
@@ -22,8 +22,9 @@ type (
 )
 
 var (
-	ce, he = e5.CheckWithStacktrace, e5.Handle
-	we     = e5.WrapWithStacktrace
-	is     = errors.Is
-	pt     = fmt.Printf
+	ce = juneerr.Check
+	he = juneerr.Handle
+	we = juneerr.Wrap
+	is = errors.Is
+	pt = fmt.Printf
 )

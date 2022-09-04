@@ -264,7 +264,7 @@ func (w *Watcher) initPath(
 		return
 	}
 	ce(err,
-		e5.NewInfo("add %s", path),
+		e5.Info("add %s", path),
 	)
 
 	if stat.IsDir() {
@@ -275,7 +275,7 @@ func (w *Watcher) initPath(
 			return
 		}
 		ce(err,
-			e5.NewInfo("open %s", path),
+			e5.Info("open %s", path),
 		)
 		var latestL sync.Mutex
 		for {

@@ -28,7 +28,7 @@ require (
 	github.com/reusee/pp v0.0.0-20211111065340-3380cad016fa
 	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
 	github.com/reusee/qa v0.0.0-20220903101203-26c9396a6dd0
-	github.com/reusee/sb v0.0.0-20220902150420-e7a4550aa30a
+	github.com/reusee/sb v0.0.0-20220904090513-3bc04e08ddf7
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
@@ -43,7 +43,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
-require github.com/reusee/e5 v0.0.0-20220902143513-42365073754d
+require github.com/reusee/e5 v0.0.0-20220904082237-2324612c136a
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect

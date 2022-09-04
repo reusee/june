@@ -68,7 +68,7 @@ func (c *ContentReader) Read(buf []byte) (_ int, err error) {
 	key := c.keys[c.keyIndex]
 	var content Content
 	ce(c.fetch(key, &content),
-		e5.NewInfo("fetch %s", key))
+		e5.Info("fetch %s", key))
 	c.remainBytes = content
 	l := int64(len(content))
 	c.lengths[c.keyIndex] = &l
@@ -82,7 +82,7 @@ func (c *ContentReader) getLen() (ret int64) {
 			key := c.keys[i]
 			var content Content
 			ce(c.fetch(key, &content),
-				e5.NewInfo("fetch %s", key))
+				e5.Info("fetch %s", key))
 			l := int64(len(content))
 			c.lengths[i] = &l
 			ret += l
@@ -116,7 +116,7 @@ func (c *ContentReader) Seek(offset int64, whence int) (_ int64, err error) {
 			key := c.keys[i]
 			var content Content
 			ce(c.fetch(key, &content),
-				e5.NewInfo("fetch %s", key))
+				e5.Info("fetch %s", key))
 			l := int64(len(content))
 			c.lengths[i] = &l
 			if offset <= c.offset+l {
@@ -135,7 +135,7 @@ func (c *ContentReader) Seek(offset int64, whence int) (_ int64, err error) {
 				key := c.keys[i]
 				var content Content
 				ce(c.fetch(key, &content),
-					e5.NewInfo("fetch %s", key))
+					e5.Info("fetch %s", key))
 				cut := offset - c.offset
 				c.remainBytes = content[cut:]
 				c.offset = offset

@@ -93,7 +93,7 @@ func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 	default:
 	}
 	defer he(&err,
-		e5.NewInfo("prefix: %s", prefix),
+		e5.Info("prefix: %s", prefix),
 	)
 
 	parts := strings.Split(prefix, "/")
@@ -149,8 +149,8 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 	defer he(
 		&err,
-		e5.NewInfo("path: %s", path),
-		e5.NewInfo("dir: %s", dir),
+		e5.Info("path: %s", path),
+		e5.Info("dir: %s", dir),
 		e5.With(storekv.StringKey(key)),
 	)
 
@@ -233,13 +233,13 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 			err := os.Rename(path, path+".deleted")
 			ce(err,
 				e5.With(storekv.StringKey(key)),
-				e5.NewInfo("path: %s", path),
+				e5.Info("path: %s", path),
 			)
 		} else {
 			err := os.Remove(path)
 			ce(err,
 				e5.With(storekv.StringKey(key)),
-				e5.NewInfo("path: %s", path),
+				e5.Info("path: %s", path),
 			)
 		}
 	}

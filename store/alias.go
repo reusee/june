@@ -18,7 +18,7 @@ type (
 
 var (
 	as = errors.As
-	ce = e5.CheckWithStacktrace
+	ce = e5.Check.With(e5.WrapStacktrace)
 	he = e5.Handle
-	we = e5.WrapWithStacktrace
+	we = e5.Wrap.With(e5.WrapStacktrace)
 )

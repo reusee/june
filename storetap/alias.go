@@ -4,12 +4,12 @@
 
 package storetap
 
-import "github.com/reusee/e5"
+import "github.com/reusee/june/juneerr"
 
 type (
 	any = interface{}
 )
 
 var (
-	ce = e5.CheckWithStacktrace
+	ce = juneerr.Check
 )

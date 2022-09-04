@@ -83,7 +83,7 @@ func (k *KV) KeyPut(key string, r io.Reader) (err error) {
 
 func (k *KV) KeyIter(prefix string, fn func(string) error) (err error) {
 	defer k.Add()()
-	defer he(&err, e5.NewInfo("prefix %s", prefix))
+	defer he(&err, e5.Info("prefix %s", prefix))
 
 	marker := ""
 loop:

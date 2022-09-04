@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/reusee/dscope"
-	"github.com/reusee/e5"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/key"
 )
 
@@ -18,7 +18,7 @@ type (
 )
 
 var (
-	ce = e5.CheckWithStacktrace
-	he = e5.Handle
+	ce = juneerr.Check
+	he = juneerr.Handle
 	pt = fmt.Printf
 )

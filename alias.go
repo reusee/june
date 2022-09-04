@@ -7,8 +7,8 @@ package june
 import (
 	"fmt"
 
-	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/store"
 )
 
@@ -23,6 +23,6 @@ type (
 var (
 	pt = fmt.Printf
 	sp = fmt.Sprintf
-	ce = e5.CheckWithStacktrace
-	he = e5.Handle
+	ce = juneerr.Check
+	he = juneerr.Handle
 )

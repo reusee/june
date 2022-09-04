@@ -7,7 +7,7 @@ package storestacked
 import (
 	"errors"
 
-	"github.com/reusee/e5"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 )
@@ -27,9 +27,9 @@ var (
 	ErrIgnore = store.ErrIgnore
 	Break     = store.Break
 
-	ce = e5.CheckWithStacktrace
-	he = e5.Handle
-	we = e5.WrapWithStacktrace
+	ce = juneerr.Check
+	he = juneerr.Handle
+	we = juneerr.Wrap
 
 	ErrKeyNotFound = store.ErrKeyNotFound
 	ErrKeyNotMatch = store.ErrKeyNotMatch

@@ -46,12 +46,12 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 
 	if entry.Type == nil {
 		return we.With(
-			e5.NewInfo("entry type is nil: %+v", entry),
+			e5.Info("entry type is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 	if entry.Key == nil && entry.Path == nil {
 		return we.With(
-			e5.NewInfo("both entry key and path is nil: %+v", entry),
+			e5.Info("both entry key and path is nil: %+v", entry),
 		)(index.ErrInvalidEntry)
 	}
 

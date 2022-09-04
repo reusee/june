@@ -7,14 +7,14 @@ package storesqlite
 import (
 	"fmt"
 
-	"github.com/reusee/e5"
+	"github.com/reusee/june/juneerr"
 )
 
 var (
-	ce = e5.CheckWithStacktrace
-	he = e5.Handle
+	ce = juneerr.Check
+	he = juneerr.Handle
+	we = juneerr.Wrap
 	pt = fmt.Printf
-	we = e5.WrapWithStacktrace
 )
 
 type (

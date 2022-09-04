@@ -54,7 +54,7 @@ func (d DiskFile) GetDevice(_ Scope) uint64 {
 }
 
 func (d DiskFile) WithReader(scope Scope, fn func(io.Reader) error) (err error) {
-	defer he(&err, e5.NewInfo("read %s", d.Path))
+	defer he(&err, e5.Info("read %s", d.Path))
 	var r io.Reader
 	if d.contentReady {
 		r = bytes.NewReader(d.content)

@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/reusee/e5"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/store"
 )
 
@@ -24,6 +24,6 @@ type (
 var (
 	is = errors.Is
 	pt = fmt.Printf
-	he = e5.Handle
-	ce = e5.CheckWithStacktrace
+	he = juneerr.Handle
+	ce = juneerr.Check
 )

@@ -14,6 +14,6 @@ import (
 var (
 	pt = fmt.Printf
 	is = errors.Is
-	ce = e5.CheckWithStacktrace
+	ce = e5.Check.With(e5.WrapStacktrace)
 	he = e5.Handle
 )

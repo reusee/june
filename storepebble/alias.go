@@ -9,9 +9,9 @@ import (
 	"fmt"
 
 	"github.com/cockroachdb/pebble/vfs"
-	"github.com/reusee/e5"
 	"github.com/reusee/june/codec"
 	"github.com/reusee/june/index"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 )
@@ -31,9 +31,9 @@ type (
 var (
 	is = errors.Is
 	pt = fmt.Printf
-	we = e5.WrapWithStacktrace
-	ce = e5.CheckWithStacktrace
-	he = e5.Handle
+	we = juneerr.Wrap
+	ce = juneerr.Check
+	he = juneerr.Handle
 
 	Break = store.Break
 

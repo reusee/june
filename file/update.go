@@ -62,7 +62,7 @@ func (_ Def) Update(
 		}
 
 		return func() (_ any, _ Src, err error) {
-			defer he(&err, e5.NewInfo("update %s", path))
+			defer he(&err, e5.Info("update %s", path))
 
 			dir := filepath.Dir(path)
 			selectFile := func(item ZipItem) any {

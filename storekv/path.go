@@ -48,7 +48,7 @@ func (s *Store) keyToPath(key Key) string {
 var pathPattern = regexp.MustCompile(`([^)]+)/([0-9a-f]+)$`)
 
 func (s *Store) pathToKey(path string) (key Key, err error) {
-	defer he(&err, e5.NewInfo("path %s", path))
+	defer he(&err, e5.Info("path %s", path))
 	path = strings.TrimPrefix(path, s.codec.ID())
 	path = strings.TrimPrefix(path, s.prefix)
 	path = strings.TrimPrefix(path, objPrefix)
@@ -57,10 +57,10 @@ func (s *Store) pathToKey(path string) (key Key, err error) {
 		ce(fmt.Errorf("bad path"))
 	}
 	bs, err := hex.DecodeString(parts[1])
-	ce(err, e5.NewInfo("bad namespace"))
+	ce(err, e5.Info("bad namespace"))
 	copy(key.Namespace[:], bs)
 	bs, err = hex.DecodeString(parts[2])
-	ce(err, e5.NewInfo("bad key"))
+	ce(err, e5.Info("bad key"))
 	copy(key.Hash[:], bs)
 	return
 }

@@ -70,7 +70,7 @@ func (_ Def) New(
 		options ...NewOption,
 	) (_ *Store, err error) {
 		defer he(&err,
-			e5.NewInfo("dir: %s", dir),
+			e5.Info("dir: %s", dir),
 			e5.With(NewOptions(options)),
 		)
 

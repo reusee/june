@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/reusee/e5"
 	"github.com/reusee/june/codec"
 	"github.com/reusee/june/fsys"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/store"
 )
 
@@ -22,9 +22,9 @@ type (
 var (
 	is = errors.Is
 	pt = fmt.Printf
-	we = e5.WrapWithStacktrace
-	he = e5.Handle
-	ce = e5.CheckWithStacktrace
+	we = juneerr.Wrap
+	he = juneerr.Handle
+	ce = juneerr.Check
 
 	Break = store.Break
 

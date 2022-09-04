@@ -7,5 +7,6 @@ package naming
 import "github.com/reusee/e5"
 
 var (
-	ce, he = e5.CheckWithStacktrace, e5.Handle
+	ce = e5.Check.With(e5.WrapStacktrace)
+	he = e5.Handle
 )

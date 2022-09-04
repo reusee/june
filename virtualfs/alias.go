@@ -8,16 +8,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/reusee/e5"
 	"github.com/reusee/june/file"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/key"
 )
 
 var (
-	ce, he = e5.CheckWithStacktrace, e5.Handle
-	as     = errors.As
-	pt     = fmt.Printf
-	is     = errors.Is
+	ce = juneerr.Check
+	he = juneerr.Handle
+	as = errors.As
+	pt = fmt.Printf
+	is = errors.Is
 )
 
 type (

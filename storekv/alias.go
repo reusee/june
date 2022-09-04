@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/reusee/e5"
 	"github.com/reusee/june/codec"
+	"github.com/reusee/june/juneerr"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
@@ -33,9 +33,9 @@ var (
 	is = errors.Is
 	as = errors.As
 	pt = fmt.Printf
-	ce = e5.CheckWithStacktrace
-	he = e5.Handle
-	we = e5.WrapWithStacktrace
+	ce = juneerr.Check
+	he = juneerr.Handle
+	we = juneerr.Wrap
 
 	Break = store.Break
 

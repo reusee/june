@@ -118,7 +118,7 @@ func (_ Def) WriteContents(
 		for _, key := range keys {
 			var content Content
 			err = fetch(key, &content)
-			ce(err, e5.NewInfo("fetch content %s", key))
+			ce(err, e5.Info("fetch content %s", key))
 			_, err := w.Write(content)
 			ce(err)
 		}

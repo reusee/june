@@ -137,7 +137,7 @@ func (s *Store) keyIter(
 	withRLock func(func()),
 	fn func(key string) error,
 ) (err error) {
-	defer he(&err, e5.NewInfo("prefix %s", prefix))
+	defer he(&err, e5.Info("prefix %s", prefix))
 	defer add()()
 
 	var lowerBytes, upperBytes []byte
@@ -195,7 +195,7 @@ func (s *Store) keyIter(
 		if is(err, Break) {
 			return nil
 		}
-		ce(err, e5.NewInfo("key %s", key))
+		ce(err, e5.Info("key %s", key))
 		withRLock(func() {
 			ok = iter.Next()
 		})
@@ -225,7 +225,7 @@ func (s *Store) keyDelete(
 			err = del(key, nil)
 		}, Kv, key)
 		ce(err,
-			e5.NewInfo("key %s", key),
+			e5.Info("key %s", key),
 		)
 	}
 
