@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/cockroachdb/errors v1.9.0 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20221031151705-b53472d0ec86
+	github.com/cockroachdb/pebble v0.0.0-20221104143948-2323c7534751
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -21,7 +21,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.43
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5
-	github.com/reusee/dscope v0.0.0-20221101044630-f9ad0e7a1e73
+	github.com/reusee/dscope v0.0.0-20221104171811-d2f6aaf71632
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
@@ -43,7 +43,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
-require github.com/reusee/e5 v0.0.0-20221101064820-fa560df2c9bf
+require github.com/reusee/e5 v0.0.0-20221103014142-7fb507f8cb8f
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
@@ -63,7 +63,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.13.0 // indirect
+	github.com/prometheus/client_golang v1.13.1 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
