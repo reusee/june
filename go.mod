@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/cockroachdb/errors v1.9.0 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20221104143948-2323c7534751
+	github.com/cockroachdb/pebble v0.0.0-20221107201208-868f031742e6
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -32,10 +32,10 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326 // indirect
+	golang.org/x/exp v0.0.0-20221106115401-f9659909a136 // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/oauth2 v0.1.0
-	golang.org/x/sys v0.1.0
+	golang.org/x/sys v0.2.0
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/tools v0.2.0
 	google.golang.org/appengine v1.6.7 // indirect
