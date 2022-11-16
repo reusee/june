@@ -68,7 +68,7 @@ func TestPush(
 			)
 			ce(err)
 			if numCheck != 3 {
-				t.Fatal()
+				t.Fatalf("got %d", numCheck)
 			}
 			if numSave != 3 {
 				t.Fatal()
