@@ -5,6 +5,7 @@
 package filebase
 
 import (
+	"context"
 	"sort"
 	"sync"
 
@@ -13,9 +14,9 @@ import (
 	"github.com/reusee/pp"
 )
 
-type IterSubs func(subs Subs, cont pp.Src) pp.Src
+type IterSubs func(ctx context.Context, subs Subs, cont pp.Src) pp.Src
 
-type FindFileInSubs func(subs Subs, parts []string) (*File, error)
+type FindFileInSubs func(ctx context.Context, subs Subs, parts []string) (*File, error)
 
 func (_ Def) Funcs(
 	fetch entity.Fetch,
@@ -27,19 +28,19 @@ func (_ Def) Funcs(
 ) {
 
 	var subsCache sync.Map
-	fetchSubs := func(key Key) (Subs, error) {
+	fetchSubs := func(ctx context.Context, key Key) (Subs, error) {
 		if v, ok := subsCache.Load(key); ok {
 			return v.(Subs), nil
 		}
 		var subs Subs
-		if err := fetch(key, &subs); err != nil {
+		if err := fetch(ctx, key, &subs); err != nil {
 			return nil, err
 		}
 		subsCache.Store(key, subs)
 		return subs, nil
 	}
 
-	iterSubs = func(subs Subs, cont pp.Src) pp.Src {
+	iterSubs = func(ctx context.Context, subs Subs, cont pp.Src) pp.Src {
 		var src pp.Src
 		src = func() (_ any, _ pp.Src, err error) {
 			defer he(&err)
@@ -51,16 +52,16 @@ func (_ Def) Funcs(
 			if sub.File != nil {
 				return sub.File, src, nil
 			} else if sub.Pack != nil {
-				childSubs, err := fetchSubs(sub.Pack.Key)
+				childSubs, err := fetchSubs(ctx, sub.Pack.Key)
 				ce(err)
-				return nil, iterSubs(childSubs, src), nil
+				return nil, iterSubs(ctx, childSubs, src), nil
 			}
 			panic("bad sub")
 		}
 		return src
 	}
 
-	findFileInSubs = func(subs Subs, parts []string) (_ *File, err error) {
+	findFileInSubs = func(ctx context.Context, subs Subs, parts []string) (_ *File, err error) {
 		defer he(&err)
 
 		if len(parts) == 0 || len(subs) == 0 {
@@ -87,11 +88,11 @@ func (_ Def) Funcs(
 			if len(parts) == 1 {
 				return sub.File, nil
 			}
-			return findFileInSubs(sub.File.Subs, parts[1:])
+			return findFileInSubs(ctx, sub.File.Subs, parts[1:])
 		} else if sub.Pack != nil {
-			childSubs, err := fetchSubs(sub.Pack.Key)
+			childSubs, err := fetchSubs(ctx, sub.Pack.Key)
 			ce(err)
-			return findFileInSubs(childSubs, parts)
+			return findFileInSubs(ctx, childSubs, parts)
 		}
 		panic("bad sub")
 	}

@@ -5,6 +5,7 @@
 package fsys
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"os"
@@ -14,16 +15,15 @@ import (
 	"time"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/pr"
 )
 
 func TestWatch(
 	t *testing.T,
-	wt *pr.WaitTree,
 	watch Watch,
 	shuffle ShuffleDir,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	// temp file
 	dir := t.TempDir()
@@ -39,7 +39,7 @@ func TestWatch(
 	var updatedCounter int64
 	initOK := make(chan struct{})
 	w, err := watch(
-		wt,
+		ctx,
 		dir,
 		TapUpdatePaths(func(paths []string) {
 			atomic.AddInt64(&counter, int64(len(paths)))

@@ -6,6 +6,7 @@ package storeonedrive
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math/rand"
 	"os"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 	"golang.org/x/oauth2"
 )
@@ -23,7 +23,6 @@ func TestKV(
 	t *testing.T,
 	testKV storekv.TestKV,
 	newStore New,
-	wt *pr.WaitTree,
 ) {
 
 	if os.Getenv("test_onedrive") == "" {
@@ -32,6 +31,7 @@ func TestKV(
 
 	defer he(nil, e5.TestingFatal(t))
 
+	ctx := context.Background()
 	with := func(fn func(storekv.KV, string)) {
 		config := oauth2.Config{
 			ClientID: "c6937f2a-2038-46b5-85ab-ccc9f1d60eef",
@@ -57,10 +57,9 @@ func TestKV(
 			sb.Unmarshal(&token),
 		))
 
-		client := config.Client(wt.Ctx, token)
+		client := config.Client(ctx, token)
 		dir := fmt.Sprintf("%d", rand.Int63())
 		kv, err := newStore(
-			wt,
 			client,
 			"/me/drive/special/AppRoot/",
 			dir,
@@ -70,6 +69,6 @@ func TestKV(
 
 	}
 
-	testKV(t, with)
+	testKV(ctx, t, with)
 
 }

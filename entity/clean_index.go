@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -14,6 +15,7 @@ import (
 )
 
 type CleanIndex func(
+	ctx context.Context,
 	options ...CleanIndexOption,
 ) error
 
@@ -26,6 +28,7 @@ func (_ Def) CleanIndex(
 	store store.Store,
 ) CleanIndex {
 	return func(
+		ctx context.Context,
 		options ...CleanIndexOption,
 	) (err error) {
 		defer he(&err)
@@ -52,12 +55,13 @@ func (_ Def) CleanIndex(
 		typeKey := reflect.TypeOf((*Key)(nil)).Elem()
 
 		keyExists := make(map[Key]bool)
-		ce(store.IterAllKeys(func(key Key) error {
+		ce(store.IterAllKeys(ctx, func(key Key) error {
 			keyExists[key] = true
 			return nil
 		}))
 
 		ce(deleteIndex(
+			ctx,
 			func(stream sb.Stream) (_ *IndexEntry, err error) {
 				defer he(&err)
 

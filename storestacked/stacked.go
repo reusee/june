@@ -5,15 +5,14 @@
 package storestacked
 
 import (
+	"context"
 	"fmt"
 	"sync/atomic"
 
 	"github.com/reusee/june/store"
-	"github.com/reusee/pr"
 )
 
 type Store struct {
-	*pr.WaitTree
 	name        string
 	Upstream    store.Store
 	Backing     store.Store
@@ -38,7 +37,7 @@ const (
 )
 
 type New func(
-	*pr.WaitTree,
+	context.Context,
 	store.Store,
 	store.Store,
 	ReadPolicy,
@@ -47,7 +46,7 @@ type New func(
 
 func (_ Def) New() New {
 	return func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		upstream store.Store,
 		backing store.Store,
 		readPolicy ReadPolicy,
@@ -55,13 +54,12 @@ func (_ Def) New() New {
 	) (_ *Store, err error) {
 		defer he(&err)
 
-		id1, err := upstream.ID()
+		id1, err := upstream.ID(ctx)
 		ce(err)
-		id2, err := backing.ID()
+		id2, err := backing.ID(ctx)
 		ce(err)
 
 		return &Store{
-			WaitTree: parentWt,
 			name: fmt.Sprintf("stacked%d(%s, %s)",
 				atomic.AddInt64(&serial, 1),
 				upstream.Name(),
@@ -82,6 +80,6 @@ func (s *Store) Name() string {
 	return s.name
 }
 
-func (s *Store) ID() (StoreID, error) {
+func (s *Store) ID(ctx context.Context) (StoreID, error) {
 	return s.id, nil
 }

@@ -5,6 +5,7 @@
 package storemem
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"sync/atomic"
@@ -37,11 +38,11 @@ type Index struct {
 	id    StoreID
 }
 
-func (i Index) Name() string {
-	return i.name
+func (i Index) Name(_ context.Context) (string, error) {
+	return i.name, nil
 }
 
-func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
+func (i Index) Save(ctx context.Context, entry IndexEntry, options ...index.SaveOption) (err error) {
 	defer he(&err)
 
 	if entry.Type == nil {
@@ -100,7 +101,7 @@ func (i Index) Save(entry IndexEntry, options ...index.SaveOption) (err error) {
 	return nil
 }
 
-func (i Index) Delete(entry IndexEntry) (err error) {
+func (i Index) Delete(ctx context.Context, entry IndexEntry) (err error) {
 	defer he(&err)
 	tokens, err := sb.TokensFromStream(
 		sb.Marshal(index.StoreIndex{
@@ -142,6 +143,7 @@ type indexIter struct {
 }
 
 func (i Index) Iter(
+	ctx context.Context,
 	lower *sb.Tokens,
 	upper *sb.Tokens,
 	order Order,
@@ -238,24 +240,26 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 			) >= 0 {
 				return false
 			}
-			if n == 0 {
+			switch n {
+			case 0:
 				var err error
 				s, err = extractIndex(tokens.Iter())
 				ce(err)
 				n++
 				return true
-			} else if n == 1 {
+			case 1:
 				m.current = tokens
 				n++
 				return false
 			}
 			return false
 		})
-		if n == 0 {
+		switch n {
+		case 0:
 			return nil, nil, nil
-		} else if n == 1 {
+		case 1:
 			return s, nil, nil
-		} else {
+		default:
 			return s, m.Iter, nil
 		}
 
@@ -278,24 +282,26 @@ func (m *indexIter) Iter() (_ any, _ pp.Src, err error) {
 			) < 0 {
 				return false
 			}
-			if n == 0 {
+			switch n {
+			case 0:
 				var err error
 				s, err = extractIndex(tokens.Iter())
 				ce(err)
 				n++
 				return true
-			} else if n == 1 {
+			case 1:
 				m.current = tokens
 				n++
 				return false
 			}
 			return false
 		})
-		if n == 0 {
+		switch n {
+		case 0:
 			return nil, nil, nil
-		} else if n == 1 {
+		case 1:
 			return s, nil, nil
-		} else {
+		default:
 			return s, m.Iter, nil
 		}
 

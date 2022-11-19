@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -17,7 +18,8 @@ func TestNewName(
 	newName NewName,
 	machineName naming.MachineName,
 ) {
-	name := newName("foo")
+	ctx := context.Background()
+	name := newName(ctx, "foo")
 	if !name.Valid() {
 		t.Fatal()
 	}

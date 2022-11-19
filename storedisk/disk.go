@@ -16,11 +16,9 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
 )
 
 type Store struct {
-	*pr.WaitTree
 	name        string
 	storeID     string
 	id          string
@@ -50,12 +48,11 @@ func (e NewOptions) Error() string {
 }
 
 type New func(
-	wt *pr.WaitTree,
 	path string,
 	options ...NewOption,
 ) (*Store, error)
 
-func (_ Def) New(
+func (Def) New(
 	ensureDir fsys.EnsureDir,
 	setRestrictedPath fsys.SetRestrictedPath,
 	isTesting sys.Testing,
@@ -65,7 +62,6 @@ func (_ Def) New(
 	noSync := bool(isTesting && runtime.GOOS == "darwin")
 
 	return func(
-		parentWt *pr.WaitTree,
 		dir string,
 		options ...NewOption,
 	) (_ *Store, err error) {
@@ -79,7 +75,6 @@ func (_ Def) New(
 		err = setRestrictedPath(dir)
 		ce(err)
 		store := &Store{
-			WaitTree: parentWt,
 			name: fmt.Sprintf("disk%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				filepath.Base(dir),

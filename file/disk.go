@@ -6,6 +6,7 @@ package file
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"time"
@@ -53,7 +54,7 @@ func (d DiskFile) GetDevice(_ Scope) uint64 {
 	return fsys.GetDevice(d.info)
 }
 
-func (d DiskFile) WithReader(scope Scope, fn func(io.Reader) error) (err error) {
+func (d DiskFile) WithReader(ctx context.Context, scope Scope, fn func(io.Reader) error) (err error) {
 	defer he(&err, e5.Info("read %s", d.Path))
 	var r io.Reader
 	if d.contentReady {

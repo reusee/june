@@ -5,6 +5,8 @@
 package storemonotree
 
 import (
+	"context"
+
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
@@ -12,7 +14,7 @@ import (
 
 var _ store.Store = new(Tree)
 
-func (t *Tree) ID() (store.ID, error) {
+func (t *Tree) ID(ctx context.Context) (store.ID, error) {
 	return t.id, nil
 }
 
@@ -21,6 +23,7 @@ func (t *Tree) Name() string {
 }
 
 func (t *Tree) Write(
+	ctx context.Context,
 	ns key.Namespace,
 	stream sb.Stream,
 	options ...store.WriteOption,
@@ -36,6 +39,7 @@ func (t *Tree) Write(
 }
 
 func (t *Tree) Read(
+	ctx context.Context,
 	key store.Key,
 	fn func(sb.Stream) error,
 ) (
@@ -49,6 +53,7 @@ func (t *Tree) Read(
 }
 
 func (t *Tree) Exists(
+	ctx context.Context,
 	key store.Key,
 ) (
 	exists bool,
@@ -62,6 +67,7 @@ func (t *Tree) Exists(
 }
 
 func (t *Tree) IterKeys(
+	ctx context.Context,
 	ns key.Namespace,
 	fn func(store.Key) error,
 ) (
@@ -75,6 +81,7 @@ func (t *Tree) IterKeys(
 }
 
 func (t *Tree) IterAllKeys(
+	ctx context.Context,
 	fn func(store.Key) error,
 ) (
 	err error,
@@ -87,6 +94,7 @@ func (t *Tree) IterAllKeys(
 }
 
 func (t *Tree) Delete(
+	ctx context.Context,
 	keys []store.Key,
 ) (
 	err error,

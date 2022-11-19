@@ -5,6 +5,7 @@
 package storestacked
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,14 +13,12 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
 	testStore store.TestStore,
 	scope dscope.Scope,
-	wt *pr.WaitTree,
 ) {
 	for _, readPolicy := range []ReadPolicy{
 		ReadThrough,
@@ -32,26 +31,27 @@ func TestStore(
 		} {
 
 			t.Run(fmt.Sprintf("%v / %v", readPolicy, writePolicy), func(t *testing.T) {
+				ctx := context.Background()
 				with := func(fn func(store.Store), defs ...any) {
 					scope.Fork(defs...).Call(func(
 						newMem storemem.New,
 						newKV storekv.New,
 						newStore New,
 					) {
-						backing, err := newKV(newMem(wt), "foo")
+						backing, err := newKV(newMem(), "foo")
 						if err != nil {
 							t.Fatal(err)
 						}
-						upstream, err := newKV(newMem(wt), "foo")
+						upstream, err := newKV(newMem(), "foo")
 						if err != nil {
 							t.Fatal(err)
 						}
-						store, err := newStore(wt, upstream, backing, readPolicy, writePolicy)
+						store, err := newStore(ctx, upstream, backing, readPolicy, writePolicy)
 						ce(err)
 						fn(store)
 					})
 				}
-				testStore(with, t)
+				testStore(ctx, with, t)
 			})
 
 		}

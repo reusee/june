@@ -5,6 +5,7 @@
 package index
 
 import (
+	"context"
 	"errors"
 	"io"
 
@@ -20,17 +21,18 @@ type SaveOption interface {
 	IsSaveOption()
 }
 
-func (_ TapEntry) IsSaveOption() {}
+func (TapEntry) IsSaveOption() {}
 
 type Index interface {
-	Name() string
+	Name(ctx context.Context) (string, error)
 	Iter(
+		ctx context.Context,
 		lower *sb.Tokens, // inclusive in any order
 		upper *sb.Tokens, // exclusive in any order
 		order Order,
 	) (Src, io.Closer, error)
-	Save(entry Entry, options ...SaveOption) error
-	Delete(entry Entry) error
+	Save(ctx context.Context, entry Entry, options ...SaveOption) error
+	Delete(ctx context.Context, entry Entry) error
 }
 
 var ErrInvalidEntry = errors.New("invalid entry")
@@ -42,6 +44,6 @@ const (
 	Desc
 )
 
-func (_ Order) IsSelectOption() {}
+func (Order) IsSelectOption() {}
 
-func (_ Order) IsIterOption() {}
+func (Order) IsIterOption() {}

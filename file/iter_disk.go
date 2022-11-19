@@ -6,6 +6,7 @@ package file
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,10 +16,10 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
-	"github.com/reusee/pr"
 )
 
 type IterDiskFile func(
+	ctx context.Context,
 	path string,
 	cont Src,
 	options ...IterDiskFileOption,
@@ -28,10 +29,9 @@ type IterDiskFileOption interface {
 	IsIterDiskFileOption()
 }
 
-func (_ Def) IterDiskFile(
+func (Def) IterDiskFile(
 	ignore Ignore,
 	isRestrictedPath fsys.IsRestrictedPath,
-	wt *pr.WaitTree,
 ) (iter IterDiskFile) {
 
 	type Ignore = func(path string, file DiskFile) bool
@@ -43,6 +43,7 @@ func (_ Def) IterDiskFile(
 	}
 
 	var iterFile func(
+		ctx context.Context,
 		base string,
 		rel string,
 		options Options,
@@ -51,9 +52,9 @@ func (_ Def) IterDiskFile(
 	) Src
 
 	iterSubs := func(
+		ctx context.Context,
 		base string,
 		rel string,
-		diskFile DiskFile,
 		options Options,
 		ignores []Ignore,
 		cont Src,
@@ -114,6 +115,7 @@ func (_ Def) IterDiskFile(
 			name := names[0]
 			names = names[1:]
 			return nil, iterFile(
+				ctx,
 				base,
 				filepath.Join(rel, name),
 				options,
@@ -125,6 +127,7 @@ func (_ Def) IterDiskFile(
 	}
 
 	iterFile = func(
+		ctx context.Context,
 		base string,
 		rel string,
 		options Options,
@@ -135,8 +138,8 @@ func (_ Def) IterDiskFile(
 		return func() (_ any, _ Src, err error) {
 
 			select {
-			case <-wt.Ctx.Done():
-				err = wt.Ctx.Err()
+			case <-ctx.Done():
+				err = ctx.Err()
 				return
 			default:
 			}
@@ -197,7 +200,7 @@ func (_ Def) IterDiskFile(
 					},
 					Expand: func(expand bool) {
 						if expand {
-							next = iterSubs(base, rel, diskFile, options, ignores, cont)
+							next = iterSubs(ctx, base, rel, options, ignores, cont)
 						} else {
 							next = cont
 						}
@@ -216,7 +219,7 @@ func (_ Def) IterDiskFile(
 		}
 	}
 
-	return func(path string, cont Src, options ...IterDiskFileOption) Src {
+	return func(ctx context.Context, path string, cont Src, options ...IterDiskFileOption) Src {
 		return func() (_ any, _ Src, err error) {
 			defer he(&err, e5.Info("iter %s", path))
 
@@ -242,6 +245,7 @@ func (_ Def) IterDiskFile(
 
 			base, rel := filepath.Split(abs)
 			return nil, iterFile(
+				ctx,
 				base,
 				rel,
 				opts,

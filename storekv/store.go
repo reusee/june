@@ -17,17 +17,17 @@ import (
 	"github.com/reusee/sb"
 )
 
-func (s *Store) ID() (StoreID, error) {
-	return s.getID()
+func (s *Store) ID(ctx context.Context) (StoreID, error) {
+	return s.getID(ctx)
 }
 
-func (s *Store) Exists(key Key) (bool, error) {
+func (s *Store) Exists(ctx context.Context, key Key) (bool, error) {
 	path := s.keyToPath(key)
-	return s.kv.KeyExists(path)
+	return s.kv.KeyExists(ctx, path)
 }
 
-func (s *Store) IterAllKeys(fn func(Key) error) error {
-	return s.kv.KeyIter(s.objPrefix(), func(k string) error {
+func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) error {
+	return s.kv.KeyIter(ctx, s.objPrefix(), func(k string) error {
 		key, err := s.pathToKey(k)
 		if err != nil {
 			// ignore
@@ -45,10 +45,10 @@ var shards = func() []string {
 	return ret
 }()
 
-func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) error {
+func (s *Store) IterKeys(ctx context.Context, ns key.Namespace, fn func(Key) error) error {
 	nsPrefix := s.nsPrefix(ns)
 
-	ctx, cancel := context.WithCancel(s.Ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	keys := make(chan *Key)
@@ -77,7 +77,7 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) error {
 				}()
 
 				prefix := nsPrefix + shard
-				if err := s.kv.KeyIter(prefix, func(k string) error {
+				if err := s.kv.KeyIter(ctx, prefix, func(k string) error {
 					key, err := s.pathToKey(k)
 					if err != nil {
 						// ignore
@@ -142,14 +142,14 @@ loop:
 	return nil
 }
 
-func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
+func (s *Store) Read(ctx context.Context, key Key, fn func(sb.Stream) error) error {
 
 	// cache
 	if s.cache != nil {
-		if err := s.cache.CacheGet(key, func(stream sb.Stream) (err error) {
+		if err := s.cache.CacheGet(ctx, key, func(stream sb.Stream) (err error) {
 			defer he(&err)
 			// cache hit, check exists
-			exists, err := s.Exists(key)
+			exists, err := s.Exists(ctx, key)
 			ce(err)
 			if !exists {
 				return we.With(e5.With(key))(ErrKeyNotFound)
@@ -167,7 +167,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 	}
 
 	path := s.keyToPath(key)
-	return s.kv.KeyGet(path, func(r io.Reader) (err error) {
+	return s.kv.KeyGet(ctx, path, func(r io.Reader) (err error) {
 		defer he(&err)
 		var tokens sb.Tokens
 		var sum []byte
@@ -187,7 +187,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 								continue
 							}
 							var offloadTokens sb.Tokens
-							err := offloadStore.Read(key, func(s sb.Stream) error {
+							err := offloadStore.Read(ctx, key, func(s sb.Stream) error {
 								return sb.Copy(
 									s,
 									sb.CollectTokens(&offloadTokens),
@@ -229,6 +229,7 @@ func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 }
 
 func (s *Store) Write(
+	ctx context.Context,
 	ns key.Namespace,
 	stream sb.Stream,
 	options ...WriteOption,
@@ -275,7 +276,7 @@ func (s *Store) Write(
 
 	// put cache
 	if s.cache != nil && len(tokens) > 0 {
-		err := s.cache.CachePut(res.Key, tokens, store.EncodedLen(encodedLen))
+		err := s.cache.CachePut(ctx, res.Key, tokens, store.EncodedLen(encodedLen))
 		ce(err)
 	}
 
@@ -283,7 +284,7 @@ func (s *Store) Write(
 
 	if s.costInfo.Exists <= s.costInfo.Put {
 		var ok bool
-		ok, err = s.kv.KeyExists(path)
+		ok, err = s.kv.KeyExists(ctx, path)
 		ce(err)
 		if ok {
 			return
@@ -299,7 +300,7 @@ func (s *Store) Write(
 				continue
 			}
 			offloaded = true
-			result, e := offloadStore.Write(ns, tokens.Iter(), options...)
+			result, e := offloadStore.Write(ctx, ns, tokens.Iter(), options...)
 			ce(e)
 			if result.Key != res.Key {
 				err = we(ErrKeyNotMatch)
@@ -341,7 +342,7 @@ func (s *Store) Write(
 	}
 	res.BytesWritten += int64(buf.Len())
 
-	err = s.kv.KeyPut(path, buf)
+	err = s.kv.KeyPut(ctx, path, buf)
 	ce(err)
 
 	res.Written = true
@@ -349,10 +350,10 @@ func (s *Store) Write(
 	return
 }
 
-func (s *Store) Delete(keys []Key) error {
+func (s *Store) Delete(ctx context.Context, keys []Key) error {
 	var paths []string
 	for _, key := range keys {
 		paths = append(paths, s.keyToPath(key))
 	}
-	return s.kv.KeyDelete(paths...)
+	return s.kv.KeyDelete(ctx, paths...)
 }

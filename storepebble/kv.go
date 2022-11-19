@@ -6,6 +6,7 @@ package storepebble
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"strings"
 
@@ -21,13 +22,21 @@ func (s *Store) CostInfo() storekv.CostInfo {
 	return costInfo
 }
 
-func (s *Store) KeyExists(key string) (ok bool, err error) {
-	return s.keyExists(s.Add, s.DB.Get, key)
+func (s *Store) KeyExists(ctx context.Context, key string) (ok bool, err error) {
+	return s.keyExists(
+		ctx,
+		s.Add,
+		func(_ context.Context, key []byte) ([]byte, io.Closer, error) {
+			return s.DB.Get(key)
+		},
+		key,
+	)
 }
 
 func (s *Store) keyExists(
+	ctx context.Context,
 	add func() func(),
-	get func([]byte) ([]byte, io.Closer, error),
+	get func(context.Context, []byte) ([]byte, io.Closer, error),
 	key string,
 ) (ok bool, err error) {
 	defer he(&err)
@@ -35,7 +44,7 @@ func (s *Store) keyExists(
 	defer catchErr(&err, pebble.ErrClosed)
 	var c io.Closer
 	withMarshalKey(func(key []byte) {
-		_, c, err = get(key)
+		_, c, err = get(ctx, key)
 	}, Kv, key)
 	if is(err, pebble.ErrNotFound) {
 		return false, nil
@@ -45,13 +54,22 @@ func (s *Store) keyExists(
 	return true, nil
 }
 
-func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
-	return s.keyGet(s.Add, s.DB.Get, key, fn)
+func (s *Store) KeyGet(ctx context.Context, key string, fn func(io.Reader) error) (err error) {
+	return s.keyGet(
+		ctx,
+		s.Add,
+		func(_ context.Context, key []byte) ([]byte, io.Closer, error) {
+			return s.DB.Get(key)
+		},
+		key,
+		fn,
+	)
 }
 
 func (s *Store) keyGet(
+	ctx context.Context,
 	add func() func(),
-	get func([]byte) ([]byte, io.Closer, error),
+	get func(context.Context, []byte) ([]byte, io.Closer, error),
 	key string,
 	fn func(io.Reader) error,
 ) (err error) {
@@ -64,7 +82,7 @@ func (s *Store) keyGet(
 	var c io.Closer
 	var bs []byte
 	withMarshalKey(func(key []byte) {
-		bs, c, err = get(key)
+		bs, c, err = get(ctx, key)
 	}, Kv, key)
 	if is(err, pebble.ErrNotFound) {
 		return we.With(e5.With(storekv.StringKey(key)))(ErrKeyNotFound)
@@ -78,14 +96,26 @@ func (s *Store) keyGet(
 	return nil
 }
 
-func (s *Store) KeyPut(key string, r io.Reader) (err error) {
-	return s.keyPut(s.Add, s.DB.Get, s.DB.Set, key, r)
+func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) (err error) {
+	return s.keyPut(
+		ctx,
+		s.Add,
+		func(_ context.Context, key []byte) ([]byte, io.Closer, error) {
+			return s.DB.Get(key)
+		},
+		func(_ context.Context, key, value []byte, opts *pebble.WriteOptions) error {
+			return s.DB.Set(key, value, opts)
+		},
+		key,
+		r,
+	)
 }
 
 func (s *Store) keyPut(
+	ctx context.Context,
 	add func() func(),
-	get func([]byte) ([]byte, io.Closer, error),
-	set func([]byte, []byte, *pebble.WriteOptions) error,
+	get func(context.Context, []byte) ([]byte, io.Closer, error),
+	set func(context.Context, []byte, []byte, *pebble.WriteOptions) error,
 	key string,
 	r io.Reader,
 ) (err error) {
@@ -100,7 +130,7 @@ func (s *Store) keyPut(
 	withMarshalKey(func(k []byte) {
 		bsKey = append(k[:0:0], k...)
 	}, Kv, key)
-	_, c, err = get(bsKey)
+	_, c, err = get(ctx, bsKey)
 	if err == nil {
 		c.Close()
 		return nil
@@ -114,11 +144,11 @@ func (s *Store) keyPut(
 		bs, err = io.ReadAll(r)
 		ce(err)
 	}
-	ce(set(bsKey, bs, writeOptions))
+	ce(set(ctx, bsKey, bs, writeOptions))
 	return nil
 }
 
-func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
+func (s *Store) KeyIter(ctx context.Context, prefix string, fn func(key string) error) (err error) {
 	return s.keyIter(
 		s.Add,
 		s.DB.NewIter,
@@ -207,13 +237,21 @@ func (s *Store) keyIter(
 	return nil
 }
 
-func (s *Store) KeyDelete(keys ...string) (err error) {
-	return s.keyDelete(s.Add, s.DB.Delete, keys...)
+func (s *Store) KeyDelete(ctx context.Context, keys ...string) (err error) {
+	return s.keyDelete(
+		ctx,
+		s.Add,
+		func(_ context.Context, key []byte, opts *pebble.WriteOptions) error {
+			return s.DB.Delete(key, opts)
+		},
+		keys...,
+	)
 }
 
 func (s *Store) keyDelete(
+	ctx context.Context,
 	add func() func(),
-	del func([]byte, *pebble.WriteOptions) error,
+	del func(context.Context, []byte, *pebble.WriteOptions) error,
 	keys ...string,
 ) (err error) {
 	defer he(&err)
@@ -222,7 +260,7 @@ func (s *Store) keyDelete(
 
 	for _, key := range keys {
 		withMarshalKey(func(key []byte) {
-			err = del(key, nil)
+			err = del(ctx, key, nil)
 		}, Kv, key)
 		ce(err,
 			e5.Info("key %s", key),

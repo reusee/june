@@ -4,21 +4,19 @@
 
 package index
 
-import (
-	"github.com/reusee/pr"
-)
+import "context"
 
 type SelectIndex func(
+	ctx context.Context,
 	args ...SelectOption,
 ) error
 
-func (_ Def) SelectIndex(
+func (Def) SelectIndex(
 	index Index,
-	wt *pr.WaitTree,
 ) SelectIndex {
-	return func(args ...SelectOption) (err error) {
+	return func(ctx context.Context, args ...SelectOption) (err error) {
 		defer he(&err)
-		args = append(args, WithCtx{wt.Ctx})
-		return Select(index, args...)
+		args = append(args, WithCtx{ctx})
+		return Select(ctx, index, args...)
 	}
 }

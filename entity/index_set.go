@@ -18,7 +18,7 @@ type HashIndexSet func(
 	error,
 )
 
-func (_ Def) HashIndexSet(
+func (Def) HashIndexSet(
 	newHashState key.NewHashState,
 ) HashIndexSet {
 	return func(

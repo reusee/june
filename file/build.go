@@ -5,6 +5,7 @@
 package file
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -21,6 +22,7 @@ type BuildOption interface {
 }
 
 type Build func(
+	ctx context.Context,
 	root *File,
 	cont Sink,
 	options ...BuildOption,
@@ -30,13 +32,12 @@ type SmallFileThreshold int64
 
 type PackThreshold int
 
-func (_ Def) Build(
+func (Def) Build(
 	toContents ToContents,
 	smallFileThreshold SmallFileThreshold,
 	fetchEntity entity.Fetch,
 	saveEntity entity.SaveEntity,
 	packThreshold PackThreshold,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 	scope Scope,
 	save entity.SaveEntity,
@@ -46,6 +47,7 @@ func (_ Def) Build(
 	threshold := int(packThreshold)
 
 	return func(
+		ctx context.Context,
 		root *File,
 		cont Sink,
 		options ...BuildOption,
@@ -83,9 +85,9 @@ func (_ Def) Build(
 		}
 
 		// async jobs
-		wt := pr.NewWaitTree(wt)
+		asyncCtx, wg := pr.WithWaitGroup(ctx)
 		putFn, wait := pr.Consume(
-			wt,
+			asyncCtx,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()
@@ -103,6 +105,7 @@ func (_ Def) Build(
 			topParent := stack[len(stack)-2]
 			// merge file to parent
 			subs, err := mergeFileToSubs(
+				ctx,
 				fetchEntity,
 				topParent.File.Subs,
 				top.File,
@@ -111,7 +114,7 @@ func (_ Def) Build(
 			topParent.File.Subs = subs
 			// pack parent subs
 			if topParent.File != root {
-				packed, err := pack(scope, topParent.File.Subs, threshold, save, wait)
+				packed, err := pack(ctx, scope, topParent.File.Subs, threshold, save, wait)
 				ce(err)
 				topParent.File.Subs = packed
 			}
@@ -136,7 +139,7 @@ func (_ Def) Build(
 					ce(unwind())
 				}
 
-				wt.Cancel()
+				wg.Cancel()
 
 				return cont, nil
 			}
@@ -189,14 +192,14 @@ func (_ Def) Build(
 							fn(value)
 						}
 						putFn(func() error {
-							if err := value.WithReader(scope, func(r io.Reader) (err error) {
+							if err := value.WithReader(ctx, scope, func(r io.Reader) (err error) {
 								defer he(&err)
 								if file.Size <= int64(smallFileThreshold) {
 									bs, err := io.ReadAll(r)
 									ce(err)
 									file.ContentBytes = bs
 								} else {
-									keys, lengths, err := toContents(r, file.Size)
+									keys, lengths, err := toContents(ctx, r, file.Size)
 									ce(err)
 									file.Contents = keys
 									file.ChunkLengths = lengths
@@ -217,6 +220,7 @@ func (_ Def) Build(
 					// add to parent
 					parent := stack[len(stack)-1].File
 					subs, err := mergeFileToSubs(
+						ctx,
 						fetchEntity,
 						parent.Subs,
 						file,
@@ -226,7 +230,7 @@ func (_ Def) Build(
 
 					// pack parent
 					if parent != root {
-						packed, err := pack(scope, parent.Subs, threshold, save, wait)
+						packed, err := pack(ctx, scope, parent.Subs, threshold, save, wait)
 						ce(err)
 						parent.Subs = packed
 					}
@@ -246,6 +250,7 @@ func (_ Def) Build(
 				// add to parent
 				parent := stack[len(stack)-1].File
 				subs, err := mergePackToSubs(
+					ctx,
 					fetchEntity,
 					parent.Subs,
 					&value.Pack,
@@ -255,7 +260,7 @@ func (_ Def) Build(
 
 				// pack parent
 				if parent != root {
-					packed, err := pack(scope, parent.Subs, threshold, save, wait)
+					packed, err := pack(ctx, scope, parent.Subs, threshold, save, wait)
 					ce(err)
 					parent.Subs = packed
 				}
@@ -273,6 +278,7 @@ func (_ Def) Build(
 }
 
 func mergeFileToSubs(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	subs Subs,
 	file *File,
@@ -311,7 +317,7 @@ func mergeFileToSubs(
 			// merge pack
 			newSubs := make(Subs, 0, len(subs))
 			newSubs = append(newSubs, subs[:i]...)
-			replace, err := mergeFileToPack(fetchEntity, sub.Pack, file)
+			replace, err := mergeFileToPack(ctx, fetchEntity, sub.Pack, file)
 			ce(err)
 			newSubs = append(newSubs, replace...)
 			newSubs = append(newSubs, subs[i+1:]...)
@@ -329,17 +335,19 @@ func mergeFileToSubs(
 }
 
 func mergeFileToPack(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	pack *Pack,
 	file *File,
 ) (_ Subs, err error) {
 	defer he(&err)
 	var subs Subs
-	ce(fetchEntity(pack.Key, &subs))
-	return mergeFileToSubs(fetchEntity, subs, file)
+	ce(fetchEntity(ctx, pack.Key, &subs))
+	return mergeFileToSubs(ctx, fetchEntity, subs, file)
 }
 
 func mergePackToSubs(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	subs Subs,
 	pack *Pack,
@@ -375,7 +383,7 @@ func mergePackToSubs(
 			// merge file
 			newSubs := make(Subs, 0, len(subs))
 			newSubs = append(newSubs, subs[:i]...)
-			replace, err := mergeFileToPack(fetchEntity, pack, sub.File)
+			replace, err := mergeFileToPack(ctx, fetchEntity, pack, sub.File)
 			ce(err)
 			newSubs = append(newSubs, replace...)
 			newSubs = append(newSubs, subs[i+1:]...)
@@ -384,7 +392,7 @@ func mergePackToSubs(
 			// merge subs
 			newSubs := make(Subs, 0, len(subs))
 			newSubs = append(newSubs, subs[:i]...)
-			replace, err := mergePack(fetchEntity, pack, sub.Pack)
+			replace, err := mergePack(ctx, fetchEntity, pack, sub.Pack)
 			ce(err)
 			newSubs = append(newSubs, replace...)
 			newSubs = append(newSubs, subs[i+1:]...)
@@ -402,6 +410,7 @@ func mergePackToSubs(
 }
 
 func mergePack(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	a *Pack,
 	b *Pack,
@@ -409,15 +418,15 @@ func mergePack(
 	defer he(&err)
 
 	var subsA Subs
-	ce(fetchEntity(a.Key, &subsA))
+	ce(fetchEntity(ctx, a.Key, &subsA))
 	var subsB Subs
-	ce(fetchEntity(b.Key, &subsB))
+	ce(fetchEntity(ctx, b.Key, &subsB))
 	for _, sub := range subsA {
 		if sub.File != nil {
-			subsB, err = mergeFileToSubs(fetchEntity, subsB, sub.File)
+			subsB, err = mergeFileToSubs(ctx, fetchEntity, subsB, sub.File)
 			ce(err)
 		} else if sub.Pack != nil {
-			subsB, err = mergePackToSubs(fetchEntity, subsB, sub.Pack)
+			subsB, err = mergePackToSubs(ctx, fetchEntity, subsB, sub.Pack)
 			ce(err)
 		}
 	}
@@ -432,6 +441,7 @@ type Partition struct {
 }
 
 func pack(
+	ctx context.Context,
 	scope Scope,
 	subs Subs,
 	threshold int,
@@ -526,7 +536,7 @@ l1:
 	ce(wait(false))
 
 	// pack
-	summary, err := saveEntity(slice)
+	summary, err := saveEntity(ctx, slice)
 	ce(err)
 	var size int64
 	for _, sub := range slice {

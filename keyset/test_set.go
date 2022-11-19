@@ -5,6 +5,7 @@
 package keyset
 
 import (
+	"context"
 	"crypto/rand"
 	"testing"
 )
@@ -22,6 +23,7 @@ func TestSet(
 		pack PackSet,
 		del Delete,
 	) {
+		ctx := context.Background()
 
 		// add and pack
 		var keys []Key
@@ -32,9 +34,9 @@ func TestSet(
 			ce(err)
 			keys = append(keys, key)
 		}
-		set, err := add(Set{}, keys...)
+		set, err := add(ctx, Set{}, keys...)
 		ce(err)
-		set, err = pack(set)
+		set, err = pack(ctx, set)
 		ce(err)
 
 		if len(set) == 0 {
@@ -43,7 +45,7 @@ func TestSet(
 
 		// iter
 		var ks []Key
-		ce(iter(set, func(key Key) error {
+		ce(iter(ctx, set, func(key Key) error {
 			ks = append(ks, key)
 			return nil
 		}))
@@ -82,7 +84,7 @@ func TestSet(
 		}
 
 		for _, key := range keys {
-			ok, err := has(set, key)
+			ok, err := has(ctx, set, key)
 			ce(err)
 			if !ok {
 				t.Fatal()
@@ -91,10 +93,10 @@ func TestSet(
 
 		// delete
 		for i, key := range keys {
-			set, err = del(set, key)
+			set, err = del(ctx, set, key)
 			ce(err)
 			if i%128 == 0 {
-				set, err = pack(set)
+				set, err = pack(ctx, set)
 				ce(err)
 			}
 		}

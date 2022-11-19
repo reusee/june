@@ -6,6 +6,7 @@ package filebase
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"io/fs"
@@ -17,18 +18,19 @@ import (
 
 var ErrNotDir = errors.New("not a dir")
 
-type NewFileFS func(file *File) (fs.FS, error)
+type NewFileFS func(ctx context.Context, file *File) (fs.FS, error)
 
 func (_ Def) NewFileFS(
 	iterSubs IterSubs,
 	newContentReadre NewContentReader,
 	findFileInSubs FindFileInSubs,
 ) NewFileFS {
-	return func(file *File) (fs.FS, error) {
+	return func(ctx context.Context, file *File) (fs.FS, error) {
 		if !file.IsDir {
 			return nil, we(ErrNotDir)
 		}
 		return &FS{
+			ctx:  ctx,
 			file: file,
 
 			iterSubs:         iterSubs,
@@ -39,6 +41,7 @@ func (_ Def) NewFileFS(
 }
 
 type FS struct {
+	ctx  context.Context
 	file *File
 
 	cache sync.Map
@@ -60,10 +63,10 @@ func (f *FS) Open(name string) (_ fs.File, err error) {
 	var iter pp.Src
 
 	if file.IsDir {
-		iter = f.iterSubs(file.Subs, nil)
+		iter = f.iterSubs(f.ctx, file.Subs, nil)
 	} else {
 		if len(file.Contents) > 0 {
-			r = f.newContentReader(file.Contents, file.ChunkLengths)
+			r = f.newContentReader(f.ctx, file.Contents, file.ChunkLengths)
 		} else {
 			r = bytes.NewReader(file.ContentBytes)
 		}
@@ -101,6 +104,7 @@ func (f *FS) open(name string) (file *File, err error) {
 	}
 
 	file, err = f.findFileInSubs(
+		f.ctx,
 		f.file.Subs,
 		strings.Split(name, "/"),
 	)

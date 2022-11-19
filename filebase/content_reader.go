@@ -5,6 +5,7 @@
 package filebase
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type ContentReader struct {
+	ctx   context.Context
 	fetch entity.Fetch
 
 	remainBytes []byte
@@ -26,18 +28,21 @@ type ContentReader struct {
 var _ io.Reader = new(ContentReader)
 
 type NewContentReader func(
+	ctx context.Context,
 	keys []Key,
 	lengths []int64,
 ) *ContentReader
 
-func (_ Def) NewContentReader(
+func (Def) NewContentReader(
 	fetch entity.Fetch,
 ) NewContentReader {
 	return func(
+		ctx context.Context,
 		keys []Key,
 		lengths []int64,
 	) *ContentReader {
 		r := &ContentReader{
+			ctx:     ctx,
 			fetch:   fetch,
 			keys:    keys,
 			lengths: make([]*int64, len(keys)),
@@ -67,7 +72,7 @@ func (c *ContentReader) Read(buf []byte) (_ int, err error) {
 
 	key := c.keys[c.keyIndex]
 	var content Content
-	ce(c.fetch(key, &content),
+	ce(c.fetch(c.ctx, key, &content),
 		e5.Info("fetch %s", key))
 	c.remainBytes = content
 	l := int64(len(content))
@@ -81,7 +86,7 @@ func (c *ContentReader) getLen() (ret int64) {
 		if p == nil {
 			key := c.keys[i]
 			var content Content
-			ce(c.fetch(key, &content),
+			ce(c.fetch(c.ctx, key, &content),
 				e5.Info("fetch %s", key))
 			l := int64(len(content))
 			c.lengths[i] = &l
@@ -115,7 +120,7 @@ func (c *ContentReader) Seek(offset int64, whence int) (_ int64, err error) {
 		if p == nil {
 			key := c.keys[i]
 			var content Content
-			ce(c.fetch(key, &content),
+			ce(c.fetch(c.ctx, key, &content),
 				e5.Info("fetch %s", key))
 			l := int64(len(content))
 			c.lengths[i] = &l
@@ -134,7 +139,7 @@ func (c *ContentReader) Seek(offset int64, whence int) (_ int64, err error) {
 			if offset <= c.offset+l {
 				key := c.keys[i]
 				var content Content
-				ce(c.fetch(key, &content),
+				ce(c.fetch(c.ctx, key, &content),
 					e5.Info("fetch %s", key))
 				cut := offset - c.offset
 				c.remainBytes = content[cut:]

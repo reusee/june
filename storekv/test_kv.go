@@ -5,6 +5,7 @@
 package storekv
 
 import (
+	"context"
 	"io"
 	"testing"
 
@@ -14,17 +15,19 @@ import (
 )
 
 type TestKV func(
+	ctx context.Context,
 	t *testing.T,
 	with func(
 		fn func(kv KV, prefix string),
 	),
 )
 
-func (_ Def) TestKV(
+func (Def) TestKV(
 	scope dscope.Scope,
 	testStore store.TestStore,
 ) TestKV {
 	return func(
+		ctx context.Context,
 		t *testing.T,
 		with func(
 			kvFunc func(kv KV, prefix string),
@@ -47,7 +50,7 @@ func (_ Def) TestKV(
 				})
 			})
 		}
-		testStore(withStore, t)
+		testStore(ctx, withStore, t)
 
 		// cache
 		withStore = func(storeFunc func(store.Store), provides ...any) {
@@ -69,11 +72,11 @@ func (_ Def) TestKV(
 				})
 			})
 		}
-		testStore(withStore, t)
+		testStore(ctx, withStore, t)
 
 		// offload
 		withStore = func(storeFunc func(store.Store), provides ...any) {
-			with(func(offloadKV KV, prefix string) {
+			with(func(offloadKV KV, _ string) {
 				scope.Call(func(
 					newStore New,
 				) {
@@ -99,12 +102,12 @@ func (_ Def) TestKV(
 				})
 			})
 		}
-		testStore(withStore, t)
+		testStore(ctx, withStore, t)
 
 		// errors
-		with(func(kv KV, prefix string) {
+		with(func(kv KV, _ string) {
 			key := "foo"
-			err := kv.KeyGet(key, func(r io.Reader) error {
+			err := kv.KeyGet(ctx, key, func(r io.Reader) error {
 				_, err := io.Copy(io.Discard, r)
 				return err
 			})

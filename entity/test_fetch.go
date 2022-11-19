@@ -5,10 +5,10 @@
 package entity
 
 import (
+	"context"
 	"testing"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/june/store"
 )
 
 type testFetch struct {
@@ -29,23 +29,23 @@ func TestFetch(
 	t *testing.T,
 	fetch Fetch,
 	save SaveEntity,
-	store store.Store,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
-	summary, err := save(testFetch{
+	summary, err := save(ctx, testFetch{
 		Foo: testFetch1(42),
 	})
 	ce(err)
 
 	var f testFetch
-	ce(fetch(summary.Key, &f))
+	ce(fetch(ctx, summary.Key, &f))
 	if f.Foo != 42 {
 		t.Fatal()
 	}
 
 	var f1 testFetch1
-	ce(fetch([]Key{
+	ce(fetch(ctx, []Key{
 		summary.Key,
 		summary.Subs[0].Key,
 	}, &f1))

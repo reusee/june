@@ -6,6 +6,7 @@ package storemem
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"strings"
 
@@ -19,9 +20,9 @@ func (s *Store) CostInfo() storekv.CostInfo {
 	return storekv.CostInfo{}
 }
 
-func (s *Store) KeyExists(key string) (bool, error) {
+func (s *Store) KeyExists(ctx context.Context, key string) (bool, error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -29,9 +30,9 @@ func (s *Store) KeyExists(key string) (bool, error) {
 	return ok, nil
 }
 
-func (s *Store) KeyGet(key string, fn func(r io.Reader) error) (err error) {
+func (s *Store) KeyGet(ctx context.Context, key string, fn func(r io.Reader) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -49,9 +50,9 @@ func (s *Store) KeyGet(key string, fn func(r io.Reader) error) (err error) {
 	return nil
 }
 
-func (s *Store) KeyIter(prefix string, fn func(key string) error) error {
+func (s *Store) KeyIter(ctx context.Context, prefix string, fn func(key string) error) error {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -72,9 +73,9 @@ func (s *Store) KeyIter(prefix string, fn func(key string) error) error {
 	return err
 }
 
-func (s *Store) KeyPut(key string, r io.Reader) error {
+func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) error {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -87,9 +88,9 @@ func (s *Store) KeyPut(key string, r io.Reader) error {
 	return nil
 }
 
-func (s *Store) KeyDelete(keys ...string) error {
+func (s *Store) KeyDelete(ctx context.Context, keys ...string) error {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return ErrClosed
 	default:
 	}

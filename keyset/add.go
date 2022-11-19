@@ -5,12 +5,14 @@
 package keyset
 
 import (
+	"context"
 	"sort"
 
 	"github.com/reusee/june/entity"
 )
 
 type Add func(
+	ctx context.Context,
 	set Set,
 	keys ...Key,
 ) (
@@ -23,6 +25,7 @@ func (_ Def) Add(
 	save entity.SaveEntity,
 ) Add {
 	return func(
+		ctx context.Context,
 		set Set,
 		keys ...Key,
 	) (
@@ -33,6 +36,7 @@ func (_ Def) Add(
 
 		for _, key := range keys {
 			set, err = mergeKeyToSet(
+				ctx,
 				fetch,
 				key,
 				set,
@@ -45,6 +49,7 @@ func (_ Def) Add(
 }
 
 func mergeKeyToSet(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	key Key,
 	set Set,
@@ -86,7 +91,7 @@ func mergeKeyToSet(
 			// merge to pack
 			newSet := make(Set, 0, len(set))
 			newSet = append(newSet, set[:i]...)
-			replace, err := mergeKeyToPack(fetchEntity, key, item.Pack)
+			replace, err := mergeKeyToPack(ctx, fetchEntity, key, item.Pack)
 			ce(err)
 			newSet = append(newSet, replace...)
 			newSet = append(newSet, set[i+1:]...)
@@ -106,17 +111,19 @@ func mergeKeyToSet(
 }
 
 func mergeKeyToPack(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	key Key,
 	pack *Pack,
 ) (_ Set, err error) {
 	defer he(&err)
 	var set Set
-	ce(fetchEntity(pack.Key, &set))
-	return mergeKeyToSet(fetchEntity, key, set)
+	ce(fetchEntity(ctx, pack.Key, &set))
+	return mergeKeyToSet(ctx, fetchEntity, key, set)
 }
 
 func mergePackToSet(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	pack *Pack,
 	set Set,
@@ -156,7 +163,7 @@ func mergePackToSet(
 			// merge file
 			newSet := make(Set, 0, len(set))
 			newSet = append(newSet, set[:i]...)
-			replace, err := mergeKeyToPack(fetchEntity, *item.Key, pack)
+			replace, err := mergeKeyToPack(ctx, fetchEntity, *item.Key, pack)
 			ce(err)
 			newSet = append(newSet, replace...)
 			newSet = append(newSet, set[i+1:]...)
@@ -166,7 +173,7 @@ func mergePackToSet(
 			// merge subs
 			newSet := make(Set, 0, len(set))
 			newSet = append(newSet, set[:i]...)
-			replace, err := mergePack(fetchEntity, pack, item.Pack)
+			replace, err := mergePack(ctx, fetchEntity, pack, item.Pack)
 			ce(err)
 			newSet = append(newSet, replace...)
 			newSet = append(newSet, set[i+1:]...)
@@ -187,21 +194,22 @@ func mergePackToSet(
 }
 
 func mergePack(
+	ctx context.Context,
 	fetchEntity entity.Fetch,
 	a *Pack,
 	b *Pack,
 ) (_ Set, err error) {
 	defer he(&err)
 	var setA Set
-	ce(fetchEntity(a.Key, &setA))
+	ce(fetchEntity(ctx, a.Key, &setA))
 	var setB Set
-	ce(fetchEntity(b.Key, &setB))
+	ce(fetchEntity(ctx, b.Key, &setB))
 	for _, item := range setA {
 		if item.Key != nil {
-			setB, err = mergeKeyToSet(fetchEntity, *item.Key, setB)
+			setB, err = mergeKeyToSet(ctx, fetchEntity, *item.Key, setB)
 			ce(err)
 		} else if item.Pack != nil {
-			setB, err = mergePackToSet(fetchEntity, item.Pack, setB)
+			setB, err = mergePackToSet(ctx, fetchEntity, item.Pack, setB)
 			ce(err)
 		}
 	}

@@ -18,18 +18,15 @@ import (
 	"time"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/pr"
 )
 
 type New func(
-	parentWt *pr.WaitTree,
 	client *http.Client,
 	drivePath string,
 	dir string,
 ) (*Store, error)
 
 type Store struct {
-	*pr.WaitTree
 	name      string
 	storeID   string
 	dirOK     sync.Map
@@ -41,7 +38,6 @@ type Store struct {
 
 func (_ Def) New() New {
 	return func(
-		parentWt *pr.WaitTree,
 		client *http.Client,
 		drivePath string,
 		dir string,
@@ -51,7 +47,6 @@ func (_ Def) New() New {
 	) {
 
 		return &Store{
-			WaitTree: parentWt,
 			name: fmt.Sprintf("onedrive%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				dir,
@@ -90,7 +85,7 @@ func (s *Store) req(
 	target any,
 ) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -138,7 +133,7 @@ func (s *Store) request(
 	contentType string,
 ) (_ *http.Response, err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-ctx.Done():
 		return nil, ErrClosed
 	default:
 	}

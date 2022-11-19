@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"testing"
 
 	"github.com/reusee/e5"
@@ -13,17 +14,17 @@ import (
 
 func TestDelete(
 	t *testing.T,
-	store Store,
 	save Save,
 	del Delete,
 	checkRef CheckRef,
 	sel index.SelectIndex,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	var summary1 *Summary
 	var summaryKey1 Key
-	res, err := save(NSEntity, 42,
+	res, err := save(ctx, NSEntity, 42,
 		TapSummary(func(s *Summary) {
 			summary1 = s
 		}),
@@ -43,7 +44,7 @@ func TestDelete(
 	}
 	var summary2 *Summary
 	var summaryKey2 Key
-	res, err = save(NSEntity, Foo{Key: key1},
+	res, err = save(ctx, NSEntity, Foo{Key: key1},
 		TapSummary(func(s *Summary) {
 			summary2 = s
 		}),
@@ -57,7 +58,7 @@ func TestDelete(
 	key2 := res.Key
 	_ = summary2
 
-	err = del(key1)
+	err = del(ctx, key1)
 	var beingRefered *BeingRefered
 	if !as(err, &beingRefered) {
 		t.Fatal()
@@ -75,14 +76,15 @@ func TestDelete(
 		t.Fatal()
 	}
 
-	ce(del(summaryKey2))
-	ce(checkRef())
+	ce(del(ctx, summaryKey2))
+	ce(checkRef(ctx))
 
-	ce(del(key1))
-	ce(checkRef())
+	ce(del(ctx, key1))
+	ce(checkRef(ctx))
 
 	// check indexes
 	ce(sel(
+		ctx,
 		MatchType(int(0)),
 		Tap(func(_ string, key Key) {
 			if key == key1 {

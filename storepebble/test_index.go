@@ -5,27 +5,27 @@
 package storepebble
 
 import (
+	"context"
 	"testing"
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
-	"github.com/reusee/pr"
 )
 
 func TestIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	test index.TestIndex,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	dir := t.TempDir()
 
-	s, err := newStore(wt, nil, dir)
+	s, err := newStore(ctx, nil, dir)
 	ce(err)
 	with := func(fn func(index.IndexManager)) {
 		fn(s)
 	}
-	test(with, t)
+	test(ctx, with, t)
 }

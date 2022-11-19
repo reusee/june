@@ -5,6 +5,7 @@
 package virtualfs
 
 import (
+	"context"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -19,6 +20,7 @@ import (
 )
 
 type TestFS func(
+	ctx context.Context,
 	t *testing.T,
 	with func(
 		rootFS fs.FS,
@@ -27,7 +29,7 @@ type TestFS func(
 	),
 )
 
-func (_ Def) TesetFS(
+func (Def) TesetFS(
 	iterDisk file.IterDiskFile,
 	build file.Build,
 	equal file.Equal,
@@ -39,6 +41,7 @@ func (_ Def) TesetFS(
 ) TestFS {
 
 	return func(
+		ctx context.Context,
 		t *testing.T,
 		with func(
 			rootFS fs.FS,
@@ -61,16 +64,16 @@ func (_ Def) TesetFS(
 
 		root := new(filebase.File)
 		ce(pp.Copy(
-			iterDisk(dataDir, nil),
-			build(root, nil),
+			iterDisk(ctx, dataDir, nil),
+			build(ctx, root, nil),
 		))
 		file1 := root.Subs[0].File
-		summary, err := save(file1)
+		summary, err := save(ctx, file1)
 		ce(err)
 		key1 := summary.Key
 
 		dir := t.TempDir()
-		f, err := newFileFS(root)
+		f, err := newFileFS(ctx, root)
 		ce(err)
 
 		with(f, dir, func() {
@@ -86,7 +89,7 @@ func (_ Def) TesetFS(
 				t.Fatal()
 			}
 
-			ce(filepath.WalkDir(dataDir, func(path string, entry fs.DirEntry, err error) error {
+			ce(filepath.WalkDir(dataDir, func(path string, _ fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
@@ -100,8 +103,8 @@ func (_ Def) TesetFS(
 
 			var n int
 			ce(filepath.Walk(dir, func(
-				path string,
-				info os.FileInfo,
+				_ string,
+				_ os.FileInfo,
 				err error,
 			) error {
 				if err != nil {
@@ -116,8 +119,8 @@ func (_ Def) TesetFS(
 
 			var numFile2 int
 			ce(filepath.WalkDir(dir, func(
-				path string,
-				entry fs.DirEntry,
+				_ string,
+				_ fs.DirEntry,
 				err error,
 			) error {
 				if err != nil {
@@ -131,8 +134,8 @@ func (_ Def) TesetFS(
 			}
 
 			iter := zip(
-				iterDisk(filepath.Join(dir, dataDirName), nil),
-				iterDisk(dataDir, nil),
+				iterDisk(ctx, filepath.Join(dir, dataDirName), nil),
+				iterDisk(ctx, dataDir, nil),
 				nil,
 			)
 			for {
@@ -150,8 +153,9 @@ func (_ Def) TesetFS(
 			}
 
 			ok, err := equal(
-				iterDisk(filepath.Join(dir, dataDirName), nil),
-				iterDisk(dataDir, nil),
+				ctx,
+				iterDisk(ctx, filepath.Join(dir, dataDirName), nil),
+				iterDisk(ctx, dataDir, nil),
 				func(a, b any, reason string) {
 					pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 				},
@@ -163,17 +167,18 @@ func (_ Def) TesetFS(
 
 			var root2 filebase.File
 			ce(pp.Copy(
-				iterDisk(filepath.Join(dir, dataDirName), nil),
-				build(&root2, nil),
+				iterDisk(ctx, filepath.Join(dir, dataDirName), nil),
+				build(ctx, &root2, nil),
 			))
 			file2 := root2.Subs[0].File
-			summary, err = save(file2)
+			summary, err = save(ctx, file2)
 			ce(err)
 			key2 := summary.Key
 			if key2 != key1 {
 				ok, err := equal(
-					iterFile(file1, nil),
-					iterFile(file2, nil),
+					ctx,
+					iterFile(ctx, file1, nil),
+					iterFile(ctx, file2, nil),
 					func(a, b any, reason string) {
 						pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 					},

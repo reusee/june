@@ -5,17 +5,18 @@
 package scopeproxy
 
 import (
+	"context"
+
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/tx"
-	"github.com/reusee/pr"
 )
 
 func EntitySave(
 	tx tx.PebbleTx,
-	wt *pr.WaitTree,
 ) entity.Save {
 	return func(
+		ctx context.Context,
 		ns key.Namespace,
 		value any,
 		options ...entity.SaveOption,
@@ -23,10 +24,10 @@ func EntitySave(
 		summary *entity.Summary,
 		err error,
 	) {
-		if e := tx(wt, func(
+		if e := tx(ctx, func(
 			save entity.Save,
 		) {
-			summary, err = save(ns, value, options...)
+			summary, err = save(ctx, ns, value, options...)
 		}); e != nil {
 			err = e
 		}

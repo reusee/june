@@ -5,11 +5,9 @@
 package file
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
 )
 
 func TestIterIgnore(
@@ -63,26 +61,4 @@ func TestIterIgnore(
 		}
 	})
 
-}
-
-func TestIterDiskCancelWaitTree(
-	t *testing.T,
-	scope Scope,
-	parentWt *pr.WaitTree,
-) {
-	wt := pr.NewWaitTree(parentWt)
-	wt.Cancel()
-	scope.Fork(func() *pr.WaitTree {
-		return wt
-	}).Call(func(
-		iterDisk IterDiskFile,
-	) {
-		err := pp.Copy(
-			iterDisk(".", nil),
-			pp.Discard,
-		)
-		if !is(err, context.Canceled) {
-			t.Fatal()
-		}
-	})
 }

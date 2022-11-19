@@ -150,6 +150,6 @@ func (e *PreEntry) UnmarshalSB(ctx sb.Ctx, cont sb.Sink) sb.Sink {
 
 }
 
-func (_ PreEntry) IsSelectOption() {}
+func (PreEntry) IsSelectOption() {}
 
-func (_ PreEntry) IsIterOption() {}
+func (PreEntry) IsIterOption() {}

@@ -6,6 +6,7 @@ package file
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"reflect"
@@ -15,15 +16,17 @@ import (
 )
 
 type Equal func(
+	ctx context.Context,
 	a, b Src,
 	fn func(any, any, string),
 ) (bool, error)
 
-func (_ Def) Equal(
+func (Def) Equal(
 	scope Scope,
 	newHashState key.NewHashState,
 ) (equal Equal) {
 	equal = func(
+		ctx context.Context,
 		a, b Src,
 		fn func(any, any, string),
 	) (ret bool, err error) {
@@ -99,7 +102,7 @@ func (_ Def) Equal(
 
 			if !aInfo.GetIsDir(scope) {
 				var hash1 []byte
-				ce(aInfo.WithReader(scope, func(r io.Reader) (err error) {
+				ce(aInfo.WithReader(ctx, scope, func(r io.Reader) (err error) {
 					defer he(&err)
 					data, err := io.ReadAll(r)
 					ce(err)
@@ -110,7 +113,7 @@ func (_ Def) Equal(
 					return
 				}))
 				var hash2 []byte
-				ce(bInfo.WithReader(scope, func(r io.Reader) (err error) {
+				ce(bInfo.WithReader(ctx, scope, func(r io.Reader) (err error) {
 					defer he(&err)
 					data, err := io.ReadAll(r)
 					ce(err)

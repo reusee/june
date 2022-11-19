@@ -10,29 +10,22 @@ import (
 	"sync/atomic"
 
 	"github.com/google/btree"
-	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
 type Store struct {
-	*pr.WaitTree
 	name   string
 	index  *btree.BTreeG[sb.Tokens]
 	values sync.Map
 	sync.RWMutex
 }
 
-type New func(
-	parentWt *pr.WaitTree,
-) *Store
+type New func() *Store
 
-func (_ Def) New() New {
-	return func(
-		parentWt *pr.WaitTree,
-	) *Store {
+func (Def) New() New {
+	return func() *Store {
 		return &Store{
-			WaitTree: parentWt,
-			name:     fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),
+			name: fmt.Sprintf("mem%d", atomic.AddInt64(&serial, 1)),
 			index: btree.NewG(2, func(a, b sb.Tokens) bool {
 				return sb.MustCompare(a.Iter(), b.Iter()) < 0
 			}),

@@ -10,7 +10,7 @@ type withCodec struct {
 	Codec Codec
 }
 
-func (_ withCodec) IsNewOption() {}
+func (withCodec) IsNewOption() {}
 
 func WithCodec(codec Codec) withCodec {
 	return withCodec{
@@ -22,7 +22,7 @@ type withCache struct {
 	Cache Cache
 }
 
-func (_ withCache) IsNewOption() {}
+func (withCache) IsNewOption() {}
 
 func WithCache(cache Cache) withCache {
 	return withCache{
@@ -32,15 +32,15 @@ func WithCache(cache Cache) withCache {
 
 type WithoutRead struct{}
 
-func (_ WithoutRead) IsNewOption() {}
+func (WithoutRead) IsNewOption() {}
 
 type WithoutWrite struct{}
 
-func (_ WithoutWrite) IsNewOption() {}
+func (WithoutWrite) IsNewOption() {}
 
 type WithOffload func(
 	key Key,
 	length int,
 ) store.Store
 
-func (_ WithOffload) IsNewOption() {}
+func (WithOffload) IsNewOption() {}

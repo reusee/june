@@ -6,6 +6,7 @@ package storesqlite
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"errors"
 	"io"
@@ -29,10 +30,8 @@ func (s *Store) CostInfo() storekv.CostInfo {
 	}
 }
 
-func (s *Store) KeyExists(key string) (ok bool, err error) {
+func (s *Store) KeyExists(ctx context.Context, key string) (ok bool, err error) {
 	defer he(&err)
-	done := s.Add()
-	defer done()
 
 	defer s.lockRead()()
 
@@ -60,10 +59,8 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 	return exists, nil
 }
 
-func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
+func (s *Store) KeyGet(ctx context.Context, key string, fn func(io.Reader) error) (err error) {
 	defer he(&err)
-	done := s.Add()
-	defer done()
 
 	defer s.lockRead()()
 
@@ -102,10 +99,8 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	return nil
 }
 
-func (s *Store) KeyPut(key string, r io.Reader) (err error) {
+func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) (err error) {
 	defer he(&err)
-	done := s.Add()
-	defer done()
 
 	if unlock := s.tryLockWrite(); unlock != nil {
 		defer unlock()
@@ -147,10 +142,8 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	return nil
 }
 
-func (s *Store) KeyDelete(keys ...string) (err error) {
+func (s *Store) KeyDelete(ctx context.Context, keys ...string) (err error) {
 	defer he(&err)
-	done := s.Add()
-	defer done()
 
 	if unlock := s.tryLockWrite(); unlock != nil {
 		defer unlock()
@@ -181,10 +174,8 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 	return
 }
 
-func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
+func (s *Store) KeyIter(ctx context.Context, prefix string, fn func(key string) error) (err error) {
 	defer he(&err)
-	done := s.Add()
-	defer done()
 
 	defer s.lockRead()()
 

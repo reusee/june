@@ -6,6 +6,7 @@ package file
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"time"
@@ -47,6 +48,6 @@ func (v Virtual) GetDevice(_ Scope) uint64 {
 	return 0
 }
 
-func (v Virtual) WithReader(scope Scope, fn func(io.Reader) error) error {
+func (v Virtual) WithReader(ctx context.Context, scope Scope, fn func(io.Reader) error) error {
 	return fn(bytes.NewReader(v.Content))
 }

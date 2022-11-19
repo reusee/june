@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/reusee/e5"
@@ -19,16 +20,16 @@ type CheckRefOption interface {
 }
 
 type CheckRef func(
+	ctx context.Context,
 	options ...CheckRefOption,
 ) error
 
 func (_ Def) CheckRef(
 	store Store,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) CheckRef {
 
-	return func(options ...CheckRefOption) (err error) {
+	return func(ctx context.Context, options ...CheckRefOption) (err error) {
 		defer he(&err)
 
 		var tapKey opts.TapKey
@@ -41,23 +42,23 @@ func (_ Def) CheckRef(
 			}
 		}
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
+		ctx, wg := pr.WithWaitGroup(ctx)
+		defer wg.Cancel()
+		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) (err error) {
 			defer he(&err)
 			key := v.(Key)
 			var summary Summary
-			ce(store.Read(key, func(s sb.Stream) error {
+			ce(store.Read(ctx, key, func(s sb.Stream) error {
 				return sb.Copy(s, sb.Unmarshal(&summary))
 			}))
-			ce(summary.checkRef(store))
+			ce(summary.checkRef(ctx, store))
 			if tapKey != nil {
 				tapKey(summary.Key)
 			}
 			return nil
 		})
 
-		ce(store.IterKeys(NSSummary, func(key Key) error {
+		ce(store.IterKeys(ctx, NSSummary, func(key Key) error {
 			put(key)
 			return nil
 		}))
@@ -67,11 +68,11 @@ func (_ Def) CheckRef(
 	}
 }
 
-func (s *Summary) checkRef(store Store) (err error) {
+func (s *Summary) checkRef(ctx context.Context, store Store) (err error) {
 	defer he(&err)
 
 	// Key
-	ok, err := store.Exists(s.Key)
+	ok, err := store.Exists(ctx, s.Key)
 	ce(err)
 	if !ok {
 		var typeName string
@@ -92,7 +93,7 @@ func (s *Summary) checkRef(store Store) (err error) {
 
 	checkKey := func(idx IndexEntry, key Key) (err error) {
 		defer he(&err)
-		ok, err := store.Exists(key)
+		ok, err := store.Exists(ctx, key)
 		ce(err)
 		if !ok {
 			return we.With(
@@ -127,12 +128,12 @@ func (s *Summary) checkRef(store Store) (err error) {
 
 	// Subs
 	for _, sub := range s.Subs {
-		ce(sub.checkRef(store))
+		ce(sub.checkRef(ctx, store))
 	}
 
 	// ReferedKeys
 	for _, key := range s.ReferedKeys {
-		ok, err := store.Exists(key)
+		ok, err := store.Exists(ctx, key)
 		ce(err)
 		if !ok {
 			return we.With(e5.With(key))(ErrKeyNotFound)

@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -80,6 +81,7 @@ func (s *Summary) clean() (ok bool) {
 }
 
 type OnSummaryIndexAdd func(
+	ctx context.Context,
 	summary *Summary,
 	summaryKey Key,
 ) (
@@ -95,6 +97,7 @@ func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Va
 		fns = append(fns, v.Interface().(OnSummaryIndexAdd))
 	}
 	fn := OnSummaryIndexAdd(func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -102,7 +105,7 @@ func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Va
 		err error,
 	) {
 		for _, f := range fns {
-			if es, err := f(summary, summaryKey); err != nil {
+			if es, err := f(ctx, summary, summaryKey); err != nil {
 				return nil, err
 			} else {
 				entries = append(entries, es...)
@@ -114,6 +117,7 @@ func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Va
 }
 
 type OnSummaryIndexDelete func(
+	ctx context.Context,
 	summary *Summary,
 	summaryKey Key,
 ) (
@@ -129,6 +133,7 @@ func (o OnSummaryIndexDelete) Reduce(_ dscope.Scope, vs []reflect.Value) reflect
 		fns = append(fns, v.Interface().(OnSummaryIndexDelete))
 	}
 	fn := OnSummaryIndexDelete(func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -136,7 +141,7 @@ func (o OnSummaryIndexDelete) Reduce(_ dscope.Scope, vs []reflect.Value) reflect
 		err error,
 	) {
 		for _, f := range fns {
-			if es, err := f(summary, summaryKey); err != nil {
+			if es, err := f(ctx, summary, summaryKey); err != nil {
 				return nil, err
 			} else {
 				entris = append(entris, es...)
@@ -157,7 +162,7 @@ func init() {
 	index.Register(IdxEmbeddedBy)
 }
 
-func (_ Def) SummaryIndexFuncs(
+func (Def) SummaryIndexFuncs(
 	sel index.SelectIndex,
 ) (
 	add OnSummaryIndexAdd,
@@ -165,8 +170,9 @@ func (_ Def) SummaryIndexFuncs(
 ) {
 
 	add = func(
+		_ context.Context,
 		summary *Summary,
-		summaryKey Key,
+		_ Key,
 	) (
 		entries []IndexEntry,
 		err error,
@@ -194,8 +200,9 @@ func (_ Def) SummaryIndexFuncs(
 	}
 
 	del = func(
+		ctx context.Context,
 		summary *Summary,
-		summaryKey Key,
+		_ Key,
 	) (
 		entries []IndexEntry,
 		err error,
@@ -216,6 +223,7 @@ func (_ Def) SummaryIndexFuncs(
 					//  check ref
 					var n int
 					ce(sel(
+						ctx,
 						MatchEntry(IdxEmbeddedBy, key),
 						Count(&n),
 					))
@@ -244,16 +252,17 @@ type SaveSummaryOption interface {
 	IsSaveSummaryOption()
 }
 
-func (_ WithIndexSaveOptions) IsSaveSummaryOption() {}
+func (WithIndexSaveOptions) IsSaveSummaryOption() {}
 
 // SaveSummary
 type SaveSummary func(
+	ctx context.Context,
 	summary *Summary,
 	isLatest bool,
 	options ...SaveSummaryOption,
 ) error
 
-func (_ Def) SaveSummary(
+func (Def) SaveSummary(
 	store store.Store,
 	sel index.SelectIndex,
 	fetch Fetch,
@@ -264,6 +273,7 @@ func (_ Def) SaveSummary(
 ) SaveSummary {
 
 	return func(
+		ctx context.Context,
 		s *Summary,
 		isLatest bool,
 		options ...SaveSummaryOption,
@@ -299,7 +309,7 @@ func (_ Def) SaveSummary(
 		proc := sb.MarshalValue(sb.Ctx{
 			SkipEmptyStructFields: true,
 		}, reflect.ValueOf(s), nil)
-		res, err := store.Write(NSSummary, &proc)
+		res, err := store.Write(ctx, NSSummary, &proc)
 		ce(err)
 		summaryKey := res.Key
 
@@ -312,13 +322,14 @@ func (_ Def) SaveSummary(
 		var oldSummaries []Summary
 		if isLatest {
 			ce(sel(
+				ctx,
 				MatchEntry(IdxSummaryKey, s.Key),
 				TapKey(func(k Key) {
 					if k == summaryKey {
 						return
 					}
 					var oldSummary Summary
-					err := fetch(k, &oldSummary)
+					err := fetch(ctx, k, &oldSummary)
 					if is(err, ErrKeyNotFound) {
 						return
 					}
@@ -327,7 +338,7 @@ func (_ Def) SaveSummary(
 				}),
 			))
 			for _, oldKey := range oldSummaryKeys {
-				ce(store.Delete([]Key{oldKey}))
+				ce(store.Delete(ctx, []Key{oldKey}))
 			}
 		}
 
@@ -337,7 +348,7 @@ func (_ Def) SaveSummary(
 		if len(oldSummaryKeys) > 0 {
 			deletingIndexes := make(map[Hash]IndexEntry)
 			for i, oldKey := range oldSummaryKeys {
-				entries, err := onDel(&oldSummaries[i], oldKey)
+				entries, err := onDel(ctx, &oldSummaries[i], oldKey)
 				ce(err)
 				for _, entry := range entries {
 					h, err := key.HashValue(entry)
@@ -345,7 +356,7 @@ func (_ Def) SaveSummary(
 					deletingIndexes[h] = entry
 				}
 			}
-			entries, err := onAdd(s, summaryKey)
+			entries, err := onAdd(ctx, s, summaryKey)
 			ce(err)
 			for _, entry := range entries {
 				h, err := key.HashValue(entry)
@@ -354,17 +365,17 @@ func (_ Def) SaveSummary(
 					delete(deletingIndexes, h)
 					continue
 				}
-				ce(index.Save(entry, indexSaveOptions...))
+				ce(index.Save(ctx, entry, indexSaveOptions...))
 			}
 			for _, entry := range deletingIndexes {
-				ce(index.Delete(entry))
+				ce(index.Delete(ctx, entry))
 			}
 
 		} else {
-			entries, err := onAdd(s, summaryKey)
+			entries, err := onAdd(ctx, s, summaryKey)
 			ce(err)
 			for _, entry := range entries {
-				ce(index.Save(entry, indexSaveOptions...))
+				ce(index.Save(ctx, entry, indexSaveOptions...))
 			}
 		}
 
@@ -395,19 +406,21 @@ func (s *Summary) addIndex(entry IndexEntry) error {
 }
 
 type DeleteSummary func(
+	ctx context.Context,
 	summary *Summary,
 	summaryKey Key,
 ) (
 	err error,
 )
 
-func (_ Def) DeleteSummary(
+func (Def) DeleteSummary(
 	store store.Store,
 	index Index,
 	locks *_EntityLocks,
 	onDel OnSummaryIndexDelete,
 ) DeleteSummary {
 	return func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -421,14 +434,14 @@ func (_ Def) DeleteSummary(
 		//TODO lock slot
 
 		// indexes
-		tuples, err := onDel(summary, summaryKey)
+		tuples, err := onDel(ctx, summary, summaryKey)
 		ce(err)
 		for _, tuple := range tuples {
-			ce(index.Delete(tuple))
+			ce(index.Delete(ctx, tuple))
 		}
 
 		// delete
-		ce(store.Delete([]Key{summaryKey}))
+		ce(store.Delete(ctx, []Key{summaryKey}))
 
 		return
 	}

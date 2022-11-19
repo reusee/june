@@ -15,12 +15,12 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
 // test Index implementation
 type TestIndex func(
+	ctx context.Context,
 	withIndexManager func(func(IndexManager)),
 	t *testing.T,
 )
@@ -44,11 +44,11 @@ func init() {
 	Register(TestingIndex2)
 }
 
-func (_ Def) TestIndex(
+func (Def) TestIndex(
 	scope Scope,
-	wt *pr.WaitTree,
 ) TestIndex {
 	return func(
+		ctx context.Context,
 		withIndexManager func(func(IndexManager)),
 		t *testing.T,
 	) {
@@ -77,13 +77,13 @@ func (_ Def) TestIndex(
 						ce(err)
 
 						// invalid
-						err = index.Save(Entry{
+						err = index.Save(ctx, Entry{
 							Type: nil,
 						})
 						if !is(err, ErrInvalidEntry) {
 							t.Fatalf("got %v\n", err)
 						}
-						err = index.Save(Entry{
+						err = index.Save(ctx, Entry{
 							Type: idxFoo{},
 						})
 						if !is(err, ErrInvalidEntry) {
@@ -93,17 +93,18 @@ func (_ Def) TestIndex(
 						// add
 						num := int(rand.Int63())
 						entry := NewEntry(TestingIndex, num, k)
-						err = index.Save(entry)
+						err = index.Save(ctx, entry)
 						ce(err)
 
 						// select
 						n := 0
 						err = selIndex(
+							ctx,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
 									// Entry
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(name string, i int, _ Key) {
 										if name != "index.testingIndex" {
 											t.Fatalf("got %s", name)
 										}
@@ -113,7 +114,7 @@ func (_ Def) TestIndex(
 										}
 									}),
 									// PreEntry
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, name string, i int) {
 										if name != "index.testingIndex" {
 											t.Fatalf("got %s", name)
 										}
@@ -133,6 +134,7 @@ func (_ Def) TestIndex(
 						// exact
 						n = 0
 						ce(selIndex(
+							ctx,
 							Exact(entry),
 							Count(&n),
 						))
@@ -142,16 +144,17 @@ func (_ Def) TestIndex(
 
 						// same tuple
 						entry = NewEntry(TestingIndex, num, k)
-						err = index.Save(entry)
+						err = index.Save(ctx, entry)
 						ce(err)
 
 						n = 0
 						err = selIndex(
+							ctx,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
 									// Entry
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(name string, i int, _ Key) {
 										if name != "index.testingIndex" {
 											t.Fatal()
 										}
@@ -161,7 +164,7 @@ func (_ Def) TestIndex(
 										}
 									}),
 									// PreEntry
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, name string, i int) {
 										if name != "index.testingIndex" {
 											t.Fatal()
 										}
@@ -180,16 +183,17 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = selIndex(
+							ctx,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										n++
 										if i != num {
 											t.Fatal()
 										}
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										n++
 										if i != num {
 											t.Fatal()
@@ -205,17 +209,18 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										n++
 										if i != num {
 											t.Fatal()
 										}
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										n++
 										if i != num {
 											t.Fatal()
@@ -231,17 +236,18 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										n++
 										if i != num {
 											t.Fatal()
 										}
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										n++
 										if i != num {
 											t.Fatal()
@@ -257,11 +263,12 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							Lower(NewEntry(TestingIndex, 1)),
 							Upper(NewEntry(TestingIndex, num+1)),
 							Asc,
-							Unmarshal(func(name string, i int, key Key) {
+							Unmarshal(func(_ string, i int, _ Key) {
 								n++
 								if i != num {
 									t.Fatal()
@@ -275,11 +282,12 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							Lower(NewEntry(TestingIndex, num+1)),
 							Upper(NewEntry(TestingIndex, 1)),
 							Asc,
-							Unmarshal(func(i int, key Key) {
+							Unmarshal(func(_ int, _ Key) {
 								n++
 							}),
 						)
@@ -289,6 +297,7 @@ func (_ Def) TestIndex(
 						}
 
 						err = Select(
+							ctx,
 							index,
 							Lower(NewEntry(TestingIndex, 1)),
 							Upper(NewEntry(TestingIndex, num+1)),
@@ -300,6 +309,7 @@ func (_ Def) TestIndex(
 						}
 
 						err = Select(
+							ctx,
 							index,
 							Lower(NewEntry(TestingIndex, num+1)),
 							Upper(NewEntry(TestingIndex, 1)),
@@ -311,6 +321,7 @@ func (_ Def) TestIndex(
 						}
 
 						err = Select(
+							ctx,
 							index,
 							Lower(NewEntry(TestingIndex, 1)),
 							Upper(NewEntry(TestingIndex, num)),
@@ -322,34 +333,37 @@ func (_ Def) TestIndex(
 						}
 
 						entry = NewEntry(TestingIndex, num+1, k)
-						err = index.Save(entry)
+						err = index.Save(ctx, entry)
 						ce(err)
 
 						// iter desc
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							Desc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
-										if n == 0 {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
+										switch n {
+										case 0:
 											if i != num+1 {
 												t.Fatal()
 											}
-										} else if n == 1 {
+										case 1:
 											if i != num {
 												t.Fatal()
 											}
 										}
 										n++
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
-										if n == 0 {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
+										switch n {
+										case 0:
 											if i != num+1 {
 												t.Fatal()
 											}
-										} else if n == 1 {
+										case 1:
 											if i != num {
 												t.Fatal()
 											}
@@ -366,29 +380,32 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
-										if n == 1 {
-											if i != num+1 {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
+										switch n {
+										case 0:
+											if i != num {
 												t.Fatal()
 											}
-										} else if n == 0 {
-											if i != num {
+										case 1:
+											if i != num+1 {
 												t.Fatal()
 											}
 										}
 										n++
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
-										if n == 1 {
-											if i != num+1 {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
+										switch n {
+										case 0:
+											if i != num {
 												t.Fatal()
 											}
-										} else if n == 0 {
-											if i != num {
+										case 1:
+											if i != num+1 {
 												t.Fatal()
 											}
 										}
@@ -403,24 +420,25 @@ func (_ Def) TestIndex(
 						}
 
 						// prefix
-						err = index.Save(NewEntry(
+						err = index.Save(ctx, NewEntry(
 							TestingIndex2, "foo", "foo", 1, k,
 						))
 						ce(err)
-						err = index.Save(NewEntry(
+						err = index.Save(ctx, NewEntry(
 							TestingIndex2, "foo", "foo", 2, k,
 						))
 						ce(err)
-						err = index.Save(NewEntry(
+						err = index.Save(ctx, NewEntry(
 							TestingIndex2, "foo", "bar", 3, k,
 						))
 						ce(err)
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2, "foo"),
-							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(_ string, p string, _ string, _ int, _ Key) {
 								if p != "foo" {
 									t.Fatal()
 								}
@@ -434,9 +452,10 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2, "foo", "foo"),
-							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(_ string, p string, p2 string, _ int, _ Key) {
 								if p != "foo" {
 									t.Fatal()
 								}
@@ -453,9 +472,10 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2, "foo", "bar"),
-							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(_ string, p string, p2 string, _ int, _ Key) {
 								if p != "foo" {
 									t.Fatal()
 								}
@@ -472,9 +492,10 @@ func (_ Def) TestIndex(
 
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2, "baz"),
-							Unmarshal(func(name string, p string, p2 string, i int, key Key) {
+							Unmarshal(func(_ string, _ string, _ string, _ int, _ Key) {
 								n++
 							}),
 						))
@@ -485,6 +506,7 @@ func (_ Def) TestIndex(
 						// where
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2),
 							Where(func(s sb.Stream) bool {
@@ -501,6 +523,7 @@ func (_ Def) TestIndex(
 						// count
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2, "foo"),
 							Count(&n),
@@ -511,6 +534,7 @@ func (_ Def) TestIndex(
 
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Count(&n),
 							Unmarshal(func(args ...any) {
@@ -523,6 +547,7 @@ func (_ Def) TestIndex(
 						// limit
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Count(&n),
 							Limit(1),
@@ -535,6 +560,7 @@ func (_ Def) TestIndex(
 
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Count(&n),
 							Limit(1),
@@ -546,6 +572,7 @@ func (_ Def) TestIndex(
 						// offset
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Offset(0),
 							Count(&n),
@@ -555,6 +582,7 @@ func (_ Def) TestIndex(
 						}
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Offset(0),
 							Limit(3),
@@ -565,6 +593,7 @@ func (_ Def) TestIndex(
 						}
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Offset(1),
 							Count(&n),
@@ -574,6 +603,7 @@ func (_ Def) TestIndex(
 						}
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Offset(2),
 							Count(&n),
@@ -583,6 +613,7 @@ func (_ Def) TestIndex(
 						}
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							Offset(2),
 							Count(&n),
@@ -595,6 +626,7 @@ func (_ Def) TestIndex(
 						// prefix and variadic call
 						n = 0
 						ce(Select(
+							ctx,
 							index,
 							MatchEntry(TestingIndex2, "foo"),
 							Unmarshal(func(tuple ...any) {
@@ -606,9 +638,10 @@ func (_ Def) TestIndex(
 						}
 
 						// context
-						ctx, cancel := context.WithCancel(wt.Ctx)
+						ctx, cancel := context.WithCancel(ctx)
 						cancel()
 						err = Select(
+							ctx,
 							index,
 							WithCtx{ctx},
 						)
@@ -618,6 +651,7 @@ func (_ Def) TestIndex(
 
 						// delete
 						iter, closer, err := index.Iter(
+							ctx,
 							nil,
 							nil,
 							Asc,
@@ -643,16 +677,17 @@ func (_ Def) TestIndex(
 						})))
 						ce(closer.Close())
 						for _, tuple := range toDelete {
-							ce(index.Delete(tuple))
+							ce(index.Delete(ctx, tuple))
 						}
 
 						iter, closer, err = index.Iter(
+							ctx,
 							nil,
 							nil,
 							Asc,
 						)
 						ce(err)
-						ce(pp.Copy(iter, pp.Tap(func(v any) error {
+						ce(pp.Copy(iter, pp.Tap(func(_ any) error {
 							// should all be deleted
 							t.Fatal()
 							return nil
@@ -661,7 +696,7 @@ func (_ Def) TestIndex(
 
 						// extra save, to test id isolation
 						entry = NewEntry(TestingIndex, num+1, k)
-						ce(index.Save(entry))
+						ce(index.Save(ctx, entry))
 
 					})
 

@@ -6,6 +6,7 @@ package storekv
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
@@ -26,13 +26,13 @@ func (s StringKey) Error() string {
 }
 
 type KV interface {
-	StoreID() string                      // IndexID is only used in initialization, should be stable and unique
-	Name() string                         // Name is for human readable
-	KeyPut(key string, r io.Reader) error // implementation should not retain reader underlying bytes after return
-	KeyGet(key string, fn func(io.Reader) error) error
-	KeyExists(key string) (bool, error)
-	KeyIter(prefix string, fn func(key string) error) error
-	KeyDelete(key ...string) error
+	StoreID() string                                           // IndexID is only used in initialization, should be stable and unique
+	Name() string                                              // Name is for human readable
+	KeyPut(ctx context.Context, key string, r io.Reader) error // implementation should not retain reader underlying bytes after return
+	KeyGet(ctx context.Context, key string, fn func(io.Reader) error) error
+	KeyExists(ctx context.Context, key string) (bool, error)
+	KeyIter(ctx context.Context, prefix string, fn func(key string) error) error
+	KeyDelete(ctx context.Context, key ...string) error
 	CostInfo() CostInfo
 }
 
@@ -45,7 +45,6 @@ type CostInfo struct {
 }
 
 type Store struct {
-	*pr.WaitTree
 	name          string
 	kv            KV
 	codec         Codec
@@ -75,10 +74,9 @@ type NewOption interface {
 
 var serial int64
 
-func (_ Def) New(
+func (Def) New(
 	newHashState key.NewHashState,
 	parallel sys.Parallel,
-	wt *pr.WaitTree,
 ) (
 	newStore New,
 ) {
@@ -113,7 +111,6 @@ func (_ Def) New(
 		}
 
 		store := &Store{
-			WaitTree: wt,
 			name: fmt.Sprintf("kv%d(%s, %s)",
 				atomic.AddInt64(&serial, 1),
 				kv.Name(),
@@ -141,7 +138,7 @@ func (s *Store) Name() string {
 	return s.name
 }
 
-func (s *Store) getID() (id store.ID, err error) {
+func (s *Store) getID(ctx context.Context) (id store.ID, err error) {
 	defer he(&err)
 	s.setupIDOnce.Do(func() {
 		idPath := strings.Join([]string{
@@ -159,13 +156,13 @@ func (s *Store) getID() (id store.ID, err error) {
 			); err != nil {
 				return err
 			}
-			err = s.kv.KeyPut(idPath, buf)
+			err = s.kv.KeyPut(ctx, idPath, buf)
 			ce(err)
 			s._id = id
 			return nil
 		}
 
-		if err := s.kv.KeyGet(idPath, func(r io.Reader) (err error) {
+		if err := s.kv.KeyGet(ctx, idPath, func(r io.Reader) (err error) {
 			defer he(&err)
 			var id StoreID
 			if err := sb.Copy(

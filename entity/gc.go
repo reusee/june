@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -15,6 +16,7 @@ import (
 )
 
 type GC func(
+	ctx context.Context,
 	roots []Key,
 	options ...GCOption,
 ) error
@@ -28,16 +30,16 @@ type GCOption interface {
 	IsGCOption()
 }
 
-func (_ Def) GC(
+func (Def) GC(
 	store Store,
 	selIndex index.SelectIndex,
 	index Index,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 	deleteSummary DeleteSummary,
 ) GC {
 
 	return func(
+		ctx context.Context,
 		roots []Key,
 		options ...GCOption,
 	) (err error) {
@@ -73,10 +75,10 @@ func (_ Def) GC(
 		// mark
 		var reachable sync.Map // Key: struct{}
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
+		ctx, wg := pr.WithWaitGroup(ctx)
+		defer wg.Cancel()
 		var put pr.Put[Key]
-		put, wait := pr.Consume(wt, int(parallel), func(i int, key Key) (err error) {
+		put, wait := pr.Consume(ctx, int(parallel), func(_ int, key Key) (err error) {
 			defer he(&err)
 
 			if _, ok := reachable.Load(key); ok {
@@ -88,6 +90,7 @@ func (_ Def) GC(
 			}
 			var keys []Key
 			ce(Select(
+				ctx,
 				index,
 				MatchEntry(IdxReferTo, key),
 				Tap(func(_ Key, toKey Key) {
@@ -116,7 +119,7 @@ func (_ Def) GC(
 
 		// collect dead objects
 		deadObjects := make([][]DeadObject, int(parallel))
-		put, wait = pr.Consume(wt, int(parallel), func(i int, key Key) (err error) {
+		put, wait = pr.Consume(ctx, int(parallel), func(i int, key Key) (err error) {
 			defer he(&err)
 
 			if tapIter != nil {
@@ -124,7 +127,7 @@ func (_ Def) GC(
 			}
 			if key.Namespace == NSSummary {
 				var summary Summary
-				ce(store.Read(key, func(stream sb.Stream) error {
+				ce(store.Read(ctx, key, func(stream sb.Stream) error {
 					return sb.Copy(stream, sb.Unmarshal(&summary))
 				}))
 				if _, ok := reachable.Load(summary.Key); ok {
@@ -147,6 +150,7 @@ func (_ Def) GC(
 
 		// must use index, to avoid empty index causing all objects to be deleted
 		ce(selIndex(
+			ctx,
 			MatchEntry(IdxSummaryKey),
 			Tap(func(key Key, summaryKey Key) {
 				put(key)
@@ -166,14 +170,14 @@ func (_ Def) GC(
 		// delete
 		batchKeys := make([][]Key, int(parallel))
 		var putDeadObject pr.Put[DeadObject]
-		putDeadObject, wait = pr.Consume(wt, int(parallel), func(proc int, obj DeadObject) (err error) {
+		putDeadObject, wait = pr.Consume(ctx, int(parallel), func(proc int, obj DeadObject) (err error) {
 			defer he(&err)
 
 			if obj.Key.Namespace == NSSummary {
-				ce(deleteSummary(obj.Summary, obj.Key))
+				ce(deleteSummary(ctx, obj.Summary, obj.Key))
 			} else {
 				if len(batchKeys[proc]) > 500 {
-					ce(store.Delete(batchKeys[proc]))
+					ce(store.Delete(ctx, batchKeys[proc]))
 					batchKeys[proc] = batchKeys[proc][:0]
 				}
 				batchKeys[proc] = append(batchKeys[proc], obj.Key)
@@ -188,7 +192,7 @@ func (_ Def) GC(
 		}
 		ce(wait(true))
 		for _, keys := range batchKeys {
-			ce(store.Delete(keys))
+			ce(store.Delete(ctx, keys))
 		}
 
 		return nil

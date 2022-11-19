@@ -5,6 +5,7 @@
 package keyset
 
 import (
+	"context"
 	"errors"
 
 	"github.com/reusee/e5"
@@ -12,6 +13,7 @@ import (
 )
 
 type Iter func(
+	ctx context.Context,
 	set Set,
 	fn func(key Key) error,
 ) error
@@ -20,11 +22,12 @@ func (_ Def) Iter(
 	fetch entity.Fetch,
 ) Iter {
 	return func(
+		ctx context.Context,
 		set Set,
 		fn func(key Key) error,
 	) (err error) {
 		return ce(
-			set.iter(fetch, fn),
+			set.iter(ctx, fetch, fn),
 			e5.Ignore(Break),
 		)
 	}
@@ -33,6 +36,7 @@ func (_ Def) Iter(
 var Break = errors.New("break")
 
 func (s Set) iter(
+	ctx context.Context,
 	fetch entity.Fetch,
 	fn func(key Key) error,
 ) error {
@@ -43,10 +47,10 @@ func (s Set) iter(
 			}
 		} else if item.Pack != nil {
 			var set Set
-			if err := fetch(item.Pack.Key, &set); err != nil {
+			if err := fetch(ctx, item.Pack.Key, &set); err != nil {
 				return err
 			}
-			if err := set.iter(fetch, fn); err != nil {
+			if err := set.iter(ctx, fetch, fn); err != nil {
 				return err
 			}
 		}

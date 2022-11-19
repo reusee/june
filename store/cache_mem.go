@@ -6,6 +6,7 @@ package store
 
 import (
 	"bytes"
+	"context"
 
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/reusee/e5"
@@ -24,7 +25,7 @@ type NewMemCache func(
 	maxSize int,
 ) (*MemCache, error)
 
-func (_ Def) NewMemCache(
+func (Def) NewMemCache(
 	newHashState key.NewHashState,
 ) NewMemCache {
 	return func(
@@ -44,7 +45,7 @@ func (_ Def) NewMemCache(
 
 var _ Cache = new(MemCache)
 
-func (m *MemCache) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
+func (m *MemCache) CacheGet(ctx context.Context, key Key, fn func(sb.Stream) error) (err error) {
 	defer he(&err)
 	v, ok := m.cache.Get(key)
 	if !ok {
@@ -56,6 +57,7 @@ func (m *MemCache) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 }
 
 func (m *MemCache) CachePut(
+	ctx context.Context,
 	key Key,
 	tokens sb.Tokens,
 	options ...CachePutOption,

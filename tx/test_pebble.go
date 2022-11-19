@@ -5,6 +5,7 @@
 package tx
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -15,20 +16,19 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storepebble"
-	"github.com/reusee/pr"
 )
 
 func TestPebbleTx(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newPeb storepebble.New,
 	newKV storekv.New,
 	scope Scope,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	dir := t.TempDir()
-	peb, err := newPeb(wt, nil, dir)
+	peb, err := newPeb(ctx, nil, dir)
 	ce(err)
 
 	scope.Fork(
@@ -41,30 +41,30 @@ func TestPebbleTx(
 		&peb,
 	).Call(func(
 		tx PebbleTx,
-		scope Scope,
 	) {
 
 		// commit tx
 		var key1 Key
-		ce(tx(wt, func(
+		ce(tx(ctx, func(
 			save entity.Save,
 		) {
-			summary, err := save(entity.NSEntity, 42)
+			summary, err := save(ctx, entity.NSEntity, 42)
 			ce(err)
 			key1 = summary.Key
 		}))
 
-		ce(tx(wt, func(
+		ce(tx(ctx, func(
 			fetch entity.Fetch,
 			selIndex index.SelectIndex,
 		) {
 			var i int
-			ce(fetch(key1, &i))
+			ce(fetch(ctx, key1, &i))
 			if i != 42 {
 				t.Fatal()
 			}
 
 			ce(selIndex(
+				ctx,
 				index.MatchEntry(entity.IdxSummaryKey, key1),
 				index.Count(&i),
 			))
@@ -76,10 +76,10 @@ func TestPebbleTx(
 		// error, no commit
 		errFoo := fmt.Errorf("foo")
 		var key2 Key
-		err = tx(wt, func(
+		err = tx(ctx, func(
 			save entity.Save,
 		) {
-			summary, err := save(entity.NSEntity, 1)
+			summary, err := save(ctx, entity.NSEntity, 1)
 			ce(err)
 			key2 = summary.Key
 			ce(errFoo)
@@ -88,17 +88,18 @@ func TestPebbleTx(
 			t.Fatal()
 		}
 
-		ce(tx(wt, func(
+		ce(tx(ctx, func(
 			fetch entity.Fetch,
 			selIndex index.SelectIndex,
 		) {
 			var i int
-			err := fetch(key2, &i)
+			err := fetch(ctx, key2, &i)
 			if !errors.Is(err, store.ErrKeyNotFound) {
 				t.Fatal()
 			}
 
 			ce(selIndex(
+				ctx,
 				index.MatchEntry(entity.IdxSummaryKey, key2),
 				index.Count(&i),
 			))
@@ -106,6 +107,7 @@ func TestPebbleTx(
 				t.Fatal()
 			}
 			ce(selIndex(
+				ctx,
 				index.MatchEntry(entity.IdxSummaryKey, key1),
 				index.Count(&i),
 			))
@@ -116,26 +118,26 @@ func TestPebbleTx(
 
 		// tx inside tx, partial commit
 		var key3, key4 Key
-		err = tx(wt, func(
+		err = tx(ctx, func(
 			save entity.Save,
 			store store.Store,
 		) {
-			ce(tx(wt, func(
+			ce(tx(ctx, func(
 				save entity.Save,
 			) {
-				summary, err := save(entity.NSEntity, 99)
+				summary, err := save(ctx, entity.NSEntity, 99)
 				ce(err)
 				key3 = summary.Key
 			}))
 
 			// should see committed key
-			ok, err := store.Exists(key3)
+			ok, err := store.Exists(ctx, key3)
 			ce(err)
 			if !ok {
 				t.Fatal()
 			}
 
-			summary, err := save(entity.NSEntity, 1)
+			summary, err := save(ctx, entity.NSEntity, 1)
 			ce(err)
 			key4 = summary.Key
 			ce(errFoo)
@@ -144,23 +146,24 @@ func TestPebbleTx(
 			t.Fatal()
 		}
 
-		ce(tx(wt, func(
+		ce(tx(ctx, func(
 			fetch entity.Fetch,
 			selIndex index.SelectIndex,
 		) {
 			var i int
 
-			ce(fetch(key3, &i))
+			ce(fetch(ctx, key3, &i))
 			if i != 99 {
 				t.Fatal()
 			}
 
-			err := fetch(key4, &i)
+			err := fetch(ctx, key4, &i)
 			if !errors.Is(err, store.ErrKeyNotFound) {
 				t.Fatal()
 			}
 
 			ce(selIndex(
+				ctx,
 				index.MatchEntry(entity.IdxSummaryKey, key4),
 				index.Count(&i),
 			))
@@ -168,6 +171,7 @@ func TestPebbleTx(
 				t.Fatal()
 			}
 			ce(selIndex(
+				ctx,
 				index.MatchEntry(entity.IdxSummaryKey, key3),
 				index.Count(&i),
 			))
@@ -182,15 +186,15 @@ func TestPebbleTx(
 
 func TestPebbleTxEntityDelete(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newPeb storepebble.New,
 	newKV storekv.New,
 	scope Scope,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	dir := t.TempDir()
-	peb, err := newPeb(wt, nil, dir)
+	peb, err := newPeb(ctx, nil, dir)
 	ce(err)
 
 	scope.Fork(
@@ -203,21 +207,21 @@ func TestPebbleTxEntityDelete(
 		&peb,
 	).Call(func(
 		tx PebbleTx,
-		scope Scope,
 	) {
 
-		ce(tx(wt, func(
+		ce(tx(ctx, func(
 			save entity.SaveEntity,
 			sel index.SelectIndex,
 			del entity.Delete,
 		) {
 
-			s, err := save(42)
+			s, err := save(ctx, 42)
 			ce(err)
 			_ = s
 
 			var c int
 			ce(sel(
+				ctx,
 				index.MatchEntry(entity.IdxPairObjectSummary, s.Key),
 				index.Count(&c),
 			))
@@ -225,9 +229,10 @@ func TestPebbleTxEntityDelete(
 				t.Fatal()
 			}
 
-			ce(del(s.Key))
+			ce(del(ctx, s.Key))
 
 			ce(sel(
+				ctx,
 				index.MatchEntry(entity.IdxPairObjectSummary, s.Key),
 				index.Count(&c),
 			))

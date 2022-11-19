@@ -5,6 +5,8 @@
 package storekv
 
 import (
+	"context"
+
 	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 	"github.com/reusee/sb"
@@ -12,9 +14,9 @@ import (
 
 var _ Cache = new(Store)
 
-func (s *Store) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
+func (s *Store) CacheGet(ctx context.Context, key Key, fn func(sb.Stream) error) (err error) {
 	defer he(&err)
-	if err := s.Read(key, func(s sb.Stream) error {
+	if err := s.Read(ctx, key, func(s sb.Stream) error {
 		return fn(s)
 	}); is(err, ErrKeyNotFound) {
 		return we.With(e5.With(key))(err)
@@ -24,7 +26,7 @@ func (s *Store) CacheGet(key Key, fn func(sb.Stream) error) (err error) {
 	return nil
 }
 
-func (s *Store) CachePut(key Key, tokes sb.Tokens, options ...store.CachePutOption) error {
+func (s *Store) CachePut(ctx context.Context, key Key, tokes sb.Tokens, options ...store.CachePutOption) error {
 	// ignore
 	return nil
 }

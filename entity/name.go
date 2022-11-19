@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"path"
@@ -23,14 +24,14 @@ func (n Name) Valid() bool {
 
 // NewName
 
-type NewName func(prefix string) Name
+type NewName func(ctx context.Context, prefix string) Name
 
 func (_ Def) NewName(
 	machineName naming.MachineName,
 	index Index,
 ) NewName {
 
-	return func(prefix string) Name {
+	return func(ctx context.Context, prefix string) Name {
 		bs := make([]byte, 2)
 		for {
 			if _, err := rand.Read(bs[:]); err != nil {
@@ -51,6 +52,7 @@ func (_ Def) NewName(
 			// check dup
 			var n int
 			if err := Select(
+				ctx,
 				index,
 				MatchEntry(IdxName, name),
 				Count(&n),

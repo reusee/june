@@ -9,6 +9,7 @@ package filebase
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"math/rand"
 	"testing"
@@ -39,12 +40,14 @@ func TestContent(
 		del entity.Delete,
 	) {
 
+		ctx := context.Background()
+
 		testKeys := func(keys []Key, lengths []int64, bs []byte) {
-			reader := newReader(keys, lengths)
+			reader := newReader(ctx, keys, lengths)
 			err := iotest.TestReader(reader, bs)
 			ce(err)
 			buf := new(bytes.Buffer)
-			err = write(keys, buf)
+			err = write(ctx, keys, buf)
 			ce(err)
 			if !bytes.Equal(bs, buf.Bytes()) {
 				t.Fatal()
@@ -86,7 +89,7 @@ func TestContent(
 				ce(err)
 
 				numBytes += len(bs)
-				keys, lengths, err := to(bytes.NewReader(bs), int64(len(bs)))
+				keys, lengths, err := to(ctx, bytes.NewReader(bs), int64(len(bs)))
 				ce(err)
 				testKeys(keys, lengths, bs)
 				var sum int64
@@ -99,13 +102,13 @@ func TestContent(
 
 				bs = append(bs, []byte("foo")...)
 				numBytes += len(bs)
-				keys, lengths, err = to(bytes.NewReader(bs), int64(len(bs)))
+				keys, lengths, err = to(ctx, bytes.NewReader(bs), int64(len(bs)))
 				ce(err)
 				testKeys(keys, lengths, bs)
 
 				bs = append([]byte("foo"), bs...)
 				numBytes += len(bs)
-				keys, lengths, err = to(bytes.NewReader(bs), int64(len(bs)))
+				keys, lengths, err = to(ctx, bytes.NewReader(bs), int64(len(bs)))
 				ce(err)
 				testKeys(keys, lengths, bs)
 
@@ -115,16 +118,17 @@ func TestContent(
 
 			var contentKeys []Key
 			selIndex(
+				ctx,
 				entity.MatchType(Content{}),
 				index.TapKey(func(key Key) {
 					var content Content
-					ce(fetch(key, &content))
+					ce(fetch(ctx, key, &content))
 					contentBytes += len(content)
 					contentKeys = append(contentKeys, key)
 				}),
 			)
 			for _, key := range contentKeys {
-				ce(del(key))
+				ce(del(ctx, key))
 			}
 
 			compactRatio := float64(contentBytes) / float64(numBytes)

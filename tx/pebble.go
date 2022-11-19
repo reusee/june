@@ -5,18 +5,19 @@
 package tx
 
 import (
+	"context"
+
 	"github.com/reusee/dscope"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storepebble"
-	"github.com/reusee/pr"
 )
 
 type KVToStore func(kv storekv.KV) (store.Store, error)
 
 type PebbleTx func(
-	wt *pr.WaitTree,
+	ctx context.Context,
 	fn any,
 ) error
 
@@ -27,13 +28,13 @@ func UsePebbleTx(
 	scope dscope.Scope,
 ) PebbleTx {
 
-	return func(wt *pr.WaitTree, fn any) (err error) {
+	return func(ctx context.Context, fn any) (err error) {
 		defer he(&err)
 
-		batch, err := newBatch(wt, peb)
+		batch, err := newBatch(ctx, peb)
 		ce(err)
 		defer he(&err, e5.WrapFunc(func(err error) error {
-			if e := batch.Abort(); e != nil {
+			if e := batch.Abort(ctx); e != nil {
 				return e5.Chain(e, err)
 			}
 			return err
@@ -50,7 +51,7 @@ func UsePebbleTx(
 			},
 		).Call(fn)
 
-		ce(batch.Commit())
+		ce(batch.Commit(ctx))
 
 		return
 	}

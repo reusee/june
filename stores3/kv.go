@@ -14,10 +14,9 @@ import (
 	"github.com/reusee/june/storekv"
 )
 
-func (k *KV) KeyExists(key string) (_ bool, err error) {
-	defer k.Add()()
+func (k *KV) KeyExists(ctx context.Context, key string) (_ bool, err error) {
 	defer he(&err)
-	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+	ctx, cancel := context.WithTimeout(ctx, k.timeout)
 	defer cancel()
 	_, err = k.client.StatObject(ctx, k.bucket, key, minio.StatObjectOptions{})
 	if err != nil {
@@ -30,12 +29,11 @@ func (k *KV) KeyExists(key string) (_ bool, err error) {
 	return true, nil
 }
 
-func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
-	defer k.Add()()
+func (k *KV) KeyGet(ctx context.Context, key string, fn func(io.Reader) error) (err error) {
 	defer he(&err,
 		e5.With(storekv.StringKey(key)),
 	)
-	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+	ctx, cancel := context.WithTimeout(ctx, k.timeout)
 	defer cancel()
 	obj, err := k.client.GetObject(ctx, k.bucket, key, minio.GetObjectOptions{})
 	var resp minio.ErrorResponse
@@ -54,12 +52,11 @@ func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	return nil
 }
 
-func (k *KV) KeyPut(key string, r io.Reader) (err error) {
-	defer k.Add()()
+func (k *KV) KeyPut(ctx context.Context, key string, r io.Reader) (err error) {
 	defer he(&err,
 		e5.With(storekv.StringKey(key)),
 	)
-	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+	ctx, cancel := context.WithTimeout(ctx, k.timeout)
 	defer cancel()
 	var content []byte
 	if b, ok := r.(interface {
@@ -81,15 +78,14 @@ func (k *KV) KeyPut(key string, r io.Reader) (err error) {
 	return nil
 }
 
-func (k *KV) KeyIter(prefix string, fn func(string) error) (err error) {
-	defer k.Add()()
+func (k *KV) KeyIter(ctx context.Context, prefix string, fn func(string) error) (err error) {
 	defer he(&err, e5.Info("prefix %s", prefix))
 
 	marker := ""
 loop:
 	for {
 		select {
-		case <-k.Ctx.Done():
+		case <-ctx.Done():
 			break loop
 		default:
 		}
@@ -116,13 +112,12 @@ loop:
 	return nil
 }
 
-func (k *KV) KeyDelete(keys ...string) (err error) {
-	defer k.Add()()
+func (k *KV) KeyDelete(ctx context.Context, keys ...string) (err error) {
 	defer he(&err)
 	for len(keys) > 0 {
 		i := 0
 
-		ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+		ctx, cancel := context.WithTimeout(ctx, k.timeout)
 		defer cancel()
 		ch := make(chan minio.ObjectInfo)
 		errChan := k.client.RemoveObjects(

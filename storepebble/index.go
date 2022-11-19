@@ -24,14 +24,13 @@ var _ index.IndexManager = new(Store)
 func (s *Store) IndexFor(id StoreID) (index.Index, error) {
 	defer s.Add()()
 	return Index{
-		ctx: s.Ctx,
 		name: fmt.Sprintf("pebble-index%d(%v, %v)",
 			atomic.AddInt64(&indexSerial, 1),
 			s.Name(),
 			id,
 		),
 		begin: s.Add,
-		exists: func(key []byte) (bool, error) {
+		exists: func(ctx context.Context, key []byte) (bool, error) {
 			_, cl, err := s.DB.Get(key)
 			if is(err, pebble.ErrNotFound) {
 				return false, nil
@@ -42,8 +41,12 @@ func (s *Store) IndexFor(id StoreID) (index.Index, error) {
 			cl.Close()
 			return true, nil
 		},
-		set:    s.DB.Set,
-		delete: s.DB.Delete,
+		set: func(_ context.Context, key, value []byte, opts *pebble.WriteOptions) error {
+			return s.DB.Set(key, value, opts)
+		},
+		delete: func(_ context.Context, key []byte, opts *pebble.WriteOptions) error {
+			return s.DB.Delete(key, opts)
+		},
 		newIter: func(options *pebble.IterOptions) *pebble.Iterator {
 			return s.DB.NewIter(options)
 		},
@@ -57,12 +60,11 @@ func (s *Store) IndexFor(id StoreID) (index.Index, error) {
 var indexSerial int64
 
 type Index struct {
-	ctx     context.Context
 	name    string
 	begin   func() func()
-	exists  func([]byte) (bool, error)
-	set     func([]byte, []byte, *pebble.WriteOptions) error
-	delete  func([]byte, *pebble.WriteOptions) error
+	exists  func(context.Context, []byte) (bool, error)
+	set     func(context.Context, []byte, []byte, *pebble.WriteOptions) error
+	delete  func(context.Context, []byte, *pebble.WriteOptions) error
 	newIter func(*pebble.IterOptions) *pebble.Iterator
 
 	withRLock func(func())
@@ -75,14 +77,14 @@ var indexBufPool = sync.Pool{
 	},
 }
 
-func (i Index) Name() string {
-	return i.name
+func (i Index) Name(_ context.Context) (string, error) {
+	return i.name, nil
 }
 
-func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
+func (i Index) Save(ctx context.Context, entry IndexEntry, options ...IndexSaveOption) (err error) {
 	select {
-	case <-i.ctx.Done():
-		return i.ctx.Err()
+	case <-ctx.Done():
+		return ctx.Err()
 	default:
 	}
 	defer catchErr(&err, pebble.ErrClosed)
@@ -109,11 +111,11 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 		}
 	}
 
-	if err := i.save(entry); err != nil {
+	if err := i.save(ctx, entry); err != nil {
 		return err
 	}
 	if entry.Key != nil {
-		if err := i.save(index.PreEntry{
+		if err := i.save(ctx, index.PreEntry{
 			Key:   *entry.Key,
 			Type:  entry.Type,
 			Tuple: entry.Tuple,
@@ -129,7 +131,7 @@ func (i Index) Save(entry IndexEntry, options ...IndexSaveOption) (err error) {
 	return nil
 }
 
-func (i Index) save(obj any) error {
+func (i Index) save(ctx context.Context, obj any) error {
 	buf := indexBufPool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
@@ -148,33 +150,33 @@ func (i Index) save(obj any) error {
 		return err
 	}
 	bs := buf.Bytes()
-	yes, err := i.exists(bs)
+	yes, err := i.exists(ctx, bs)
 	if err != nil {
 		return err
 	}
 	if yes {
 		return nil
 	}
-	if err = i.set(bs, []byte{}, writeOptions); err != nil {
+	if err = i.set(ctx, bs, []byte{}, writeOptions); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Index) Delete(entry IndexEntry) (err error) {
+func (i Index) Delete(ctx context.Context, entry IndexEntry) (err error) {
 	select {
-	case <-i.ctx.Done():
-		return i.ctx.Err()
+	case <-ctx.Done():
+		return ctx.Err()
 	default:
 	}
 	defer catchErr(&err, pebble.ErrClosed)
 	defer i.begin()()
 
-	if err := i._delete(entry); err != nil {
+	if err := i._delete(ctx, entry); err != nil {
 		return err
 	}
 	if entry.Key != nil {
-		if err := i._delete(index.PreEntry{
+		if err := i._delete(ctx, index.PreEntry{
 			Key:   *entry.Key,
 			Type:  entry.Type,
 			Tuple: entry.Tuple,
@@ -186,7 +188,7 @@ func (i Index) Delete(entry IndexEntry) (err error) {
 	return nil
 }
 
-func (i Index) _delete(obj any) error {
+func (i Index) _delete(ctx context.Context, obj any) error {
 	buf := indexBufPool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
@@ -204,7 +206,7 @@ func (i Index) _delete(obj any) error {
 	); err != nil {
 		return err
 	}
-	if err := i.delete(buf.Bytes(), writeOptions); err != nil {
+	if err := i.delete(ctx, buf.Bytes(), writeOptions); err != nil {
 		return err
 	}
 	return nil
@@ -221,13 +223,14 @@ type indexIter struct {
 }
 
 func (idx Index) Iter(
+	ctx context.Context,
 	lower *sb.Tokens,
 	upper *sb.Tokens,
 	order index.Order,
 ) (pp.Src, io.Closer, error) {
 	select {
-	case <-idx.ctx.Done():
-		return nil, nil, idx.ctx.Err()
+	case <-ctx.Done():
+		return nil, nil, ctx.Err()
 	default:
 	}
 

@@ -6,27 +6,27 @@ package storepebble
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"testing"
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
 func TestMixedIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	testIndex index.TestIndex,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	withIndex := func(fn func(index.IndexManager)) {
 		dir := t.TempDir()
-		s, err := newStore(wt, nil, dir)
+		s, err := newStore(ctx, nil, dir)
 		ce(err)
 
 		buf := new(bytes.Buffer)
@@ -37,6 +37,7 @@ func TestMixedIndex(
 			t.Fatal(err)
 		}
 		err = s.KeyPut(
+			ctx,
 			"foo",
 			buf,
 		)
@@ -44,21 +45,21 @@ func TestMixedIndex(
 
 		fn(s)
 	}
-	testIndex(withIndex, t)
+	testIndex(ctx, withIndex, t)
 
 }
 
 func TestMixedKV(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	testKV storekv.TestKV,
 ) {
+	ctx := context.Background()
 
 	withKV := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(wt, nil, dir)
+		s, err := newStore(ctx, nil, dir)
 		ce(err)
 
 		entry := index.NewEntry(TestingIndex, 42)
@@ -66,12 +67,12 @@ func TestMixedKV(
 
 		index, err := s.IndexFor("foo")
 		ce(err)
-		err = index.Save(entry)
+		err = index.Save(ctx, entry)
 		ce(err)
 
 		fn(s, "foo")
 	}
-	testKV(t, withKV)
+	testKV(ctx, t, withKV)
 
 }
 

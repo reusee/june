@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/reusee/dscope"
@@ -17,6 +18,7 @@ import (
 )
 
 type IndexGC func(
+	ctx context.Context,
 	options ...IndexGCOption,
 ) error
 
@@ -48,9 +50,9 @@ func (_ Def) IndexGC(
 	fetch Fetch,
 	index Index,
 	parallel sys.Parallel,
-	wt *pr.WaitTree,
 ) IndexGC {
 	return func(
+		ctx context.Context,
 		options ...IndexGCOption,
 	) (err error) {
 		defer he(&err)
@@ -66,7 +68,7 @@ func (_ Def) IndexGC(
 		}
 
 		// rebuild summary in mem store
-		memStore := newMem(wt)
+		memStore := newMem()
 		memScope := scope.Fork(func() (Store, IndexManager) {
 			kv, err := newKV(memStore, "index-gc", storekv.WithCodec(
 				blackholeCodec{},
@@ -81,16 +83,17 @@ func (_ Def) IndexGC(
 		) {
 
 			// save
-			ce(store.IterKeys(NSSummary, func(key Key) (err error) {
+			ce(store.IterKeys(ctx, NSSummary, func(key Key) (err error) {
 				defer he(&err)
 				var summary Summary
-				ce(fetch(key, &summary))
-				ce(memSaveSummary(&summary, true))
+				ce(fetch(ctx, key, &summary))
+				ce(memSaveSummary(ctx, &summary, true))
 				return nil
 			}))
 
 			// iter
 			src, closeSrc, err := index.Iter(
+				ctx,
 				nil,
 				nil,
 				Asc,
@@ -100,6 +103,7 @@ func (_ Def) IndexGC(
 
 			// iter
 			memSrc, closeMemSrc, err := memIndex.Iter(
+				ctx,
 				nil,
 				nil,
 				Asc,
@@ -135,9 +139,9 @@ func (_ Def) IndexGC(
 				return
 			}
 
-			wt := pr.NewWaitTree(wt)
-			defer wt.Cancel()
-			put, wait := pr.Consume(wt, int(parallel), func(_ int, v any) (err error) {
+			ctx, wg := pr.WithWaitGroup(ctx)
+			defer wg.Cancel()
+			put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
 				defer he(&err)
 				tokens := v.(sb.Tokens)
 				if tokens[1].Kind != sb.KindString {
@@ -149,7 +153,7 @@ func (_ Def) IndexGC(
 					tokens.Iter(),
 					sb.Unmarshal(&entry),
 				))
-				ce(index.Delete(entry))
+				ce(index.Delete(ctx, entry))
 				for _, tap := range tapDeleted {
 					tap(entry)
 				}

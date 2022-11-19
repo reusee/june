@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"sync/atomic"
 	"testing"
 
@@ -26,11 +27,12 @@ func TestIndex(
 	indexGC IndexGC,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	// save
 	var keys []Key
 	for i := 0; i < 8; i++ {
-		if summary, err := save(testIndex(i)); err != nil {
+		if summary, err := save(ctx, testIndex(i)); err != nil {
 			t.Fatal(err)
 		} else {
 			keys = append(keys, summary.Key)
@@ -43,12 +45,13 @@ func TestIndex(
 	lenTuple := 0
 	nKey := 0
 	ce(Select(
+		ctx,
 		index,
 		MatchEntry(idxTest{}),
 		Tap(func(i int, key Key) {
 			n++
 			var value testIndex
-			ce(fetch(key, &value))
+			ce(fetch(ctx, key, &value))
 			if int(value) != i {
 				t.Fatal()
 			}
@@ -59,7 +62,7 @@ func TestIndex(
 		IndexTapEntry(func(e IndexEntry) {
 			lenTuple = len(e.Tuple)
 		}),
-		TapKey(func(key Key) {
+		TapKey(func(_ Key) {
 			nKey++
 		}),
 	))
@@ -77,17 +80,18 @@ func TestIndex(
 	}
 
 	// check
-	ce(checkRef())
+	ce(checkRef(ctx))
 
 	// delete
-	ce(store.Delete(keys[:1]))
+	ce(store.Delete(ctx, keys[:1]))
 
 	// clean index
 	n = 0
 	m := 0
 	nKeys := 0
 	ce(cleanIndex(
-		TapDeleteIndex(func(e IndexEntry) {
+		ctx,
+		TapDeleteIndex(func(_ IndexEntry) {
 			n++
 		}),
 		opts.TapInvalidKey(func(key Key) {
@@ -96,7 +100,7 @@ func TestIndex(
 				t.Fatal()
 			}
 		}),
-		opts.TapKey(func(key Key) {
+		opts.TapKey(func(_ Key) {
 			nKeys++
 		}),
 	))
@@ -114,6 +118,7 @@ func TestIndex(
 	var summaryKeys []Key
 	for i := 0; i < 8; i++ {
 		if _, err := save(
+			ctx,
 			testIndex(i),
 			SaveSummaryOptions([]SaveSummaryOption{
 				TapKey(func(key Key) {
@@ -125,10 +130,11 @@ func TestIndex(
 		}
 	}
 	// delete summary
-	ce(store.Delete(summaryKeys[:1]))
+	ce(store.Delete(ctx, summaryKeys[:1]))
 	// gc
 	n = 0
 	ce(indexGC(
+		ctx,
 		TapDeleteIndex(func(_ IndexEntry) {
 			atomic.AddInt64(&n, 1)
 		}),
@@ -163,10 +169,10 @@ func TestEmbeddingSameObject(
 	t *testing.T,
 	save SaveEntity,
 	del Delete,
-	updateIndex UpdateIndex,
 	sel index.SelectIndex,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	type Foo struct {
 		N int
@@ -177,7 +183,7 @@ func TestEmbeddingSameObject(
 		N: 1,
 		I: testIndex(42),
 	}
-	s, err := save(a)
+	s, err := save(ctx, a)
 	ce(err)
 	key1 := s.Key
 
@@ -185,12 +191,13 @@ func TestEmbeddingSameObject(
 		N: 2,
 		I: testIndex(42),
 	}
-	s, err = save(b)
+	s, err = save(ctx, b)
 	ce(err)
 	key2 := s.Key
 
 	var n int
 	ce(sel(
+		ctx,
 		MatchEntry(idxTest{}, 42),
 		Count(&n),
 	))
@@ -198,9 +205,10 @@ func TestEmbeddingSameObject(
 		t.Fatal()
 	}
 
-	ce(del(key1))
+	ce(del(ctx, key1))
 
 	ce(sel(
+		ctx,
 		MatchEntry(idxTest{}, 42),
 		Count(&n),
 	))
@@ -208,9 +216,10 @@ func TestEmbeddingSameObject(
 		t.Fatalf("got %d\n", n)
 	}
 
-	ce(del(key2))
+	ce(del(ctx, key2))
 
 	ce(sel(
+		ctx,
 		MatchEntry(idxTest{}, 42),
 		Count(&n),
 	))

@@ -5,6 +5,7 @@
 package file
 
 import (
+	"context"
 	"io"
 	"os"
 	"time"
@@ -23,12 +24,13 @@ type FileLike interface {
 
 	// content
 	WithReader(
+		context.Context,
 		Scope,
 		func(io.Reader) error,
 	) error
 }
 
-func writeFileLikeToDisk(scope Scope, value FileLike, path string) (err error) {
+func writeFileLikeToDisk(ctx context.Context, scope Scope, value FileLike, path string) (err error) {
 	defer he(&err, e5.Info("write to %s", path))
 	f, err := os.OpenFile(
 		path,
@@ -37,7 +39,7 @@ func writeFileLikeToDisk(scope Scope, value FileLike, path string) (err error) {
 	)
 	ce(err)
 	defer f.Close()
-	if err := value.WithReader(scope, func(r io.Reader) error {
+	if err := value.WithReader(ctx, scope, func(r io.Reader) error {
 		_, err := io.Copy(f, r)
 		return err
 	}); err != nil {

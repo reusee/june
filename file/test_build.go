@@ -5,6 +5,7 @@
 package file
 
 import (
+	"context"
 	"sync/atomic"
 	"testing"
 
@@ -19,6 +20,7 @@ func TestBuild(
 	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e5.TestingFatal(t))
+	ctx := context.Background()
 
 	scope.Fork(
 		func() PackThreshold {
@@ -39,7 +41,7 @@ func TestBuild(
 			iterVirtual(Virtual{
 				Name: "foo",
 			}, nil),
-			build(&root, nil),
+			build(ctx, &root, nil),
 		))
 		if len(root.Subs) != 1 {
 			t.Fatal()
@@ -56,7 +58,7 @@ func TestBuild(
 			iterVirtual(Virtual{
 				Name: "foo",
 			}, nil),
-			build(&root, nil),
+			build(ctx, &root, nil),
 		))
 		if len(root.Subs) != 1 {
 			t.Fatal()
@@ -78,10 +80,11 @@ func TestBuild(
 		// disk file
 		var numFile int64
 		ce(pp.Copy(
-			iterDisk(dir, nil),
+			iterDisk(ctx, dir, nil),
 			build(
+				ctx,
 				&root, nil,
-				TapBuildFile(func(info FileInfo, file *File) {
+				TapBuildFile(func(_ FileInfo, _ *File) {
 					atomic.AddInt64(&numFile, 1)
 				}),
 			),
@@ -92,8 +95,9 @@ func TestBuild(
 
 		// compare
 		ok, err := equal(
-			iterDisk(dir, nil),
-			iterFile(root.Subs[0].File, nil),
+			ctx,
+			iterDisk(ctx, dir, nil),
+			iterFile(ctx, root.Subs[0].File, nil),
 			nil,
 		)
 		ce(err)
@@ -104,12 +108,13 @@ func TestBuild(
 		// build from file
 		var root2 File
 		ce(pp.Copy(
-			iterFile(root.Subs[0].File, nil),
-			build(&root2, nil),
+			iterFile(ctx, root.Subs[0].File, nil),
+			build(ctx, &root2, nil),
 		))
 		ok, err = equal(
-			iterFile(root2.Subs[0].File, nil),
-			iterFile(root.Subs[0].File, nil),
+			ctx,
+			iterFile(ctx, root2.Subs[0].File, nil),
+			iterFile(ctx, root.Subs[0].File, nil),
 			nil,
 		)
 		ce(err)
@@ -125,6 +130,7 @@ func TestBuildMerge(
 	t *testing.T,
 	scope Scope,
 ) {
+	ctx := context.Background()
 
 	scope.Fork(
 		func() PackThreshold {
@@ -159,10 +165,11 @@ func TestBuildMerge(
 		check := func() {
 			ce(pp.Copy(
 				iterVirtual(vRoot, nil, NoSubsSort(true)),
-				build(&root, nil),
+				build(ctx, &root, nil),
 			))
 			ok, err := equal(
-				iterFile(root.Subs[0].File, nil),
+				ctx,
+				iterFile(ctx, root.Subs[0].File, nil),
 				iterVirtual(vRoot, nil),
 				nil,
 			)
