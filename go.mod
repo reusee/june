@@ -27,7 +27,7 @@ require (
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20211111065340-3380cad016fa
 	github.com/reusee/qa v0.0.0-20220903101203-26c9396a6dd0
-	github.com/reusee/sb v0.0.0-20220904090513-3bc04e08ddf7
+	github.com/reusee/sb v0.0.0-20221121151007-c0a4f865a611
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
@@ -43,7 +43,7 @@ require (
 )
 
 require (
-	github.com/reusee/e5 v0.0.0-20221103014142-7fb507f8cb8f
+	github.com/reusee/e5 v0.0.0-20221121150545-535ad462f830
 	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
 )
 

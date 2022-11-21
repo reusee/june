@@ -34,7 +34,7 @@ func UsePebbleTx(
 		ce(err)
 		defer he(&err, e5.WrapFunc(func(err error) error {
 			if e := batch.Abort(); e != nil {
-				return e5.Chain(e, err)
+				return e5.Join(e, err)
 			}
 			return err
 		}))
