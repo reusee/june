@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/cockroachdb/errors v1.9.0 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20221116143619-fa0980976952
+	github.com/cockroachdb/pebble v0.0.0-20221118180615-b9289d765e2c
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/golang/snappy v0.0.4
@@ -18,20 +18,19 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.43
+	github.com/minio/minio-go/v7 v7.0.44
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5
-	github.com/reusee/dscope v0.0.0-20221108180659-5d4b89b1a1f1
+	github.com/reusee/dscope v0.0.0-20221120023127-e603dddff641
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20211111065340-3380cad016fa
-	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
 	github.com/reusee/qa v0.0.0-20220903101203-26c9396a6dd0
 	github.com/reusee/sb v0.0.0-20220904090513-3bc04e08ddf7
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	golang.org/x/crypto v0.2.0 // indirect
+	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20221114191408-850992195362 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/oauth2 v0.2.0
@@ -43,10 +42,12 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
-require github.com/reusee/e5 v0.0.0-20221103014142-7fb507f8cb8f
+require (
+	github.com/reusee/e5 v0.0.0-20221103014142-7fb507f8cb8f
+	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
+)
 
 require (
-	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
