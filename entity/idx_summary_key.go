@@ -5,8 +5,6 @@
 package entity
 
 import (
-	"context"
-
 	"github.com/reusee/june/index"
 )
 
@@ -22,13 +20,12 @@ func init() {
 	index.Register(IdxSummaryKey)
 }
 
-func (Def) IdxSummaryKeyFuncs() (
+func (_ Def) IdxSummaryKeyFuncs() (
 	add OnSummaryIndexAdd,
 	del OnSummaryIndexDelete,
 ) {
 
 	add = func(
-		_ context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -43,7 +40,6 @@ func (Def) IdxSummaryKeyFuncs() (
 	}
 
 	del = func(
-		_ context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (

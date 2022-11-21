@@ -5,54 +5,33 @@
 package index
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"reflect"
-	"sync"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/sb"
 )
 
-func (Def) Index(
+func (_ Def) Index(
 	manager IndexManager,
-	store Store,
+	storeID StoreID,
 ) Index {
 
-	return &wrapped{
-		manager: manager,
-		store:   store,
+	index, err := manager.IndexFor(storeID)
+	ce(err)
+
+	return wrapped{
+		Index: index,
 	}
 
 }
 
 type wrapped struct {
-	manager IndexManager
-	store   Store
-	once    sync.Once
-	index   Index
+	Index
 }
 
 var keyType = reflect.TypeOf((*Key)(nil)).Elem()
 
-func (w *wrapped) getIndex(ctx context.Context) (idx Index, err error) {
-	w.once.Do(func() {
-		var id StoreID
-		id, err = w.store.ID(ctx)
-		if err != nil {
-			return
-		}
-		w.index, err = w.manager.IndexFor(id)
-		if err != nil {
-			return
-		}
-	})
-	idx = w.index
-	return
-}
-
-func (w *wrapped) Save(ctx context.Context, entry Entry, options ...SaveOption) (err error) {
+func (w wrapped) Save(entry Entry, options ...SaveOption) (err error) {
 	defer he(&err)
 
 	if _, ok := entry.Type.(idxUnknown); ok {
@@ -117,41 +96,11 @@ func (w *wrapped) Save(ctx context.Context, entry Entry, options ...SaveOption) 
 		}
 	}
 
-	index, err := w.getIndex(ctx)
-	ce(err)
-	ce(index.Save(ctx, entry))
+	ce(w.Index.Save(entry))
 
 	for _, tap := range tapEntry {
 		tap(entry)
 	}
 
 	return nil
-}
-
-func (w *wrapped) Delete(ctx context.Context, entry Entry) (err error) {
-	defer he(&err)
-	index, err := w.getIndex(ctx)
-	ce(err)
-	return index.Delete(ctx, entry)
-}
-
-func (w *wrapped) Iter(
-	ctx context.Context,
-	lower *sb.Tokens, // inclusive in any order
-	upper *sb.Tokens, // exclusive in any order
-	order Order,
-) (Src, io.Closer, error) {
-	index, err := w.getIndex(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	return index.Iter(ctx, lower, upper, order)
-}
-
-func (w *wrapped) Name(ctx context.Context) (string, error) {
-	index, err := w.getIndex(ctx)
-	if err != nil {
-		return "", err
-	}
-	return index.Name(ctx)
 }

@@ -6,7 +6,6 @@ package store
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 
 	"github.com/reusee/june/key"
@@ -21,18 +20,17 @@ type ScrubOption interface {
 }
 
 type Scrub func(
-	ctx context.Context,
 	store Store,
 	options ...ScrubOption,
 ) error
 
 func (_ Def) Scrub(
 	newHashState key.NewHashState,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) Scrub {
 
 	return func(
-		ctx context.Context,
 		store Store,
 		options ...ScrubOption,
 	) (err error) {
@@ -51,14 +49,14 @@ func (_ Def) Scrub(
 			}
 		}
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		defer wg.Cancel()
-		put, wait := pr.Consume(ctx, int(parallel), func(i int, v any) error {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) error {
 			key := v.(Key)
 			if tapKey != nil {
 				tapKey(key)
 			}
-			if err := store.Read(ctx, key, func(s sb.Stream) error {
+			if err := store.Read(key, func(s sb.Stream) error {
 				var sum []byte
 				if err := sb.Copy(
 					s,
@@ -78,7 +76,7 @@ func (_ Def) Scrub(
 			return nil
 		})
 
-		if err := store.IterAllKeys(ctx, func(key Key) error {
+		if err := store.IterAllKeys(func(key Key) error {
 			put(key)
 			return nil
 		}); err != nil {

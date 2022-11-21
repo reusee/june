@@ -6,7 +6,6 @@ package vars
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"runtime"
@@ -21,21 +20,21 @@ import (
 
 type VarsSpec func() (
 	dir string,
-	ctx context.Context,
+	wt *pr.WaitTree,
 )
 
 type VarsStore struct {
-	ctx context.Context
-	db  *pebble.DB
+	*pr.WaitTree
+	db *pebble.DB
 }
 
-func (Def) VarsStore(
+func (_ Def) VarsStore(
 	ensureDir fsys.EnsureDir,
 	spec VarsSpec,
 	setRestrictedPath fsys.SetRestrictedPath,
 ) *VarsStore {
 
-	dir, ctx := spec()
+	dir, parentWt := spec()
 
 	ce(ensureDir(string(dir)))
 	ce(setRestrictedPath(string(dir)))
@@ -48,19 +47,19 @@ func (Def) VarsStore(
 	})
 	ce(err)
 
-	ctx, wg := pr.WithWaitGroup(ctx)
+	wt := pr.NewWaitTree(parentWt, pr.ID("vars"))
 
-	wg.Parent().Go(func() {
-		<-ctx.Done()
-		wg.Wait()
+	parentWt.Go(func() {
+		<-parentWt.Ctx.Done()
+		wt.Wait()
 		var err error
 		defer catchErr(&err, pebble.ErrClosed)
 		ce(db.Close())
 	})
 
 	return &VarsStore{
-		ctx: ctx,
-		db:  db,
+		WaitTree: wt,
+		db:       db,
 	}
 }
 
@@ -89,18 +88,19 @@ func catchErr(errp *error, errs ...error) {
 	panic(p)
 }
 
-type Get func(ctx context.Context, key string, target any) error
+type Get func(key string, target any) error
 
-func (Def) Get(
+func (_ Def) Get(
 	store *VarsStore,
 ) Get {
 
-	return func(ctx context.Context, key string, target any) (err error) {
+	return func(key string, target any) (err error) {
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
+		case <-store.Ctx.Done():
+			return store.Ctx.Err()
 		default:
 		}
+		defer store.Add()()
 
 		defer catchErr(&err, pebble.ErrClosed)
 		bs, c, err := store.db.Get([]byte(key))
@@ -134,18 +134,19 @@ func (n *NotFound) Error() string {
 
 var ErrNotFound = errors.New("not found")
 
-type Set func(ctx context.Context, key string, value any) error
+type Set func(key string, value any) error
 
-func (Def) Set(
+func (_ Def) Set(
 	store *VarsStore,
 ) Set {
 
-	return func(ctx context.Context, key string, value any) (err error) {
+	return func(key string, value any) (err error) {
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
+		case <-store.Ctx.Done():
+			return store.Ctx.Err()
 		default:
 		}
+		defer store.Add()()
 
 		defer catchErr(&err, pebble.ErrClosed)
 		buf := new(bytes.Buffer)

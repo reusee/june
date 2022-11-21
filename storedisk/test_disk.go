@@ -5,44 +5,44 @@
 package storedisk
 
 import (
-	"context"
 	"os"
 	"testing"
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(dir)
+		s, err := newStore(wt, dir)
 		ce(err)
 		fn(s, "foo")
 	}
-	test(ctx, t, with)
+	test(t, with)
 }
 
 func TestStoreSoftDelete(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(dir, SoftDelete(true))
+		s, err := newStore(wt, dir, SoftDelete(true))
 		ce(err)
 		fn(s, "foo")
 	}
-	test(ctx, t, with)
+	test(t, with)
 }

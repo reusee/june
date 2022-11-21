@@ -5,35 +5,35 @@
 package storemem
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
 ) {
-	ctx := context.Background()
 	with := func(fn func(storekv.KV, string)) {
-		m := newStore()
+		m := newStore(wt)
 		fn(m, "foo")
 	}
-	test(ctx, t, with)
+	test(t, with)
 }
 
 func TestIndex(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test index.TestIndex,
 	newManager New,
 ) {
-	ctx := context.Background()
-	manager := newManager()
+	manager := newManager(wt)
 	with := func(fn func(index.IndexManager)) {
 		fn(manager)
 	}
-	test(ctx, with, t)
+	test(with, t)
 }

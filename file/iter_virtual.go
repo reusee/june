@@ -16,11 +16,11 @@ type IterVirtualOption interface {
 
 type NoSubsSort bool
 
-func (NoSubsSort) IsIterVirtualOption() {}
+func (_ NoSubsSort) IsIterVirtualOption() {}
 
 type IterVirtual func(file Virtual, cont Src, options ...IterVirtualOption) Src
 
-func (Def) IterVirtual(
+func (_ Def) IterVirtual(
 	ignore Ignore,
 ) IterVirtual {
 

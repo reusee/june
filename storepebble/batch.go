@@ -5,7 +5,6 @@
 package storepebble
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"sync"
@@ -18,7 +17,7 @@ import (
 )
 
 type Batch struct {
-	*pr.WaitGroup
+	*pr.WaitTree
 	name     string
 	store    *Store
 	batch    *pebble.Batch
@@ -30,13 +29,13 @@ type Batch struct {
 var batchSerial int64
 
 type NewBatch func(
-	ctx context.Context,
+	wt *pr.WaitTree,
 	store *Store,
 ) (*Batch, error)
 
-func (Def) NewBatch() NewBatch {
+func (_ Def) NewBatch() NewBatch {
 	return func(
-		ctx context.Context,
+		parentWaitTree *pr.WaitTree,
 		store *Store,
 	) (_ *Batch, err error) {
 		defer he(&err)
@@ -50,12 +49,10 @@ func (Def) NewBatch() NewBatch {
 			batch: batch,
 			cond:  sync.NewCond(new(sync.Mutex)),
 		}
-		ctx, wg := pr.WithWaitGroup(ctx)
-		b.WaitGroup = wg
-		parentWg := wg.Parent()
-		parentWg.Go(func() {
-			<-ctx.Done()
-			b.Wait()
+		b.WaitTree = pr.NewWaitTree(parentWaitTree, pr.ID("pebble batch "+b.name))
+		parentWaitTree.Go(func() {
+			<-parentWaitTree.Ctx.Done()
+			b.WaitTree.Wait()
 			ce(batch.Close())
 		})
 		return b, nil
@@ -100,10 +97,10 @@ func (b *Batch) lockWrite() func() {
 	}
 }
 
-func (b *Batch) Commit(ctx context.Context) (err error) {
+func (b *Batch) Commit() (err error) {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
@@ -111,10 +108,10 @@ func (b *Batch) Commit(ctx context.Context) (err error) {
 	return b.batch.Commit(writeOptions)
 }
 
-func (b *Batch) Abort(ctx context.Context) error {
+func (b *Batch) Abort() error {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
@@ -128,24 +125,23 @@ func (b *Batch) CostInfo() storekv.CostInfo {
 	return costInfo
 }
 
-func (b *Batch) KeyDelete(ctx context.Context, keys ...string) (err error) {
+func (b *Batch) KeyDelete(keys ...string) (err error) {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
-	return b.store.keyDelete(ctx, b.Add, b.delete, keys...)
+	return b.store.keyDelete(b.Add, b.delete, keys...)
 }
 
 func (b *Batch) delete(
-	ctx context.Context,
 	key []byte,
 	options *pebble.WriteOptions,
 ) error {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.lockWrite()()
@@ -155,18 +151,17 @@ func (b *Batch) delete(
 	return nil
 }
 
-func (b *Batch) KeyExists(ctx context.Context, key string) (ok bool, err error) {
+func (b *Batch) KeyExists(key string) (ok bool, err error) {
 	select {
-	case <-ctx.Done():
-		return false, ctx.Err()
+	case <-b.Ctx.Done():
+		return false, b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
-	return b.store.keyExists(ctx, b.Add, b.get, key)
+	return b.store.keyExists(b.Add, b.get, key)
 }
 
 func (b *Batch) get(
-	ctx context.Context,
 	key []byte,
 ) (
 	[]byte,
@@ -174,28 +169,28 @@ func (b *Batch) get(
 	error,
 ) {
 	select {
-	case <-ctx.Done():
-		return nil, nil, ctx.Err()
+	case <-b.Ctx.Done():
+		return nil, nil, b.Ctx.Err()
 	default:
 	}
 	defer b.lockRead()()
 	return b.batch.Get(key)
 }
 
-func (b *Batch) KeyGet(ctx context.Context, key string, fn func(io.Reader) error) (err error) {
+func (b *Batch) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
-	return b.store.keyGet(ctx, b.Add, b.get, key, fn)
+	return b.store.keyGet(b.Add, b.get, key, fn)
 }
 
-func (b *Batch) KeyIter(ctx context.Context, prefix string, fn func(key string) error) (err error) {
+func (b *Batch) KeyIter(prefix string, fn func(key string) error) (err error) {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
@@ -216,25 +211,24 @@ func (b *Batch) newIter(options *pebble.IterOptions) *pebble.Iterator {
 	return b.batch.NewIter(options)
 }
 
-func (b *Batch) KeyPut(ctx context.Context, key string, r io.Reader) (err error) {
+func (b *Batch) KeyPut(key string, r io.Reader) (err error) {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.Add()()
-	return b.store.keyPut(ctx, b.Add, b.get, b.set, key, r)
+	return b.store.keyPut(b.Add, b.get, b.set, key, r)
 }
 
 func (b *Batch) set(
-	ctx context.Context,
 	key []byte,
 	value []byte,
 	option *pebble.WriteOptions,
 ) (err error) {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
+	case <-b.Ctx.Done():
+		return b.Ctx.Err()
 	default:
 	}
 	defer b.lockWrite()()
@@ -244,16 +238,22 @@ func (b *Batch) set(
 var _ index.IndexManager = new(Batch)
 
 func (b *Batch) IndexFor(id StoreID) (index.Index, error) {
+	select {
+	case <-b.Ctx.Done():
+		return nil, b.Ctx.Err()
+	default:
+	}
 	defer b.Add()()
 	return Index{
+		ctx: b.Ctx,
 		name: fmt.Sprintf("pebble-batch-index%d(%v, %v)",
 			atomic.AddInt64(&indexSerial, 1),
 			b.Name(),
 			id,
 		),
 		begin: b.Add,
-		exists: func(ctx context.Context, key []byte) (bool, error) {
-			_, cl, err := b.get(ctx, key)
+		exists: func(key []byte) (bool, error) {
+			_, cl, err := b.get(key)
 			if is(err, pebble.ErrNotFound) {
 				return false, nil
 			}
@@ -263,11 +263,11 @@ func (b *Batch) IndexFor(id StoreID) (index.Index, error) {
 			cl.Close()
 			return true, nil
 		},
-		set: func(ctx context.Context, key []byte, value []byte, options *pebble.WriteOptions) error {
-			return b.set(ctx, key, value, options)
+		set: func(key []byte, value []byte, options *pebble.WriteOptions) error {
+			return b.set(key, value, options)
 		},
-		delete: func(ctx context.Context, key []byte, options *pebble.WriteOptions) error {
-			return b.delete(ctx, key, options)
+		delete: func(key []byte, options *pebble.WriteOptions) error {
+			return b.delete(key, options)
 		},
 		newIter: func(options *pebble.IterOptions) *pebble.Iterator {
 			return b.newIter(options)

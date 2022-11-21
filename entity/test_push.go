@@ -5,25 +5,25 @@
 package entity
 
 import (
-	"context"
 	"sync/atomic"
 	"testing"
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestPush(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newMem storemem.New,
 	newKV storekv.New,
 	scope Scope,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
-	mem1 := newMem()
+	mem1 := newMem(wt)
 	store1, err := newKV(mem1, "foo")
 	ce(err)
 	scope.Fork(func() Store {
@@ -34,30 +34,29 @@ func TestPush(
 		indexManager IndexManager,
 	) {
 
-		summary, err := saveEntity(ctx, 42)
+		summary, err := saveEntity(42)
 		ce(err)
 		key1 := summary.Key
 		type Keys []Key
-		summary, err = saveEntity(ctx, Keys{
+		summary, err = saveEntity(Keys{
 			key1, key1,
 		})
 		ce(err)
 		key2 := summary.Key
-		summary, err = saveEntity(ctx, Keys{
+		summary, err = saveEntity(Keys{
 			key1, key1, key2,
 		})
 		ce(err)
 		key := summary.Key
 
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 
 			var numCheck int64
 			var numSave int64
 			err = push(
-				ctx,
 				store2, indexManager,
 				[]Key{key},
 				TapPushCheckSummary(func(_ Key) {
@@ -83,7 +82,7 @@ func TestPush(
 			) {
 
 				n := 0
-				ce(store.IterAllKeys(ctx, func(_ Key) error {
+				ce(store.IterAllKeys(func(key Key) error {
 					n++
 					return nil
 				}))
@@ -91,21 +90,20 @@ func TestPush(
 					t.Fatalf("got %d", n)
 				}
 
-				ce(checkRef(ctx))
+				ce(checkRef())
 			})
 
 		}
 
 		// keys not specified
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 
 			var numCheck int64
 			var numSave int64
 			err = push(
-				ctx,
 				store2, indexManager,
 				nil,
 				TapPushCheckSummary(func(_ Key) {
@@ -131,7 +129,7 @@ func TestPush(
 			) {
 
 				n := 0
-				ce(store.IterAllKeys(ctx, func(_ Key) error {
+				ce(store.IterAllKeys(func(key Key) error {
 					n++
 					return nil
 				}))
@@ -139,21 +137,20 @@ func TestPush(
 					t.Fatalf("got %d", n)
 				}
 
-				ce(checkRef(ctx))
+				ce(checkRef())
 			})
 
 		}
 
 		// index manager not specified
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 
 			var numCheck int64
 			var numSave int64
 			err = push(
-				ctx,
 				store2, nil,
 				nil,
 				TapPushCheckSummary(func(_ Key) {
@@ -179,7 +176,7 @@ func TestPush(
 			) {
 
 				n := 0
-				ce(store.IterAllKeys(ctx, func(_ Key) error {
+				ce(store.IterAllKeys(func(key Key) error {
 					n++
 					return nil
 				}))
@@ -187,21 +184,20 @@ func TestPush(
 					t.Fatalf("got %d", n)
 				}
 
-				ce(checkRef(ctx))
+				ce(checkRef())
 			})
 
 		}
 
 		// ignore
 		{
-			mem2 := newMem()
+			mem2 := newMem(wt)
 			store2, err := newKV(mem2, "foo")
 			ce(err)
 
 			var numCheck int64
 			var numSave int64
 			err = push(
-				ctx,
 				store2, indexManager,
 				[]Key{key},
 				TapPushCheckSummary(func(_ Key) {
@@ -230,7 +226,7 @@ func TestPush(
 			) {
 
 				n := 0
-				ce(store.IterAllKeys(ctx, func(_ Key) error {
+				ce(store.IterAllKeys(func(key Key) error {
 					n++
 					return nil
 				}))
@@ -238,7 +234,7 @@ func TestPush(
 					t.Fatalf("got %d", n)
 				}
 
-				ce(checkRef(ctx))
+				ce(checkRef())
 			})
 
 		}

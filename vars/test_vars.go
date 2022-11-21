@@ -5,22 +5,22 @@
 package vars
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/e5"
+	"github.com/reusee/pr"
 )
 
 func TestVars(
 	t *testing.T,
 	scope Scope,
+	wt *pr.WaitTree,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	scope.Fork(func() VarsSpec {
-		return func() (string, context.Context) {
-			return t.TempDir(), ctx
+		return func() (string, *pr.WaitTree) {
+			return t.TempDir(), wt
 		}
 	}).Call(func(
 		get Get,
@@ -30,20 +30,20 @@ func TestVars(
 		defer store.db.Close()
 
 		var v any
-		err := get(ctx, "foo", &v)
+		err := get("foo", &v)
 		if e := new(NotFound); !as(err, &e) {
 			t.Fatalf("got %v", err)
 		}
 
-		err = set(ctx, "foo", 42)
+		err = set("foo", 42)
 		ce(err)
-		err = get(ctx, "foo", &v)
+		err = get("foo", &v)
 		ce(err)
 		if v != 42 {
 			t.Fatal()
 		}
 
-		err = get(ctx, "bar", &v)
+		err = get("bar", &v)
 		if e := new(NotFound); !as(err, &e) {
 			t.Fatalf("got %v", err)
 		}

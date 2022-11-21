@@ -5,14 +5,12 @@
 package keyset
 
 import (
-	"context"
 	"sort"
 
 	"github.com/reusee/june/entity"
 )
 
 type Delete func(
-	ctx context.Context,
 	set Set,
 	keys ...Key,
 ) (
@@ -20,11 +18,10 @@ type Delete func(
 	err error,
 )
 
-func (Def) Delete(
+func (_ Def) Delete(
 	fetch entity.Fetch,
 ) Delete {
 	return func(
-		ctx context.Context,
 		set Set,
 		keys ...Key,
 	) (
@@ -34,7 +31,7 @@ func (Def) Delete(
 		defer he(&err)
 
 		for _, key := range keys {
-			set, err = deleteKeyFromSet(ctx, fetch, key, set)
+			set, err = deleteKeyFromSet(fetch, key, set)
 			ce(err)
 		}
 
@@ -44,7 +41,6 @@ func (Def) Delete(
 }
 
 func deleteKeyFromSet(
-	ctx context.Context,
 	fetch entity.Fetch,
 	key Key,
 	set Set,
@@ -85,9 +81,8 @@ func deleteKeyFromSet(
 
 	} else if item.Pack != nil {
 		var s Set
-		ce(fetch(ctx, item.Pack.Key, &s))
+		ce(fetch(item.Pack.Key, &s))
 		replace, err := deleteKeyFromSet(
-			ctx,
 			fetch,
 			key,
 			s,

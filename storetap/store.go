@@ -5,7 +5,6 @@
 package storetap
 
 import (
-	"context"
 	"fmt"
 	"sync/atomic"
 
@@ -83,17 +82,16 @@ func (s *Store) Name() string {
 	return s.name
 }
 
-func (s *Store) ID(ctx context.Context) (id store.ID, err error) {
+func (s *Store) ID() (id store.ID, err error) {
 	defer func() {
 		if s.funcs.ID != nil {
 			s.funcs.ID(id, err)
 		}
 	}()
-	return s.upstream.ID(ctx)
+	return s.upstream.ID()
 }
 
 func (s *Store) Write(
-	ctx context.Context,
 	ns key.Namespace,
 	stream sb.Stream,
 	options ...store.WriteOption,
@@ -106,11 +104,10 @@ func (s *Store) Write(
 			s.funcs.Write(ns, stream, options, res, err)
 		}
 	}()
-	return s.upstream.Write(ctx, ns, stream, options...)
+	return s.upstream.Write(ns, stream, options...)
 }
 
 func (s *Store) Read(
-	ctx context.Context,
 	key key.Key,
 	fn func(sb.Stream) error,
 ) (err error) {
@@ -119,11 +116,10 @@ func (s *Store) Read(
 			s.funcs.Read(key, fn, err)
 		}
 	}()
-	return s.upstream.Read(ctx, key, fn)
+	return s.upstream.Read(key, fn)
 }
 
 func (s *Store) Exists(
-	ctx context.Context,
 	key key.Key,
 ) (exists bool, err error) {
 	defer func() {
@@ -131,11 +127,10 @@ func (s *Store) Exists(
 			s.funcs.Exists(key, exists, err)
 		}
 	}()
-	return s.upstream.Exists(ctx, key)
+	return s.upstream.Exists(key)
 }
 
 func (s *Store) IterKeys(
-	ctx context.Context,
 	ns key.Namespace,
 	fn func(key.Key) error,
 ) (err error) {
@@ -144,11 +139,10 @@ func (s *Store) IterKeys(
 			s.funcs.IterKeys(ns, fn, err)
 		}
 	}()
-	return s.upstream.IterKeys(ctx, ns, fn)
+	return s.upstream.IterKeys(ns, fn)
 }
 
 func (s *Store) IterAllKeys(
-	ctx context.Context,
 	fn func(key.Key) error,
 ) (err error) {
 	defer func() {
@@ -156,11 +150,10 @@ func (s *Store) IterAllKeys(
 			s.funcs.IterAllKeys(fn, err)
 		}
 	}()
-	return s.upstream.IterAllKeys(ctx, fn)
+	return s.upstream.IterAllKeys(fn)
 }
 
 func (s *Store) Delete(
-	ctx context.Context,
 	keys []key.Key,
 ) (err error) {
 	defer func() {
@@ -168,5 +161,5 @@ func (s *Store) Delete(
 			s.funcs.Delete(keys, err)
 		}
 	}()
-	return s.upstream.Delete(ctx, keys)
+	return s.upstream.Delete(keys)
 }

@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"hash/fnv"
 	"testing"
@@ -20,9 +19,8 @@ func TestSummary(
 	save SaveEntity,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
-	summary, err := save(ctx, testSummary{
+	summary, err := save(testSummary{
 		I:  42,
 		S:  "foo",
 		Is: []int{1, 2, 3},
@@ -87,11 +85,9 @@ func TestSummaryUpdate(
 	indexGC IndexGC,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	var summaryKey1 Key
 	summary1, err := save(
-		ctx,
 		NSEntity, testSummaryUpdateFoo{
 			I: 42,
 			indexes: func() IndexSet {
@@ -108,7 +104,7 @@ func TestSummaryUpdate(
 	)
 	ce(err)
 
-	summary2, err := save(ctx, NSEntity, testSummaryUpdateFoo{
+	summary2, err := save(NSEntity, testSummaryUpdateFoo{
 		I: 42,
 		indexes: func() IndexSet {
 			return IndexSet{
@@ -125,17 +121,17 @@ func TestSummaryUpdate(
 	}
 
 	// deleted
-	err = fetch(ctx, summaryKey1, &summary1)
+	err = fetch(summaryKey1, &summary1)
 	if !is(err, ErrKeyNotFound) {
 		t.Fatal()
 	}
 
 	// check ref
-	ce(checkRef(ctx))
+	ce(checkRef())
 
 	// no invalid index
 	n := 0
-	ce(cleanIndex(ctx, opts.TapInvalidKey(func(_ Key) {
+	ce(cleanIndex(opts.TapInvalidKey(func(_ Key) {
 		n++
 	})))
 	if n > 0 {
@@ -144,7 +140,7 @@ func TestSummaryUpdate(
 
 	// no garbage index
 	n = 0
-	ce(indexGC(ctx, TapDeleteIndex(func(_ IndexEntry) {
+	ce(indexGC(TapDeleteIndex(func(_ IndexEntry) {
 		n++
 	})))
 	if n > 0 {

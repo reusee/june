@@ -6,7 +6,6 @@ package storepebble
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -23,7 +22,7 @@ import (
 )
 
 type Store struct {
-	*pr.WaitGroup
+	*pr.WaitTree
 	name    string
 	storeID string
 	DB      *pebble.DB
@@ -31,7 +30,7 @@ type Store struct {
 
 // create new pebble store
 type New func(
-	ctx context.Context,
+	wt *pr.WaitTree,
 	fs vfs.FS,
 	dir string,
 ) (*Store, error)
@@ -43,7 +42,7 @@ func (_ Def) New(
 	machine naming.MachineName,
 ) New {
 	return func(
-		ctx context.Context,
+		parentWt *pr.WaitTree,
 		fs vfs.FS,
 		dir string,
 	) (_ *Store, err error) {
@@ -93,12 +92,10 @@ func (_ Def) New(
 			DB: db,
 		}
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		s.WaitGroup = wg
-		parentWg := wg.Parent()
-		parentWg.Go(func() {
-			<-ctx.Done()
-			parentWg.Wait()
+		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("pebble "+s.storeID))
+		parentWt.Go(func() {
+			<-parentWt.Ctx.Done()
+			s.WaitTree.Wait()
 			ce(s.DB.Flush())
 			ce(s.DB.Close())
 		})

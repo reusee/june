@@ -5,18 +5,17 @@
 package file
 
 import (
-	"context"
 	"path/filepath"
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 )
 
-type IterFile func(ctx context.Context, file *File, cont Src) Src
+type IterFile func(file *File, cont Src) Src
 
-type IterKey func(ctx context.Context, key Key, cont Src) Src
+type IterKey func(key Key, cont Src) Src
 
-func (Def) IterFile(
+func (_ Def) IterFile(
 	fetch entity.Fetch,
 	ignore Ignore,
 ) (
@@ -24,19 +23,19 @@ func (Def) IterFile(
 	IterKey,
 ) {
 
-	var iterPack func(ctx context.Context, dir string, pack Pack, cont Src) Src
-	var iterSubs func(ctx context.Context, dir string, file *File, cont Src) Src
-	var iterFile func(ctx context.Context, dir string, file *File, cont Src) Src
-	var iterKey func(ctx context.Context, dir string, key Key, cont Src) Src
+	var iterPack func(dir string, pack Pack, cont Src) Src
+	var iterSubs func(dir string, file *File, cont Src) Src
+	var iterFile func(dir string, file *File, cont Src) Src
+	var iterKey func(dir string, key Key, cont Src) Src
 
-	iterPack = func(ctx context.Context, path string, pack Pack, cont Src) Src {
+	iterPack = func(path string, pack Pack, cont Src) Src {
 		loaded := false
 		var subs Subs
 		var src Src
 		src = func() (_ any, _ Src, err error) {
 			defer he(&err)
 			if !loaded {
-				err := fetch(ctx, pack.Key, &subs)
+				err := fetch(pack.Key, &subs)
 				ce(err, e5.Info("fetch pack %s %s", path, pack.Key))
 				loaded = true
 			}
@@ -46,7 +45,7 @@ func (Def) IterFile(
 			sub := subs[0]
 			subs = subs[1:]
 			if sub.File != nil {
-				return nil, iterFile(ctx, path, sub.File, src), nil
+				return nil, iterFile(path, sub.File, src), nil
 			}
 			if sub.Pack != nil {
 				next := invalid
@@ -55,7 +54,7 @@ func (Def) IterFile(
 					Pack: *sub.Pack,
 					Expand: func(expand bool) {
 						if expand {
-							next = iterPack(ctx, path, *sub.Pack, src)
+							next = iterPack(path, *sub.Pack, src)
 						} else {
 							next = src
 						}
@@ -70,7 +69,7 @@ func (Def) IterFile(
 		return src
 	}
 
-	iterFile = func(ctx context.Context, dir string, file *File, cont Src) Src {
+	iterFile = func(dir string, file *File, cont Src) Src {
 		return func() (any, Src, error) {
 			path := filepath.Join(dir, file.Name)
 			if ignore(path, file) {
@@ -86,7 +85,7 @@ func (Def) IterFile(
 					},
 					Expand: func(expand bool) {
 						if expand {
-							next = iterSubs(ctx, path, file, cont)
+							next = iterSubs(path, file, cont)
 						} else {
 							next = cont
 						}
@@ -105,7 +104,7 @@ func (Def) IterFile(
 		}
 	}
 
-	iterSubs = func(ctx context.Context, path string, file *File, cont Src) Src {
+	iterSubs = func(path string, file *File, cont Src) Src {
 		subs := file.Subs
 		var src Src
 		src = func() (any, Src, error) {
@@ -115,7 +114,7 @@ func (Def) IterFile(
 			sub := subs[0]
 			subs = subs[1:]
 			if sub.File != nil {
-				return nil, iterFile(ctx, path, sub.File, src), nil
+				return nil, iterFile(path, sub.File, src), nil
 			}
 			if sub.Pack != nil {
 				next := invalid
@@ -124,7 +123,7 @@ func (Def) IterFile(
 					Pack: *sub.Pack,
 					Expand: func(expand bool) {
 						if expand {
-							next = iterPack(ctx, path, *sub.Pack, src)
+							next = iterPack(path, *sub.Pack, src)
 						} else {
 							next = src
 						}
@@ -139,20 +138,20 @@ func (Def) IterFile(
 		return src
 	}
 
-	iterKey = func(ctx context.Context, dir string, key Key, cont Src) Src {
+	iterKey = func(dir string, key Key, cont Src) Src {
 		return func() (_ any, _ Src, err error) {
 			defer he(&err)
 			var file File
-			err = fetch(ctx, key, &file)
+			err = fetch(key, &file)
 			ce(err, e5.Info("iter %s %s", dir, key))
-			return nil, iterFile(ctx, dir, &file, cont), nil
+			return nil, iterFile(dir, &file, cont), nil
 		}
 	}
 
-	return func(ctx context.Context, file *File, cont Src) Src {
-			return iterFile(ctx, ".", file, cont)
+	return func(file *File, cont Src) Src {
+			return iterFile(".", file, cont)
 		},
-		func(ctx context.Context, key Key, cont Src) Src {
-			return iterKey(ctx, ".", key, cont)
+		func(key Key, cont Src) Src {
+			return iterKey(".", key, cont)
 		}
 }

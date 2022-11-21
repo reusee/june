@@ -6,7 +6,6 @@ package file
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"io/fs"
@@ -20,12 +19,16 @@ import (
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
+	"github.com/reusee/june/store"
 	"github.com/reusee/pp"
 )
 
 func TestSave(
 	t *testing.T,
 	walk Walk,
+	write WriteContents,
+	store store.Store,
+	fetch entity.Fetch,
 	scope Scope,
 ) {
 	defer he(nil, e5.TestingFatal(t))
@@ -44,10 +47,15 @@ func TestSave(
 		iterDiskFile IterDiskFile,
 		iterFile IterFile,
 		build Build,
+		iterKey IterKey,
 		equal Equal,
+		fetch entity.Fetch,
+		checkRef entity.CheckRef,
+		store Store,
+		gc entity.GC,
+		rebuildIndex entity.RebuildIndex,
 		index index.Index,
 	) {
-		ctx := context.Background()
 
 		c := 0
 		numRead := 0
@@ -55,9 +63,8 @@ func TestSave(
 		// save
 		file := new(File)
 		err := Copy(
-			iterDiskFile(ctx, ".", nil, UseGitIgnore(false)),
+			iterDiskFile(".", nil, UseGitIgnore(false)),
 			build(
-				ctx,
 				file, nil,
 				TapBuildFile(func(_ FileInfo, _ *File) {
 					c++
@@ -78,9 +85,8 @@ func TestSave(
 
 		// equal
 		ok, err := equal(
-			ctx,
-			iterDiskFile(ctx, ".", nil, UseGitIgnore(false)),
-			iterFile(ctx, file, nil),
+			iterDiskFile(".", nil, UseGitIgnore(false)),
+			iterFile(file, nil),
 			func(a, b any, reason string) {
 				pt("NOT EQUAL: %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -92,7 +98,6 @@ func TestSave(
 
 		var n int
 		if err := Select(
-			ctx,
 			index,
 			entity.MatchType(Subs{}),
 			Count(&n),
@@ -108,7 +113,7 @@ func TestSave(
 		dir := filepath.Dir(abs)
 		n = 0
 		if err := Copy(
-			iterFile(ctx, file, nil),
+			iterFile(file, nil),
 			walk(func(path string, file FileLike) (err error) {
 				defer he(&err)
 				n++
@@ -116,7 +121,7 @@ func TestSave(
 				// file content
 				if !file.GetIsDir(scope) {
 					buf := new(bytes.Buffer)
-					if err := file.WithReader(ctx, scope, func(r io.Reader) error {
+					if err := file.WithReader(scope, func(r io.Reader) error {
 						_, err := io.Copy(buf, r)
 						return err
 					}); err != nil {
@@ -142,7 +147,7 @@ func TestSave(
 
 		// file numbers
 		m := 0
-		if err := filepath.WalkDir(".", func(path string, _ fs.DirEntry, e error) error {
+		if err := filepath.WalkDir(".", func(path string, entry fs.DirEntry, e error) error {
 			if path == ".git" || path == ".github" {
 				return fs.SkipDir
 			}
@@ -164,12 +169,11 @@ func TestSave(
 		file2 := new(File)
 		err = Copy(
 			pp.Tee(
-				iterFile(ctx, file, nil),
+				iterFile(file, nil),
 			),
 			build(
-				ctx,
 				file2, nil,
-				TapBuildFile(func(info FileInfo, _ *File) {
+				TapBuildFile(func(info FileInfo, file *File) {
 					paths = append(paths, info.Path)
 				}),
 			),
@@ -182,9 +186,8 @@ func TestSave(
 
 		// equal
 		ok, err = equal(
-			ctx,
-			iterFile(ctx, file, nil),
-			iterFile(ctx, file2, nil),
+			iterFile(file, nil),
+			iterFile(file2, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -194,9 +197,8 @@ func TestSave(
 			t.Fatal()
 		}
 		ok, err = equal(
-			ctx,
-			iterDiskFile(ctx, ".", nil, UseGitIgnore(false)),
-			iterFile(ctx, file2, nil),
+			iterDiskFile(".", nil, UseGitIgnore(false)),
+			iterFile(file2, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -221,7 +223,6 @@ func TestSymlink(
 	iterDiskfile IterDiskFile,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	if runtime.GOOS == "windows" {
 		t.Skip()
@@ -233,8 +234,8 @@ func TestSymlink(
 	ce(err)
 	file := new(File)
 	err = Copy(
-		iterDiskfile(ctx, dir, nil),
-		build(ctx, file, nil),
+		iterDiskfile(dir, nil),
+		build(file, nil),
 	)
 	ce(err)
 }
@@ -254,7 +255,6 @@ func TestPack(
 		iter IterVirtual,
 		fetch entity.Fetch,
 	) {
-		ctx := context.Background()
 
 		var tap Sink
 		tap = func(v any) (Sink, error) {
@@ -286,7 +286,7 @@ func TestPack(
 				}, nil),
 				tap,
 			),
-			build(ctx, file, nil),
+			build(file, nil),
 		)
 		ce(err)
 
@@ -307,7 +307,7 @@ func TestPack(
 		}
 
 		var ss Subs
-		err = fetch(ctx, pack.Key, &ss)
+		err = fetch(pack.Key, &ss)
 		ce(err)
 		pack = ss[0].Pack
 		if pack.Min != "a" {

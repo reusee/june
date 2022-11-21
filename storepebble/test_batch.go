@@ -5,51 +5,53 @@
 package storepebble
 
 import (
-	"context"
 	"os"
 	"testing"
 
+	"github.com/reusee/dscope"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestBatchKV(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
+	scope dscope.Scope,
 	newStore New,
 	newBatch NewBatch,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(ctx, nil, dir)
+		s, err := newStore(wt, nil, dir)
 		ce(err)
-		batch, err := newBatch(ctx, s)
+		batch, err := newBatch(wt, s)
 		ce(err)
 		fn(batch, "foo")
 	}
-	test(ctx, t, with)
+	test(t, with)
 }
 
 func TestBatchIndex(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newStore New,
 	newBatch NewBatch,
 	test index.TestIndex,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 	dir, err := os.MkdirTemp(t.TempDir(), "")
 	ce(err)
-	s, err := newStore(ctx, nil, dir)
+	s, err := newStore(wt, nil, dir)
 	ce(err)
-	batch, err := newBatch(ctx, s)
+	batch, err := newBatch(wt, s)
 	ce(err)
 	with := func(fn func(index.IndexManager)) {
 		fn(batch)
 	}
-	test(ctx, with, t)
+	test(with, t)
 }

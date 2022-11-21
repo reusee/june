@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/reusee/june/sys"
@@ -15,7 +14,6 @@ import (
 )
 
 type DeleteIndex func(
-	ctx context.Context,
 	predict func(sb.Stream) (*IndexEntry, error),
 	options ...DeleteIndexOption,
 ) error
@@ -26,11 +24,11 @@ type DeleteIndexOption interface {
 
 func (_ Def) DeleteIndex(
 	index Index,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) DeleteIndex {
 
 	return func(
-		ctx context.Context,
 		predict func(sb.Stream) (*IndexEntry, error),
 		options ...DeleteIndexOption,
 	) (err error) {
@@ -47,7 +45,6 @@ func (_ Def) DeleteIndex(
 		}
 
 		iter, closer, err := index.Iter(
-			ctx,
 			nil,
 			nil,
 			Asc,
@@ -55,12 +52,12 @@ func (_ Def) DeleteIndex(
 		ce(err)
 		defer closer.Close()
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		defer wg.Cancel()
-		put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)
 			entry := v.(IndexEntry)
-			ce(index.Delete(ctx, entry))
+			ce(index.Delete(entry))
 			return nil
 		})
 

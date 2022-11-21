@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"hash/fnv"
 	"strings"
@@ -18,6 +17,7 @@ import (
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/storetap"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr"
 	"github.com/reusee/sb"
 )
 
@@ -33,6 +33,7 @@ func (t testSaveFoo) EntityIndexes() (IndexSet, int64, error) {
 
 func TestSave(
 	t *testing.T,
+	wt *pr.WaitTree,
 	save SaveEntity,
 	store store.Store,
 	rebuildIndex RebuildIndex,
@@ -47,7 +48,6 @@ func TestSave(
 	indexGC IndexGC,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	var err error
 	var summary *Summary
@@ -61,7 +61,7 @@ func TestSave(
 				_ sb.Stream,
 				_ []WriteOption,
 				res WriteResult,
-				_ error,
+				err error,
 			) {
 				keysWritten++
 				bytesWritten += res.BytesWritten
@@ -70,7 +70,7 @@ func TestSave(
 	}).Call(func(
 		save SaveEntity,
 	) {
-		summary, err = save(ctx, testSaveFoo(42))
+		summary, err = save(testSaveFoo(42))
 		ce(err)
 		if keysWritten != 2 {
 			t.Fatalf("got %d", keysWritten)
@@ -88,7 +88,7 @@ func TestSave(
 	}
 	n := 0
 	ce(summary.iterAll(
-		func(path []Key, _ Summary) error {
+		func(path []Key, s Summary) error {
 			n++
 			if len(path) != 1 {
 				t.Fatal()
@@ -116,7 +116,7 @@ func TestSave(
 	numType := 0
 	numTypeFoo := 0
 	numName := 0
-	ce(Select(ctx, index, Unmarshal(func(tuple ...any) {
+	ce(Select(index, Unmarshal(func(tuple ...any) {
 		numIdx++
 		prefix, ok := tuple[0].(string)
 		if !ok {
@@ -160,7 +160,7 @@ func TestSave(
 
 	// pre index
 	var savedVersion int64
-	ce(Select(ctx, index,
+	ce(Select(index,
 		MatchPreEntry(summary.Key, IdxVersion),
 		TapPre(func(v int64) {
 			savedVersion = v
@@ -172,7 +172,7 @@ func TestSave(
 
 	t.Run("same data", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		summary, err = save(ctx, testSaveFoo(42))
+		summary, err = save(testSaveFoo(42))
 		ce(err)
 
 		if !summary.Valid() {
@@ -183,7 +183,7 @@ func TestSave(
 		}
 		n := 0
 		ce(summary.iterAll(
-			func(path []Key, _ Summary) error {
+			func(path []Key, s Summary) error {
 				n++
 				if len(path) != 1 {
 					t.Fatal()
@@ -202,7 +202,7 @@ func TestSave(
 		numType = 0
 		numTypeFoo = 0
 		numName = 0
-		ce(Select(ctx, index, Unmarshal(func(tuple ...any) {
+		ce(Select(index, Unmarshal(func(tuple ...any) {
 			numIdx++
 			prefix, ok := tuple[0].(string)
 			if !ok {
@@ -240,7 +240,7 @@ func TestSave(
 
 	t.Run("new data", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		summary, err = save(ctx, testSaveFoo(43))
+		summary, err = save(testSaveFoo(43))
 		ce(err)
 
 		if !summary.Valid() {
@@ -251,7 +251,7 @@ func TestSave(
 		}
 		n := 0
 		ce(summary.iterAll(
-			func(path []Key, _ Summary) error {
+			func(path []Key, s Summary) error {
 				n++
 				if len(path) != 1 {
 					t.Fatal()
@@ -271,7 +271,6 @@ func TestSave(
 		numTypeFoo = 0
 		numName = 0
 		ce(Select(
-			ctx,
 			index,
 			Desc,
 			Unmarshal(func(tuple ...any) {
@@ -313,16 +312,14 @@ func TestSave(
 		defer he(nil, e5.TestingFatal(t))
 		var before int
 		ce(Select(
-			ctx,
 			index,
 			Count(&before),
 		))
 
 		var num int64
 		if n, err := rebuildIndex(
-			ctx,
 			WithIndexSaveOptions([]IndexSaveOption{
-				IndexTapEntry(func(_ IndexEntry) {
+				IndexTapEntry(func(entry IndexEntry) {
 					atomic.AddInt64(&num, 1)
 				}),
 			}),
@@ -338,7 +335,6 @@ func TestSave(
 
 		var after int
 		ce(Select(
-			ctx,
 			index,
 			Count(&after),
 		))
@@ -346,7 +342,7 @@ func TestSave(
 			t.Fatal()
 		}
 
-		if n, err := updateIndex(ctx); err != nil {
+		if n, err := updateIndex(); err != nil {
 			t.Fatal(err)
 		} else if n != 0 {
 			t.Fatalf("got %d\n", n)
@@ -358,7 +354,6 @@ func TestSave(
 		defer he(nil, e5.TestingFatal(t))
 
 		iter, closer, err := index.Iter(
-			ctx,
 			nil,
 			nil,
 			Asc,
@@ -392,8 +387,8 @@ func TestSave(
 
 		newIndexes := make(map[Hash]IndexEntry)
 		var n2 int
-		manager := IndexManager(newMemStore())
-		storeID, err := store.ID(ctx)
+		manager := IndexManager(newMemStore(wt))
+		storeID, err := store.ID()
 		ce(err)
 		scope.Fork(
 			&storeID,
@@ -405,16 +400,15 @@ func TestSave(
 			saveSummary SaveSummary,
 		) {
 
-			ce(store.IterKeys(ctx, NSSummary, func(key Key) (err error) {
+			ce(store.IterKeys(NSSummary, func(key Key) (err error) {
 				defer he(&err)
 				var summary Summary
-				ce(fetch(ctx, key, &summary))
-				ce(saveSummary(ctx, &summary, false))
+				ce(fetch(key, &summary))
+				ce(saveSummary(&summary, false))
 				return nil
 			}))
 
 			iter, closer, err := index.Iter(
-				ctx,
 				nil,
 				nil,
 				Asc,
@@ -458,19 +452,18 @@ func TestSave(
 
 	t.Run("index gc", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		ce(indexGC(ctx))
+		ce(indexGC())
 	})
 
 	t.Run("index clean", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		ce(cleanIndex(ctx))
+		ce(cleanIndex())
 	})
 
 	t.Run("resave", func(t *testing.T) {
 		var n int64
 		var m int64
 		ce(resave(
-			ctx,
 			[]any{
 				testSaveFoo(0),
 			},
@@ -491,6 +484,6 @@ func TestSave(
 		}
 	})
 
-	ce(checkRef(ctx))
+	ce(checkRef())
 
 }

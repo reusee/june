@@ -5,8 +5,6 @@
 package storestacked
 
 import (
-	"context"
-
 	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
@@ -15,9 +13,9 @@ import (
 
 var _ store.Store = new(Store)
 
-func (s *Store) Exists(ctx context.Context, key Key) (bool, error) {
+func (s *Store) Exists(key Key) (bool, error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -25,23 +23,23 @@ func (s *Store) Exists(ctx context.Context, key Key) (bool, error) {
 	switch s.ReadPolicy {
 
 	case ReadThrough, ReadThroughCaching:
-		if ok, err := s.Backing.Exists(ctx, key); err != nil {
+		if ok, err := s.Backing.Exists(key); err != nil {
 			return false, err
 		} else if ok {
 			return true, nil
 		}
-		return s.Upstream.Exists(ctx, key)
+		return s.Upstream.Exists(key)
 
 	case ReadAround:
-		return s.Upstream.Exists(ctx, key)
+		return s.Upstream.Exists(key)
 
 	}
 	panic("bad policy")
 }
 
-func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) (err error) {
+func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -53,12 +51,12 @@ func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) (err error)
 	case ReadThrough, ReadThroughCaching:
 		// slow, but works
 		backingKeys := make(map[Key]struct{})
-		ce(s.Backing.IterAllKeys(ctx, func(key Key) error {
+		ce(s.Backing.IterAllKeys(func(key Key) error {
 			backingKeys[key] = struct{}{}
 			return nil
 		}))
 		isBreak := false
-		ce(s.Upstream.IterAllKeys(ctx, func(key Key) (err error) {
+		ce(s.Upstream.IterAllKeys(func(key Key) (err error) {
 			defer he(&err)
 			delete(backingKeys, key)
 			ce(
@@ -89,15 +87,15 @@ func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) (err error)
 		return nil
 
 	case ReadAround:
-		return s.Upstream.IterAllKeys(ctx, fn)
+		return s.Upstream.IterAllKeys(fn)
 
 	}
 	panic("bad policy")
 }
 
-func (s *Store) IterKeys(ctx context.Context, ns key.Namespace, fn func(Key) error) (err error) {
+func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -109,12 +107,12 @@ func (s *Store) IterKeys(ctx context.Context, ns key.Namespace, fn func(Key) err
 	case ReadThrough, ReadThroughCaching:
 		// slow, but works
 		backingKeys := make(map[Key]struct{})
-		ce(s.Backing.IterKeys(ctx, ns, func(key Key) error {
+		ce(s.Backing.IterKeys(ns, func(key Key) error {
 			backingKeys[key] = struct{}{}
 			return nil
 		}))
 		isBreak := false
-		ce(s.Upstream.IterKeys(ctx, ns, func(key Key) (err error) {
+		ce(s.Upstream.IterKeys(ns, func(key Key) (err error) {
 			defer he(&err)
 			delete(backingKeys, key)
 			ce(
@@ -145,15 +143,15 @@ func (s *Store) IterKeys(ctx context.Context, ns key.Namespace, fn func(Key) err
 		return nil
 
 	case ReadAround:
-		return s.Upstream.IterKeys(ctx, ns, fn)
+		return s.Upstream.IterKeys(ns, fn)
 
 	}
 	panic("bad policy")
 }
 
-func (s *Store) Read(ctx context.Context, key Key, fn func(sb.Stream) error) (err error) {
+func (s *Store) Read(key Key, fn func(sb.Stream) error) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -163,26 +161,26 @@ func (s *Store) Read(ctx context.Context, key Key, fn func(sb.Stream) error) (er
 	switch s.ReadPolicy {
 
 	case ReadThrough:
-		if err := s.Backing.Read(ctx, key, fn); err == nil {
+		if err := s.Backing.Read(key, fn); err == nil {
 			return nil
 		} else if !is(err, ErrKeyNotFound) {
 			return err
 		}
-		return s.Upstream.Read(ctx, key, fn)
+		return s.Upstream.Read(key, fn)
 
 	case ReadThroughCaching:
-		if err := s.Backing.Read(ctx, key, fn); err == nil {
+		if err := s.Backing.Read(key, fn); err == nil {
 			return nil
 		} else if !is(err, ErrKeyNotFound) {
 			return err
 		}
-		return s.Upstream.Read(ctx, key, func(str sb.Stream) (err error) {
+		return s.Upstream.Read(key, func(str sb.Stream) (err error) {
 			defer he(&err)
 			tokens, err := sb.TokensFromStream(str)
 			ce(err)
 			err = fn(tokens.Iter())
 			ce(err)
-			if _, err := s.Backing.Write(ctx, key.Namespace, tokens.Iter()); err != nil {
+			if _, err := s.Backing.Write(key.Namespace, tokens.Iter()); err != nil {
 				if is(err, ErrIgnore) {
 					err = nil
 				} else {
@@ -193,20 +191,19 @@ func (s *Store) Read(ctx context.Context, key Key, fn func(sb.Stream) error) (er
 		})
 
 	case ReadAround:
-		return s.Upstream.Read(ctx, key, fn)
+		return s.Upstream.Read(key, fn)
 
 	}
 	panic("bad policy")
 }
 
 func (s *Store) Write(
-	ctx context.Context,
 	ns key.Namespace,
 	stream sb.Stream,
 	options ...WriteOption,
 ) (res store.WriteResult, err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		err = ErrClosed
 		return
 	default:
@@ -219,14 +216,14 @@ func (s *Store) Write(
 	case WriteThrough:
 		tokens, err := sb.TokensFromStream(stream)
 		ce(err)
-		res1, err := s.Backing.Write(ctx, ns, tokens.Iter(), options...)
+		res1, err := s.Backing.Write(ns, tokens.Iter(), options...)
 		ignore := false
 		if is(err, ErrIgnore) {
 			ignore = true
 			err = nil
 		}
 		ce(err)
-		res2, err := s.Upstream.Write(ctx, ns, tokens.Iter(), options...)
+		res2, err := s.Upstream.Write(ns, tokens.Iter(), options...)
 		ce(err)
 		if !ignore {
 			if res1.Key != res2.Key {
@@ -240,15 +237,15 @@ func (s *Store) Write(
 		}, nil
 
 	case WriteAround:
-		return s.Upstream.Write(ctx, ns, stream, options...)
+		return s.Upstream.Write(ns, stream, options...)
 
 	}
 	panic("bad policy")
 }
 
-func (s *Store) Delete(ctx context.Context, keys []Key) (err error) {
+func (s *Store) Delete(keys []Key) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -258,12 +255,12 @@ func (s *Store) Delete(ctx context.Context, keys []Key) (err error) {
 	switch s.WritePolicy {
 
 	case WriteThrough:
-		ce(s.Backing.Delete(ctx, keys))
-		ce(s.Upstream.Delete(ctx, keys))
+		ce(s.Backing.Delete(keys))
+		ce(s.Upstream.Delete(keys))
 		return nil
 
 	case WriteAround:
-		ce(s.Upstream.Delete(ctx, keys))
+		ce(s.Upstream.Delete(keys))
 		return nil
 
 	}

@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -18,7 +17,6 @@ import (
 )
 
 type Push func(
-	ctx context.Context,
 	to Store,
 	toIndex IndexManager,
 	keys []Key,
@@ -31,22 +29,22 @@ type PushOption interface {
 
 type TapPushCheckSummary func(summaryKey Key)
 
-func (TapPushCheckSummary) IsPushOption() {}
+func (_ TapPushCheckSummary) IsPushOption() {}
 
 type TapPushSave func(summaryKey Key, summary *Summary)
 
-func (TapPushSave) IsPushOption() {}
+func (_ TapPushSave) IsPushOption() {}
 
-func (Def) Push(
+func (_ Def) Push(
 	scope dscope.Scope,
 	selIndex index.SelectIndex,
 	store Store,
+	wt *pr.WaitTree,
 	fetch Fetch,
 	parallel sys.Parallel,
 ) Push {
 
 	return func(
-		ctx context.Context,
 		to Store,
 		toIndex IndexManager,
 		keys []Key,
@@ -93,7 +91,7 @@ func (Def) Push(
 		if toIndex == nil {
 			// iterate keys
 			keySet := make(map[Key]struct{})
-			ce(to.IterKeys(ctx, NSSummary, func(key Key) error {
+			ce(to.IterKeys(NSSummary, func(key Key) error {
 				keySet[key] = struct{}{}
 				return nil
 			}))
@@ -108,7 +106,6 @@ func (Def) Push(
 			var toSelectIndex index.SelectIndex
 			toScope.Assign(&toSelectIndex)
 			ce(toSelectIndex(
-				ctx,
 				MatchEntry(IdxPairSummaryObject),
 				Tap(func(summaryKey Key, _ Key) {
 					keySet[summaryKey] = struct{}{}
@@ -135,7 +132,6 @@ func (Def) Push(
 						ce(fn(key))
 					} else {
 						ce(selIndex(
-							ctx,
 							MatchEntry(IdxPairObjectSummary, key),
 							Tap(func(_ Key, summaryKey Key) {
 								ce(fn(summaryKey))
@@ -150,7 +146,7 @@ func (Def) Push(
 			iterKeys = func(
 				fn func(summaryKey Key) error,
 			) {
-				ce(store.IterKeys(ctx, NSSummary, func(key Key) error {
+				ce(store.IterKeys(NSSummary, func(key Key) error {
 					return fn(key)
 				}))
 			}
@@ -167,9 +163,9 @@ func (Def) Push(
 			}
 
 			// save object
-			ce(store.Read(ctx, summary.Key, func(stream sb.Stream) (err error) {
+			ce(store.Read(summary.Key, func(stream sb.Stream) (err error) {
 				defer he(&err)
-				res, err := to.Write(ctx, summary.Key.Namespace, stream)
+				res, err := to.Write(summary.Key.Namespace, stream)
 				ce(err)
 				if res.Key != summary.Key {
 					return we(fmt.Errorf("bad write: %s", summary.Key))
@@ -180,7 +176,6 @@ func (Def) Push(
 			// save summary
 			var retKey Key
 			ce(toSaveSummary(
-				ctx,
 				summary,
 				false,
 				TapKey(func(k Key) {
@@ -197,9 +192,9 @@ func (Def) Push(
 		type Proc func() error
 
 		// workers
-		ctx, wg := pr.WithWaitGroup(ctx)
-		defer wg.Cancel()
-		put, wait := pr.Consume(ctx, p, func(_ int, v any) error {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, p, func(_ int, v any) error {
 			proc := v.(Proc)
 			if proc == nil {
 				return nil
@@ -241,7 +236,7 @@ func (Def) Push(
 
 				// get summary
 				var summary Summary
-				ce(fetch(ctx, summaryKey, &summary))
+				ce(fetch(summaryKey, &summary))
 
 				for _, fn := range ignoreSummary {
 					if fn(summary) {
@@ -268,7 +263,6 @@ func (Def) Push(
 					for _, key := range summary.ReferedKeys {
 						var c int
 						ce(selIndex(
-							ctx,
 							MatchEntry(IdxPairObjectSummary, key),
 							Count(&c),
 							Tap(func(_ Key, sKey Key) {

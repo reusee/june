@@ -5,7 +5,6 @@
 package storemonotree
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/dscope"
@@ -13,10 +12,12 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
+	wt *pr.WaitTree,
 	testStore store.TestStore,
 	scope dscope.Scope,
 ) {
@@ -24,19 +25,18 @@ func TestStore(
 
 	defer he(nil, e5.TestingFatal(t))
 
-	ctx := context.Background()
 	with := func(fn func(store.Store), defs ...any) {
 		scope.Fork(defs...).Call(func(
 			newMem storemem.New,
 			newKV storekv.New,
 			newTree New,
 		) {
-			upstream, err := newKV(newMem(), "foo")
+			upstream, err := newKV(newMem(wt), "foo")
 			ce(err)
-			tree, err := newTree(ctx, upstream)
+			tree, err := newTree(upstream)
 			ce(err)
 			fn(tree)
 		})
 	}
-	testStore(ctx, with, t)
+	testStore(with, t)
 }

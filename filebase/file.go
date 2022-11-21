@@ -6,7 +6,6 @@ package filebase
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -129,13 +128,13 @@ func (f *File) GetDevice(_ Scope) uint64 {
 	return 0
 }
 
-func (f *File) WithReader(ctx context.Context, scope Scope, fn func(io.Reader) error) (err error) {
+func (f *File) WithReader(scope Scope, fn func(io.Reader) error) (err error) {
 	defer he(&err)
 	var r io.Reader
 	if len(f.Contents) > 0 {
 		var newContentReader NewContentReader
 		scope.Assign(&newContentReader)
-		r = newContentReader(ctx, f.Contents, f.ChunkLengths)
+		r = newContentReader(f.Contents, f.ChunkLengths)
 	} else {
 		r = bytes.NewReader(f.ContentBytes)
 	}

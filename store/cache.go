@@ -5,16 +5,14 @@
 package store
 
 import (
-	"context"
-
 	"github.com/reusee/sb"
 )
 
 type Cache interface {
-	CacheGet(context.Context, Key, func(sb.Stream) error) error
+	CacheGet(Key, func(sb.Stream) error) error
 
 	// CachePut must save tokens as encoded form
-	CachePut(context.Context, Key, sb.Tokens, ...CachePutOption) error
+	CachePut(Key, sb.Tokens, ...CachePutOption) error
 }
 
 type CachePutOption interface {

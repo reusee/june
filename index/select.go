@@ -162,7 +162,6 @@ func (_ WithCtx) IsSelectOption() {}
 var Cancel = errors.New("cancel")
 
 func Iter(
-	ctx context.Context,
 	options ...IterOption,
 ) (
 	fn func(
@@ -312,7 +311,6 @@ func Iter(
 
 		// iter
 		iter, closer, err = index.Iter(
-			ctx,
 			lowerTokens,
 			upperTokens,
 			order,
@@ -382,7 +380,6 @@ func Iter(
 }
 
 func Select(
-	ctx context.Context,
 	index Index,
 	options ...SelectOption,
 ) (
@@ -442,7 +439,7 @@ func Select(
 		handleOption(option)
 	}
 
-	iter, closer, err := Iter(ctx, iterOptions...)(index)
+	iter, closer, err := Iter(iterOptions...)(index)
 	ce(err)
 	defer closer.Close()
 

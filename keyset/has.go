@@ -5,14 +5,12 @@
 package keyset
 
 import (
-	"context"
 	"sort"
 
 	"github.com/reusee/june/entity"
 )
 
 type Has func(
-	ctx context.Context,
 	set Set,
 	key Key,
 ) (
@@ -20,23 +18,21 @@ type Has func(
 	err error,
 )
 
-func (Def) Has(
+func (_ Def) Has(
 	fetch entity.Fetch,
 ) Has {
 	return func(
-		ctx context.Context,
 		set Set,
 		key Key,
 	) (
 		ok bool,
 		err error,
 	) {
-		return set.has(ctx, fetch, key)
+		return set.has(fetch, key)
 	}
 }
 
 func (s Set) has(
-	ctx context.Context,
 	fetch entity.Fetch,
 	key Key,
 ) (
@@ -65,8 +61,8 @@ func (s Set) has(
 
 	} else if item.Pack != nil {
 		var set Set
-		ce(fetch(ctx, item.Pack.Key, &set))
-		return set.has(ctx, fetch, key)
+		ce(fetch(item.Pack.Key, &set))
+		return set.has(fetch, key)
 	}
 
 	panic("bad item")

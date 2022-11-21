@@ -5,29 +5,29 @@
 package storepebble
 
 import (
-	"context"
 	"os"
 	"testing"
 
 	"github.com/reusee/dscope"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestKV(
 	t *testing.T,
+	wt *pr.WaitTree,
 	test storekv.TestKV,
 	scope dscope.Scope,
 	newStore New,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(ctx, nil, dir)
+		s, err := newStore(wt, nil, dir)
 		ce(err)
 		fn(s, "foo")
 	}
-	test(ctx, t, with)
+	test(t, with)
 }

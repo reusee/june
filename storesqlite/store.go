@@ -5,7 +5,6 @@
 package storesqlite
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -21,6 +20,7 @@ import (
 )
 
 type Store struct {
+	*pr.WaitTree
 	name    string
 	storeID string
 
@@ -33,7 +33,7 @@ type Store struct {
 }
 
 type New func(
-	ctx context.Context,
+	wt *pr.WaitTree,
 	path string,
 ) (*Store, error)
 
@@ -43,7 +43,7 @@ func (_ Def) New(
 	setRestrictedPath fsys.SetRestrictedPath,
 ) New {
 	return func(
-		ctx context.Context,
+		parentWt *pr.WaitTree,
 		path string,
 	) (_ *Store, err error) {
 		defer he(&err)
@@ -76,16 +76,14 @@ func (_ Def) New(
 			dirty: make(chan struct{}, 1),
 		}
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		wg.Parent().Go(func() {
-			<-ctx.Done()
-			wg.Wait()
+		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("sqlite "+s.storeID))
+		parentWt.Go(func() {
+			<-parentWt.Ctx.Done()
+			s.WaitTree.Wait()
 			ce(db.Close())
 		})
 
-		wg.Go(func() {
-			s.sync(ctx)
-		})
+		s.WaitTree.Go(s.sync)
 
 		return s, nil
 	}
@@ -132,7 +130,7 @@ func (s *Store) tryLockWrite() func() {
 	return nil
 }
 
-func (s *Store) sync(ctx context.Context) {
+func (s *Store) sync() {
 
 	sync := func() (err error) {
 		defer he(&err)
@@ -183,7 +181,7 @@ func (s *Store) sync(ctx context.Context) {
 		select {
 		case <-s.dirty:
 			ce(sync())
-		case <-ctx.Done():
+		case <-s.Ctx.Done():
 			ce(sync())
 			return
 		}

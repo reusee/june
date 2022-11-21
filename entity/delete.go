@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/reusee/june/index"
@@ -21,7 +20,6 @@ TODO
 */
 
 type Delete func(
-	ctx context.Context,
 	key Key,
 ) (
 	err error,
@@ -42,7 +40,7 @@ func (e *BeingRefered) Error() string {
 	)
 }
 
-func (Def) Delete(
+func (_ Def) Delete(
 	fetch Fetch,
 	store Store,
 	index Index,
@@ -53,7 +51,6 @@ func (Def) Delete(
 	//TODO entity lock
 
 	return func(
-		ctx context.Context,
 		key Key,
 	) (
 		err error,
@@ -65,14 +62,12 @@ func (Def) Delete(
 		if key.Namespace == NSSummary {
 			summaryKeys[key] = struct{}{}
 			ce(sel(
-				ctx,
 				MatchEntry(IdxSummaryOf, key),
 				TapKey(func(key Key) {
 					entityKey = key
 				}),
 			))
 			ce(sel(
-				ctx,
 				MatchEntry(IdxSummaryKey, entityKey),
 				TapKey(func(key Key) {
 					summaryKeys[key] = struct{}{}
@@ -81,7 +76,6 @@ func (Def) Delete(
 		} else {
 			entityKey = key
 			ce(sel(
-				ctx,
 				MatchEntry(IdxSummaryKey, entityKey),
 				TapKey(func(key Key) {
 					summaryKeys[key] = struct{}{}
@@ -92,7 +86,6 @@ func (Def) Delete(
 		// IdxReferedBy
 		referring := make(map[Key]struct{})
 		ce(Select(
-			ctx,
 			index,
 			MatchEntry(IdxReferedBy, entityKey),
 			Tap(func(_ Key, referringKey Key) error {
@@ -112,12 +105,12 @@ func (Def) Delete(
 		// delete summary
 		for summaryKey := range summaryKeys {
 			var summary Summary
-			ce(fetch(ctx, summaryKey, &summary))
-			ce(deleteSummary(ctx, &summary, summaryKey))
+			ce(fetch(summaryKey, &summary))
+			ce(deleteSummary(&summary, summaryKey))
 		}
 
 		// delete entity
-		ce(store.Delete(ctx, []Key{
+		ce(store.Delete([]Key{
 			entityKey,
 		}))
 

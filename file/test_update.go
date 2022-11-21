@@ -5,7 +5,6 @@
 package file
 
 import (
-	"context"
 	"math/rand"
 	"path/filepath"
 	"sync/atomic"
@@ -16,19 +15,20 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestUpdate(
 	t *testing.T,
+	wt *pr.WaitTree,
 	newKV storekv.New,
 	newMem storemem.New,
 	scope Scope,
 	shuffle fsys.ShuffleDir,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
-	store, err := newKV(newMem(), "test")
+	store, err := newKV(newMem(wt), "test")
 	ce(err)
 
 	scope.Fork(func() Store {
@@ -37,13 +37,14 @@ func TestUpdate(
 		build Build,
 		iterDisk IterDiskFile,
 		update Update,
+		iterKey IterKey,
 		equal Equal,
 		watch fsys.Watch,
 		iterFile IterFile,
 	) {
 
 		dir := t.TempDir()
-		watcher, err := watch(ctx, dir)
+		watcher, err := watch(wt, dir)
 		ce(err)
 
 		// build
@@ -51,12 +52,11 @@ func TestUpdate(
 		file := new(File)
 		var numFile int64
 		err = Copy(
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
 			build(
-				ctx,
 				file,
 				nil,
-				TapBuildFile(func(info FileInfo, _ *File) {
+				TapBuildFile(func(info FileInfo, file *File) {
 					atomic.AddInt64(&numFile, 1)
 					if filepath.Base(dir) != info.Path {
 						t.Fatal()
@@ -76,19 +76,18 @@ func TestUpdate(
 		err = Copy(
 			update(
 				dir,
-				iterFile(ctx, file, nil),
+				iterFile(file, nil),
 				t0,
-				iterDisk(ctx, dir, nil),
+				iterDisk(dir, nil),
 				watcher,
 			),
-			build(ctx, file2, nil),
+			build(file2, nil),
 		)
 		ce(err)
 		file2 = file2.Subs[0].File
 		if ok, err := equal(
-			ctx,
-			iterFile(ctx, file, nil),
-			iterFile(ctx, file2, nil),
+			iterFile(file, nil),
+			iterFile(file2, nil),
 			nil,
 		); err != nil {
 			t.Fatal(err)
@@ -117,16 +116,15 @@ func TestUpdate(
 			err = Copy(
 				update(
 					dir,
-					iterFile(ctx, lastFile, nil),
+					iterFile(lastFile, nil),
 					lastTime,
-					iterDisk(ctx, dir, nil),
+					iterDisk(dir, nil),
 					watcher,
 				),
 				build(
-					ctx,
 					file,
 					nil,
-					TapReadFile(func(_ FileInfo) {
+					TapReadFile(func(info FileInfo) {
 						atomic.AddInt64(&numRead, 1)
 					}),
 				),
@@ -136,9 +134,8 @@ func TestUpdate(
 
 			// verify
 			ok, err := equal(
-				ctx,
-				iterDisk(ctx, dir, nil),
-				iterFile(ctx, file, nil),
+				iterDisk(dir, nil),
+				iterFile(file, nil),
 				func(a, b any, reason string) {
 					pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 				},

@@ -5,7 +5,6 @@
 package file
 
 import (
-	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -24,7 +23,6 @@ func TestZip(
 	scope Scope,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	scope.Fork(
 		func() PackThreshold {
@@ -34,6 +32,7 @@ func TestZip(
 		zip Zip,
 		iterVirtual IterVirtual,
 		build Build,
+		iterKey IterKey,
 		unzip Unzip,
 		equal Equal,
 		reverse Reverse,
@@ -86,14 +85,14 @@ func TestZip(
 		file1 := new(File)
 		err := pp.Copy(
 			iterVirtual(D("foo", D("bar", D("baz", D("qux", F("quux"))))), nil),
-			build(ctx, file1, nil),
+			build(file1, nil),
 		)
 		ce(err)
 		file1 = file1.Subs[0].File
 		file2 := new(File)
 		err = pp.Copy(
 			iterVirtual(D("foo", D("1", D("baz", D("qux", F("quux"))))), nil),
-			build(ctx, file2, nil),
+			build(file2, nil),
 		)
 		ce(err)
 		file2 = file2.Subs[0].File
@@ -111,7 +110,7 @@ func TestZip(
 				A: F("foo"),
 				B: F("foo"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", F("foo")),
 						B:   I("foo", F("foo")),
 						Dir: ".",
@@ -123,12 +122,12 @@ func TestZip(
 				A: F("bar"),
 				B: F("foo"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("bar", F("bar")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo", F("foo")),
 						Dir: ".",
@@ -140,12 +139,12 @@ func TestZip(
 				A: F("foo"),
 				B: F("bar"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("bar", F("bar")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo", F("foo")),
 						B:   nil,
 						Dir: ".",
@@ -162,7 +161,7 @@ func TestZip(
 					F("foo"),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   T("foo", D("foo")),
 						B:   T("foo", D("foo")),
 						Dir: ".",
@@ -178,12 +177,12 @@ func TestZip(
 					F("foo"),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   T("bar", D("bar")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   T("foo", D("foo")),
 						Dir: ".",
@@ -199,12 +198,12 @@ func TestZip(
 					F("bar"),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   nil,
 						B:   T("bar", D("bar")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   T("foo", D("foo")),
 						B:   nil,
 						Dir: ".",
@@ -217,12 +216,12 @@ func TestZip(
 				A: D("foo", F("foo")),
 				B: ExpandAll(iterVirtual(D("foo", F("foo")), nil)),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo/foo", D("foo")),
 						B:   I("foo/foo", D("foo")),
 						Dir: "foo",
@@ -234,17 +233,17 @@ func TestZip(
 				A: D("foo", F("bar")),
 				B: ExpandAll(iterVirtual(D("foo", F("foo")), nil)),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo/bar", D("bar")),
 						B:   nil,
 						Dir: "foo",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/foo", D("foo")),
 						Dir: "foo",
@@ -256,17 +255,17 @@ func TestZip(
 				A: ExpandAll(iterVirtual(D("foo", F("foo")), nil)),
 				B: D("foo", F("bar")),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/bar", D("bar")),
 						Dir: "foo",
 					},
-					{
+					ZipItem{
 						A:   I("foo/foo", D("foo")),
 						B:   nil,
 						Dir: "foo",
@@ -284,12 +283,12 @@ func TestZip(
 					F("foo"),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo/foo", F("foo")),
 						B:   I("foo/foo", F("foo")),
 						Dir: "foo",
@@ -302,7 +301,7 @@ func TestZip(
 				A: D("foo"),
 				B: F("foo"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", F("foo")),
 						Dir: ".",
@@ -314,7 +313,7 @@ func TestZip(
 				A: F("foo"),
 				B: D("foo"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", F("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
@@ -326,12 +325,12 @@ func TestZip(
 				A: F("foo"),
 				B: D("foo", F("foo")),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", F("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/foo", F("foo")),
 						Dir: "foo",
@@ -343,12 +342,12 @@ func TestZip(
 				A: D("foo", F("foo")),
 				B: F("foo"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", F("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo/foo", F("foo")),
 						B:   nil,
 						Dir: "foo",
@@ -365,17 +364,17 @@ func TestZip(
 				),
 				B: D("foo"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo/bar", D("bar")),
 						B:   nil,
 						Dir: "foo",
 					},
-					{
+					ZipItem{
 						A:   I("foo/bar/baz", D("baz")),
 						B:   nil,
 						Dir: "foo/bar",
@@ -392,17 +391,17 @@ func TestZip(
 					),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/bar", D("bar")),
 						Dir: "foo",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/bar/baz", F("baz")),
 						Dir: "foo/bar",
@@ -419,22 +418,22 @@ func TestZip(
 					),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   T("bar", D("bar")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/bar", D("bar")),
 						Dir: "foo",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("foo/bar/baz", F("baz")),
 						Dir: "foo/bar",
@@ -451,22 +450,22 @@ func TestZip(
 				),
 				B: D("bar"),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   nil,
 						B:   T("bar", D("bar")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("foo/bar", D("bar")),
 						B:   nil,
 						Dir: "foo",
 					},
-					{
+					ZipItem{
 						A:   I("foo/bar/baz", F("baz")),
 						B:   nil,
 						Dir: "foo/bar",
@@ -488,32 +487,32 @@ func TestZip(
 					),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("1", D("1")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("1/11", D("11")),
 						B:   nil,
 						Dir: "1",
 					},
-					{
+					ZipItem{
 						A:   I("1/11/111", F("111")),
 						B:   nil,
 						Dir: "1/11",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("2", D("2")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("2/22", D("22")),
 						Dir: "2",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("2/22/222", F("222")),
 						Dir: "2/22",
@@ -535,32 +534,32 @@ func TestZip(
 					),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("1", D("1")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("1/11", D("11")),
 						Dir: "1",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("1/11/111", F("111")),
 						Dir: "1/11",
 					},
-					{
+					ZipItem{
 						A:   I("2", D("2")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("2/22", D("22")),
 						B:   nil,
 						Dir: "2",
 					},
-					{
+					ZipItem{
 						A:   I("2/22/222", F("222")),
 						B:   nil,
 						Dir: "2/22",
@@ -577,22 +576,22 @@ func TestZip(
 					),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("1", D("1")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("1/bar", D("bar")),
 						Dir: "1",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   I("1/bar/baz", F("baz")),
 						Dir: "1/bar",
 					},
-					{
+					ZipItem{
 						A:   T("bar", D("bar")),
 						B:   nil,
 						Dir: ".",
@@ -609,22 +608,22 @@ func TestZip(
 					),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("1", D("1")),
 						B:   nil,
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   I("1/bar", D("bar")),
 						B:   nil,
 						Dir: "1",
 					},
-					{
+					ZipItem{
 						A:   I("1/bar/baz", F("baz")),
 						B:   nil,
 						Dir: "1/bar",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   T("bar", D("bar")),
 						Dir: ".",
@@ -641,12 +640,12 @@ func TestZip(
 					I("foo", D("foo")),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   T("foo/bar", D("bar")),
 						B:   nil,
 						Dir: "foo",
@@ -663,12 +662,12 @@ func TestZip(
 					T("foo/bar", D("bar")),
 				),
 				Expected: []ZipItem{
-					{
+					ZipItem{
 						A:   I("foo", D("foo")),
 						B:   I("foo", D("foo")),
 						Dir: ".",
 					},
-					{
+					ZipItem{
 						A:   nil,
 						B:   T("foo/bar", D("bar")),
 						Dir: "foo",
@@ -677,7 +676,7 @@ func TestZip(
 			},
 
 			24: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: ExpandAll(
 					iterVirtual(D("foo"), nil),
 				),
@@ -701,7 +700,7 @@ func TestZip(
 				A: ExpandAll(
 					iterVirtual(D("foo"), nil),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -722,7 +721,7 @@ func TestZip(
 				A: ExpandAll(
 					iterVirtual(D("foo", D("bar")), nil),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -743,7 +742,7 @@ func TestZip(
 			},
 
 			27: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: ExpandAll(
 					iterVirtual(D("foo", D("bar")), nil),
 				),
@@ -767,7 +766,7 @@ func TestZip(
 			},
 
 			28: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: ExpandAll(
 					iterVirtual(D("foo", D("1")), nil),
 				),
@@ -794,7 +793,7 @@ func TestZip(
 				A: ExpandAll(
 					iterVirtual(D("foo", D("1")), nil),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -818,7 +817,7 @@ func TestZip(
 				A: ExpandAll(
 					iterVirtual(D("foo", D("z")), nil),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -839,7 +838,7 @@ func TestZip(
 			},
 
 			31: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: ExpandAll(
 					iterVirtual(D("foo", D("z")), nil),
 				),
@@ -863,7 +862,7 @@ func TestZip(
 			},
 
 			32: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: pp.Seq(
 					I("foo", D("foo")),
 					T("foo/bar", D("bar")),
@@ -887,7 +886,7 @@ func TestZip(
 					I("foo", D("foo")),
 					T("foo/bar", D("bar")),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -907,7 +906,7 @@ func TestZip(
 					I("foo", D("foo")),
 					T("foo/1", D("1")),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -928,7 +927,7 @@ func TestZip(
 			},
 
 			35: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: pp.Seq(
 					I("foo", D("foo")),
 					T("foo/1", D("1")),
@@ -953,7 +952,7 @@ func TestZip(
 			},
 
 			36: {
-				A: iterFile(ctx, file1, nil),
+				A: iterFile(file1, nil),
 				B: pp.Seq(
 					I("foo", D("foo")),
 					T("foo/z", D("z")),
@@ -982,7 +981,7 @@ func TestZip(
 					I("foo", D("foo")),
 					T("foo/z", D("z")),
 				),
-				B: iterFile(ctx, file1, nil),
+				B: iterFile(file1, nil),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -1003,8 +1002,8 @@ func TestZip(
 			},
 
 			38: {
-				A: ExpandAll(iterFile(ctx, file1, nil)),
-				B: ExpandAll(iterFile(ctx, file1, nil)),
+				A: ExpandAll(iterFile(file1, nil)),
+				B: ExpandAll(iterFile(file1, nil)),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -1035,8 +1034,8 @@ func TestZip(
 			},
 
 			39: {
-				A: ExpandFileInfoThunk(iterFile(ctx, file1, nil)),
-				B: ExpandFileInfoThunk(iterFile(ctx, file2, nil)),
+				A: ExpandFileInfoThunk(iterFile(file1, nil)),
+				B: ExpandFileInfoThunk(iterFile(file2, nil)),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -1057,8 +1056,8 @@ func TestZip(
 			},
 
 			40: {
-				A: ExpandFileInfoThunk(iterFile(ctx, file2, nil)),
-				B: ExpandFileInfoThunk(iterFile(ctx, file1, nil)),
+				A: ExpandFileInfoThunk(iterFile(file2, nil)),
+				B: ExpandFileInfoThunk(iterFile(file1, nil)),
 				Expected: []ZipItem{
 					{
 						A:   I("foo", D("foo")),
@@ -1247,7 +1246,6 @@ func TestZip(
 			}))
 
 			res, err := equal(
-				ctx,
 				valuesA.Iter(nil),
 				unzip(items.Iter(nil), func(item ZipItem) any {
 					return item.A
@@ -1260,7 +1258,6 @@ func TestZip(
 			}
 
 			res, err = equal(
-				ctx,
 				valuesB.Iter(nil),
 				unzip(reverse(items.Iter(nil), nil), func(item ZipItem) any {
 					return item.A
@@ -1284,11 +1281,11 @@ func TestZipFile(
 	unzip Unzip,
 	equal Equal,
 	build Build,
+	iterKey IterKey,
 	iterFile IterFile,
 	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	dir := t.TempDir()
 	for i := 0; i < 64; i++ {
@@ -1296,7 +1293,7 @@ func TestZipFile(
 		ce(err)
 
 		numFiles := 0
-		ce(filepath.WalkDir(dir, func(_ string, _ fs.DirEntry, err error) error {
+		ce(filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -1306,8 +1303,8 @@ func TestZipFile(
 
 		// zip(disk ,disk) : disk
 		zipped := zip(
-			iterDisk(ctx, dir, nil),
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
 			nil,
 		)
 		left := unzip(
@@ -1318,9 +1315,8 @@ func TestZipFile(
 			nil,
 		)
 		ok, err := equal(
-			ctx,
 			left,
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -1333,14 +1329,14 @@ func TestZipFile(
 		// zip(build(disk), disk) : disk
 		file := new(File)
 		err = Copy(
-			iterDisk(ctx, dir, nil),
-			build(ctx, file, nil),
+			iterDisk(dir, nil),
+			build(file, nil),
 		)
 		ce(err)
 		file = file.Subs[0].File
 		zipped = zip(
-			iterFile(ctx, file, nil),
-			iterDisk(ctx, dir, nil),
+			iterFile(file, nil),
+			iterDisk(dir, nil),
 			nil,
 		)
 		left = unzip(
@@ -1351,9 +1347,8 @@ func TestZipFile(
 			nil,
 		)
 		ok, err = equal(
-			ctx,
 			left,
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -1365,8 +1360,8 @@ func TestZipFile(
 
 		// tap(zip(disk, disk))
 		zipped = zip(
-			iterDisk(ctx, dir, nil),
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
 			nil,
 		)
 		left = unzip(
@@ -1398,8 +1393,8 @@ func TestZipFile(
 
 		// collect(zip(disk, disk))
 		zipped = zip(
-			iterDisk(ctx, dir, nil),
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
 			nil,
 		)
 		left = unzip(
@@ -1423,14 +1418,13 @@ func TestZipFile(
 		root := new(File)
 		err = Copy(
 			values.Iter(nil),
-			build(ctx, root, nil),
+			build(root, nil),
 		)
 		ce(err)
 		root = root.Subs[0].File
 		ok, err = equal(
-			ctx,
-			iterFile(ctx, root, nil),
-			iterDisk(ctx, dir, nil),
+			iterFile(root, nil),
+			iterDisk(dir, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -1444,14 +1438,13 @@ func TestZipFile(
 		file = new(File)
 		err = Copy(
 			values.Iter(nil),
-			build(ctx, file, nil),
+			build(file, nil),
 		)
 		ce(err)
 		file = file.Subs[0].File
 		ok, err = equal(
-			ctx,
-			iterFile(ctx, file, nil),
-			iterDisk(ctx, dir, nil),
+			iterFile(file, nil),
+			iterDisk(dir, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -1463,8 +1456,8 @@ func TestZipFile(
 
 		// build(zip(disk, disk) : disk
 		zipped = zip(
-			iterDisk(ctx, dir, nil),
-			iterDisk(ctx, dir, nil),
+			iterDisk(dir, nil),
+			iterDisk(dir, nil),
 			nil,
 		)
 		left = unzip(
@@ -1477,14 +1470,13 @@ func TestZipFile(
 		file = new(File)
 		err = Copy(
 			left,
-			build(ctx, file, nil),
+			build(file, nil),
 		)
 		ce(err)
 		file = file.Subs[0].File
 		ok, err = equal(
-			ctx,
-			iterFile(ctx, file, nil),
-			iterDisk(ctx, dir, nil),
+			iterFile(file, nil),
+			iterDisk(dir, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},

@@ -5,7 +5,6 @@
 package storetap
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/dscope"
@@ -13,15 +12,16 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestStore(
 	t *testing.T,
+	wt *pr.WaitTree,
 	testStore store.TestStore,
 	scope dscope.Scope,
 ) {
 	defer e5.Handle(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	with := func(
 		fn func(store.Store),
@@ -32,13 +32,13 @@ func TestStore(
 			newKV storekv.New,
 			newStore New,
 		) {
-			upstream, err := newKV(newMem(), "foo")
+			upstream, err := newKV(newMem(wt), "foo")
 			ce(err)
 			store := newStore(upstream, Funcs{})
 			fn(store)
 		})
 	}
 
-	testStore(ctx, with, t)
+	testStore(with, t)
 
 }

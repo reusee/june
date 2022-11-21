@@ -5,7 +5,6 @@
 package storedisk
 
 import (
-	"context"
 	"io"
 	"io/fs"
 	"math/rand"
@@ -18,7 +17,6 @@ import (
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
 )
 
 var _ storekv.KV = new(Store)
@@ -50,9 +48,9 @@ func (s *Store) pathToKey(path string) string {
 	return strings.Join(parts, "/")
 }
 
-func (s *Store) KeyExists(ctx context.Context, key string) (ok bool, err error) {
+func (s *Store) KeyExists(key string) (ok bool, err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -68,9 +66,9 @@ func (s *Store) KeyExists(ctx context.Context, key string) (ok bool, err error) 
 	return true, nil
 }
 
-func (s *Store) KeyGet(ctx context.Context, key string, fn func(io.Reader) error) (err error) {
+func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -88,9 +86,9 @@ func (s *Store) KeyGet(ctx context.Context, key string, fn func(io.Reader) error
 	return fn(f)
 }
 
-func (s *Store) KeyIter(ctx context.Context, prefix string, fn func(string) error) (err error) {
+func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -140,9 +138,9 @@ func (s *Store) KeyIter(ctx context.Context, prefix string, fn func(string) erro
 	return nil
 }
 
-func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) (err error) {
+func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}
@@ -187,8 +185,7 @@ func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) (err error)
 
 	if atomic.CompareAndSwapInt32(&s.syncPending, 0, 1) {
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		done := wg.Add()
+		done := s.Add()
 		timer := time.AfterFunc(time.Second, func() {
 			defer done()
 			atomic.StoreInt32(&s.syncPending, 0)
@@ -206,7 +203,7 @@ func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) (err error)
 
 		go func() {
 			select {
-			case <-ctx.Done():
+			case <-s.Ctx.Done():
 				// cancel timer
 				if !timer.Stop() {
 					// func started
@@ -223,9 +220,9 @@ func (s *Store) KeyPut(ctx context.Context, key string, r io.Reader) (err error)
 	return nil
 }
 
-func (s *Store) KeyDelete(ctx context.Context, keys ...string) (err error) {
+func (s *Store) KeyDelete(keys ...string) (err error) {
 	select {
-	case <-ctx.Done():
+	case <-s.Ctx.Done():
 		return ErrClosed
 	default:
 	}

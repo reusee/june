@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"sync"
@@ -19,7 +18,6 @@ import (
 )
 
 type RebuildIndex func(
-	ctx context.Context,
 	options ...IndexOption,
 ) (
 	n int64,
@@ -27,7 +25,6 @@ type RebuildIndex func(
 )
 
 type UpdateIndex func(
-	ctx context.Context,
 	options ...IndexOption,
 ) (
 	n int64,
@@ -40,17 +37,17 @@ type IndexOption interface {
 
 type WithIndexSaveOptions []IndexSaveOption
 
-func (WithIndexSaveOptions) IsIndexOption() {}
+func (_ WithIndexSaveOptions) IsIndexOption() {}
 
-func (Def) IndexFuncs(
+func (_ Def) IndexFuncs(
 	store Store,
 	saveSummary SaveSummary,
 	sel index.SelectIndex,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) (rebuild RebuildIndex, update UpdateIndex) {
 
 	resave := func(
-		ctx context.Context,
 		ignore func(summaryKey Key) (bool, error),
 		options ...IndexOption,
 	) (n int64, err error) {
@@ -69,9 +66,9 @@ func (Def) IndexFuncs(
 			}
 		}
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		defer wg.Cancel()
-		put, wait := pr.Consume(ctx, int(parallel), func(_ int, v any) (err error) {
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
+		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
 			defer he(&err)
 
 			key := v.(Key)
@@ -92,7 +89,7 @@ func (Def) IndexFuncs(
 			// fetch
 			var summary Summary
 			ce(
-				store.Read(ctx, key, func(s sb.Stream) error {
+				store.Read(key, func(s sb.Stream) error {
 					err := sb.Copy(
 						s,
 						sb.UnmarshalValue(sb.Ctx{
@@ -108,13 +105,13 @@ func (Def) IndexFuncs(
 			}
 
 			// save
-			ce(saveSummary(ctx, &summary, false, WithIndexSaveOptions(saveOptions)))
+			ce(saveSummary(&summary, false, WithIndexSaveOptions(saveOptions)))
 			atomic.AddInt64(&n, 1)
 
 			return nil
 		})
 
-		ce(store.IterKeys(ctx, NSSummary, func(key Key) error {
+		ce(store.IterKeys(NSSummary, func(key Key) error {
 			put(key)
 			return nil
 		}))
@@ -124,24 +121,21 @@ func (Def) IndexFuncs(
 	}
 
 	rebuild = func(
-		ctx context.Context,
 		options ...IndexOption,
 	) (n int64, err error) {
-		return resave(ctx, nil, options...)
+		return resave(nil, options...)
 	}
 
 	update = func(
-		ctx context.Context,
 		options ...IndexOption,
 	) (n int64, err error) {
-		return resave(ctx, func(summaryKey Key) (_ bool, err error) {
+		return resave(func(summaryKey Key) (_ bool, err error) {
 			defer he(&err)
 
 			// check existence
 			var c int
 			var key Key
 			ce(sel(
-				ctx,
 				MatchEntry(IdxSummaryOf, summaryKey),
 				Count(&c),
 				Limit(1),
@@ -156,7 +150,6 @@ func (Def) IndexFuncs(
 			// check version
 			var typeName string
 			ce(sel(
-				ctx,
 				MatchPreEntry(key, IdxType),
 				TapPre(func(t string) {
 					typeName = t
@@ -169,7 +162,6 @@ func (Def) IndexFuncs(
 				var savedVersion int64
 				var c int
 				ce(sel(
-					ctx,
 					MatchPreEntry(key, IdxVersion),
 					TapPre(func(v int64) {
 						savedVersion = v

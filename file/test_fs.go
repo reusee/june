@@ -5,7 +5,6 @@
 package file
 
 import (
-	"context"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -27,7 +26,6 @@ func TestFileFS(
 	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	dir := t.TempDir()
 	for i := 0; i < 64; i++ {
@@ -36,7 +34,7 @@ func TestFileFS(
 	}
 	var expectes []string
 	var numFiles int
-	ce(filepath.WalkDir(dir, func(path string, _ fs.DirEntry, err error) error {
+	ce(filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -55,18 +53,18 @@ func TestFileFS(
 
 	var root File
 	ce(pp.Copy(
-		iterDisk(ctx, dir, nil),
-		build(ctx, &root, nil),
+		iterDisk(dir, nil),
+		build(&root, nil),
 	))
 
-	f, err := newFileFS(ctx, root.Subs[0].File)
+	f, err := newFileFS(root.Subs[0].File)
 	ce(err)
 	ce(fstest.TestFS(f,
 		expectes...,
 	))
 
 	n := 0
-	ce(fs.WalkDir(f, ".", func(_ string, _ fs.DirEntry, err error) error {
+	ce(fs.WalkDir(f, ".", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

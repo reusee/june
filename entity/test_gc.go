@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -16,6 +15,7 @@ import (
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storemem"
+	"github.com/reusee/pr"
 )
 
 func TestGC(
@@ -29,7 +29,6 @@ func TestGC(
 	deleteSummary DeleteSummary,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	type Root struct {
 		Key Key
@@ -45,7 +44,7 @@ func TestGC(
 
 		// plain object
 		func() Key {
-			s, err := saveEntity(ctx, Foo{
+			s, err := saveEntity(Foo{
 				Content: fmt.Sprintf("%d", rand.Int63()),
 			})
 			ce(err)
@@ -56,7 +55,7 @@ func TestGC(
 		// nested
 		func() Key {
 			key := fns[rand.Intn(len(fns))]()
-			s, err := saveEntity(ctx, Foo{
+			s, err := saveEntity(Foo{
 				Content: key,
 			})
 			ce(err)
@@ -72,7 +71,7 @@ func TestGC(
 			} else {
 				key = fns[rand.Intn(len(fns))]()
 			}
-			s, err := saveEntity(ctx, Foo{
+			s, err := saveEntity(Foo{
 				Content: key,
 			})
 			ce(err)
@@ -83,7 +82,7 @@ func TestGC(
 
 	rootKeys := make(map[Key]bool)
 	for i := 0; i < 50; i++ {
-		s, err := saveEntity(ctx, Root{
+		s, err := saveEntity(Root{
 			Key: fns[rand.Intn(len(fns))](),
 		})
 		ce(err)
@@ -104,10 +103,9 @@ func TestGC(
 		// delete
 		var toDelete []Key
 		ce(Select(
-			ctx,
 			index,
 			MatchEntry(IdxSummaryKey, key),
-			Tap(func(_ Key, summaryKey Key) {
+			Tap(func(_key Key, summaryKey Key) {
 				toDelete = append(toDelete, summaryKey)
 			}),
 		))
@@ -115,11 +113,11 @@ func TestGC(
 		for _, summaryKey := range toDelete {
 			deleted = true
 			var summary Summary
-			ce((fetch(ctx, summaryKey, &summary)))
-			ce(deleteSummary(ctx, &summary, summaryKey))
+			ce((fetch(summaryKey, &summary)))
+			ce(deleteSummary(&summary, summaryKey))
 		}
 		if deleted {
-			ce(store.Delete(ctx, []Key{key}))
+			ce(store.Delete([]Key{key}))
 		}
 
 		// gc
@@ -129,25 +127,24 @@ func TestGC(
 		}
 		var numMarked, numReachable, numItered, numDeadObjs, numSweeped int64
 		ce(gc(
-			ctx,
 			keys,
-			TapMarkKey(func(_ Key) {
+			TapMarkKey(func(key Key) {
 				atomic.AddInt64(&numMarked, 1)
 			}),
 			TapReachableObjects(func(reachable *sync.Map) {
-				reachable.Range(func(_, _ any) bool {
+				reachable.Range(func(k, v any) bool {
 					numReachable++
 					return true
 				})
 			}),
-			TapIterKey(func(_ Key) {
+			TapIterKey(func(key Key) {
 				atomic.AddInt64(&numItered, 1)
 			}),
 			TapDeadObjects(func(deadObjs []DeadObject) {
 				numDeadObjs = int64(len(deadObjs))
 				numDead += len(deadObjs)
 			}),
-			TapSweepDeadObject(func(_ DeadObject) {
+			TapSweepDeadObject(func(obj DeadObject) {
 				atomic.AddInt64(&numSweeped, 1)
 			}),
 		))
@@ -155,7 +152,7 @@ func TestGC(
 		if numMarked == 0 {
 			t.Fatal()
 		}
-		if numReachable <= 0 || numReachable > numMarked {
+		if !(numReachable > 0 && numReachable <= numMarked) {
 			t.Fatal()
 		}
 		if numItered < numMarked {
@@ -166,7 +163,7 @@ func TestGC(
 		}
 
 		// check
-		ce(checkRef(ctx))
+		ce(checkRef())
 
 	}
 
@@ -178,26 +175,26 @@ func TestGC(
 
 func TestGCWithEmptyIndex(
 	t *testing.T,
+	wt *pr.WaitTree,
 	save Save,
 	newMemStore storemem.New,
 	scope Scope,
 	gc GC,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
-	res, err := save(ctx, NSEntity, 42)
+	res, err := save(NSEntity, 42)
 	ce(err)
 	type Foo struct {
 		Key Key
 	}
-	res, err = save(ctx, NSEntity, Foo{
+	res, err = save(NSEntity, Foo{
 		Key: res.Key,
 	})
 	ce(err)
 
 	n := 0
-	ce(gc(ctx, []Key{
+	ce(gc([]Key{
 		res.Key,
 	}, TapSweepDeadObject(func(_ DeadObject) {
 		n++
@@ -206,14 +203,14 @@ func TestGCWithEmptyIndex(
 		t.Fatal()
 	}
 
-	indexManager := newMemStore()
+	indexManager := newMemStore(wt)
 	scope.Fork(func() index.IndexManager {
 		return indexManager
 	}).Call(func(
 		gc GC,
 	) {
 		n := 0
-		ce(gc(ctx, []Key{
+		ce(gc([]Key{
 			res.Key,
 		}, TapSweepDeadObject(func(_ DeadObject) {
 			n++

@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 
@@ -15,7 +14,6 @@ import (
 )
 
 type Resave func(
-	ctx context.Context,
 	objs []any,
 	options ...ResaveOption,
 ) error
@@ -32,11 +30,11 @@ func (_ Def) Resave(
 	sel index.SelectIndex,
 	fetch Fetch,
 	save Save,
+	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) Resave {
 
 	return func(
-		ctx context.Context,
 		objs []any,
 		options ...ResaveOption,
 	) (err error) {
@@ -55,10 +53,10 @@ func (_ Def) Resave(
 			}
 		}
 
-		ctx, wg := pr.WithWaitGroup(ctx)
-		defer wg.Cancel()
+		wt := pr.NewWaitTree(wt)
+		defer wt.Cancel()
 		put, wait := pr.Consume(
-			ctx,
+			wt,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()
@@ -72,7 +70,6 @@ func (_ Def) Resave(
 			obj := obj
 			objType := reflect.TypeOf(obj)
 			ce(sel(
-				ctx,
 				MatchType(obj),
 				TapKey(func(key Key) {
 
@@ -82,9 +79,8 @@ func (_ Def) Resave(
 							fn(key)
 						}
 						ptr := reflect.New(objType)
-						ce(fetch(ctx, key, ptr.Interface()))
+						ce(fetch(key, ptr.Interface()))
 						_, err = save(
-							ctx,
 							key.Namespace, ptr.Elem().Interface(),
 							saveOptions...,
 						)

@@ -5,8 +5,6 @@
 package storemonotree
 
 import (
-	"context"
-
 	"github.com/reusee/june/store"
 )
 
@@ -16,16 +14,14 @@ type Tree struct {
 }
 
 type New func(
-	ctx context.Context,
 	upstream store.Store,
 ) (
 	tree *Tree,
 	err error,
 )
 
-func (Def) New() New {
+func (_ Def) New() New {
 	return func(
-		ctx context.Context,
 		upstream store.Store,
 	) (
 		tree *Tree,
@@ -33,7 +29,7 @@ func (Def) New() New {
 	) {
 		defer he(&err)
 
-		id, err := upstream.ID(ctx)
+		id, err := upstream.ID()
 		ce(err)
 		tree = &Tree{
 			upstream: upstream,

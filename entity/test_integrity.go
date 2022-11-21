@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/e5"
@@ -17,23 +16,22 @@ func TestIntegrity(
 	store Store,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	type Foo int
 	type Bar struct {
 		Key Key
 	}
-	s, err := saveEntity(ctx, Foo(42))
+	s, err := saveEntity(Foo(42))
 	ce(err)
-	s2, err := saveEntity(ctx, Bar{
+	s2, err := saveEntity(Bar{
 		Key: s.Key,
 	})
 	ce(err)
 
-	ce(s2.checkRef(ctx, store))
+	ce(s2.checkRef(store))
 
-	ce(store.Delete(ctx, []Key{s.Key}))
-	err = s2.checkRef(ctx, store)
+	ce(store.Delete([]Key{s.Key}))
+	err = s2.checkRef(store)
 	if !is(err, ErrKeyNotFound) {
 		t.Fatal()
 	}

@@ -5,7 +5,6 @@
 package file
 
 import (
-	"context"
 	"testing"
 
 	"github.com/reusee/e5"
@@ -15,10 +14,12 @@ import (
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr"
 )
 
 func TestPushFile(
 	t *testing.T,
+	wt *pr.WaitTree,
 	build Build,
 	iterDisk IterDiskFile,
 	newMem storemem.New,
@@ -31,7 +32,6 @@ func TestPushFile(
 	shuffleDir fsys.ShuffleDir,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	dir := t.TempDir()
 	for i := 0; i < 64; i++ {
@@ -41,19 +41,18 @@ func TestPushFile(
 
 	file := new(File)
 	ce(pp.Copy(
-		iterDisk(ctx, dir, nil),
-		build(ctx, file, nil),
+		iterDisk(dir, nil),
+		build(file, nil),
 	))
-	summary, err := save(ctx, file)
+	summary, err := save(file)
 	ce(err)
 
-	mem := newMem()
+	mem := newMem(wt)
 	kv, err := newKV(
 		mem, "foo",
 	)
 	ce(err)
 	ce(push(
-		ctx,
 		kv,
 		indexManager,
 		[]Key{
@@ -67,13 +66,13 @@ func TestPushFile(
 		fetch entity.Fetch,
 	) {
 		file2 := new(File)
-		ce(fetch(ctx, summary.Key, &file2))
+		ce(fetch(summary.Key, &file2))
 		file3 := new(File)
 		ce(pp.Copy(
-			iterFile(ctx, file2.Subs[0].File, nil),
-			build(ctx, file3, nil),
+			iterFile(file2.Subs[0].File, nil),
+			build(file3, nil),
 		))
-		s, err := save(ctx, file3)
+		s, err := save(file3)
 		ce(err)
 		if s.Key != summary.Key {
 			t.Fatal()

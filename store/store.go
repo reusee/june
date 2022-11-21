@@ -5,7 +5,6 @@
 package store
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -23,11 +22,10 @@ var (
 type ID string
 
 type Store interface {
-	ID(context.Context) (ID, error)
+	ID() (ID, error)
 	Name() string
 
 	Write(
-		context.Context,
 		key.Namespace,
 		sb.Stream,
 		...WriteOption,
@@ -37,29 +35,24 @@ type Store interface {
 	)
 
 	Read(
-		context.Context,
 		Key,
 		func(sb.Stream) error,
 	) error
 
 	Exists(
-		context.Context,
 		Key,
 	) (bool, error)
 
 	IterKeys(
-		context.Context,
 		key.Namespace,
 		func(Key) error,
 	) error
 
 	IterAllKeys(
-		context.Context,
-		func(Key) error,
+		fn func(Key) error,
 	) error
 
 	Delete(
-		context.Context,
 		[]Key,
 	) error
 }

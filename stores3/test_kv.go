@@ -5,7 +5,6 @@
 package stores3
 
 import (
-	"context"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -15,15 +14,16 @@ import (
 	"github.com/pelletier/go-toml"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
+	"github.com/reusee/pr"
 )
 
 func TestKV(
 	t *testing.T,
+	wt *pr.WaitTree,
 	testKV storekv.TestKV,
 	newKV New,
 ) {
 	defer he(nil, e5.TestingFatal(t))
-	ctx := context.Background()
 
 	//TODO
 	t.Skip()
@@ -43,13 +43,15 @@ func TestKV(
 
 	with := func(fn func(storekv.KV, string)) {
 		kv, err := newKV(
+			wt,
 			config.Endpoint,
 			config.Key,
 			config.Secret,
+			true,
 			config.TestBucket,
 		)
 		ce(err)
 		fn(kv, strconv.FormatInt(rand.Int63(), 10))
 	}
-	testKV(ctx, t, with)
+	testKV(t, with)
 }

@@ -5,7 +5,6 @@
 package store
 
 import (
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"errors"
@@ -25,7 +24,6 @@ import (
 
 // test Store implementation
 type TestStore func(
-	ctx context.Context,
 	withStore func(
 		fn func(Store),
 		provides ...any,
@@ -33,12 +31,11 @@ type TestStore func(
 	t *testing.T,
 )
 
-func (Def) TestStore(
+func (_ Def) TestStore(
 	scrub Scrub,
 ) TestStore {
 
 	return func(
-		ctx context.Context,
 		withStore func(
 			fn func(Store),
 			provides ...any,
@@ -53,7 +50,7 @@ func (Def) TestStore(
 			var res WriteResult
 			t.Run("write", func(t *testing.T) {
 				var err error
-				res, err = store.Write(ctx, ns, sb.Marshal(42))
+				res, err = store.Write(ns, sb.Marshal(42))
 				ce(err)
 				if res.Key.Hash.String() != "151a3a0b4c88483512fc484d0badfedf80013ebb18df498bbee89ac5b69d7222" {
 					t.Fatalf("got %x", res.Key)
@@ -65,7 +62,7 @@ func (Def) TestStore(
 
 			t.Run("read", func(t *testing.T) {
 				defer he(nil, e5.TestingFatal(t))
-				if err := store.Read(ctx, res.Key, func(s sb.Stream) (err error) {
+				if err := store.Read(res.Key, func(s sb.Stream) (err error) {
 					defer he(&err)
 					var i int
 					err = sb.Copy(s, sb.Unmarshal(&i))
@@ -81,7 +78,7 @@ func (Def) TestStore(
 
 			t.Run("read error", func(t *testing.T) {
 				errFoo := fmt.Errorf("bad")
-				err := store.Read(ctx, res.Key, func(s sb.Stream) error {
+				err := store.Read(res.Key, func(s sb.Stream) error {
 					return errFoo
 				})
 				if err == nil {
@@ -104,12 +101,12 @@ func (Def) TestStore(
 
 			t.Run("exists", func(t *testing.T) {
 				defer he(nil, e5.TestingFatal(t))
-				ok, err := store.Exists(ctx, res.Key)
+				ok, err := store.Exists(res.Key)
 				ce(err)
 				if !ok {
 					t.Fatalf("should exists")
 				}
-				ok, err = store.Exists(ctx, Key{Hash: Hash{1, 2, 3}})
+				ok, err = store.Exists(Key{Hash: Hash{1, 2, 3}})
 				ce(err)
 				if ok {
 					t.Fatalf("should not exists")
@@ -124,7 +121,7 @@ func (Def) TestStore(
 				for i := int64(0); i < num; i++ {
 					go func() {
 						defer wg.Done()
-						_, err := store.Write(ctx, ns, sb.Marshal(rand.Int63()))
+						_, err := store.Write(ns, sb.Marshal(rand.Int63()))
 						if err != nil {
 							errors <- err
 							return
@@ -141,7 +138,7 @@ func (Def) TestStore(
 
 			t.Run("iter", func(t *testing.T) {
 				var n int64
-				if err := store.IterKeys(ctx, ns, func(_ Key) error {
+				if err := store.IterKeys(ns, func(key Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
@@ -154,7 +151,7 @@ func (Def) TestStore(
 
 			t.Run("iter all", func(t *testing.T) {
 				var n int64
-				if err := store.IterAllKeys(ctx, func(_ Key) error {
+				if err := store.IterAllKeys(func(key Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
@@ -167,7 +164,7 @@ func (Def) TestStore(
 
 			t.Run("iter break", func(t *testing.T) {
 				var n int64
-				if err := store.IterKeys(ctx, ns, func(_ Key) error {
+				if err := store.IterKeys(ns, func(key Key) error {
 					if atomic.AddInt64(&n, 1) == num/2 {
 						return Break
 					}
@@ -183,7 +180,7 @@ func (Def) TestStore(
 			e := errors.New("foo")
 			t.Run("iter err", func(t *testing.T) {
 				var n int64
-				if err := store.IterKeys(ctx, ns, func(_ Key) error {
+				if err := store.IterKeys(ns, func(key Key) error {
 					if atomic.AddInt64(&n, 1) == num/2 {
 						return e
 					}
@@ -199,12 +196,11 @@ func (Def) TestStore(
 			t.Run("scrub", func(t *testing.T) {
 				var n int64
 				if err := scrub(
-					ctx,
 					store,
-					opts.TapKey(func(_ Key) {
+					opts.TapKey(func(key Key) {
 						atomic.AddInt64(&n, 1)
 					}),
-					opts.TapBadKey(func(_ Key) {
+					opts.TapBadKey(func(key Key) {
 						t.Fatal("bad store")
 					}),
 				); err != nil {
@@ -218,15 +214,15 @@ func (Def) TestStore(
 			t.Run("namespace", func(t *testing.T) {
 				defer he(nil, e5.TestingFatal(t))
 				nsBar := key.Namespace{'b', 'a', 'r'}
-				res, err := store.Write(ctx, nsBar, sb.Marshal(42))
+				res, err := store.Write(nsBar, sb.Marshal(42))
 				ce(err)
-				ok, err := store.Exists(ctx, res.Key)
+				ok, err := store.Exists(res.Key)
 				ce(err)
 				if !ok {
 					t.Fatal()
 				}
 				var n int64
-				if err := store.IterKeys(ctx, nsBar, func(_ Key) error {
+				if err := store.IterKeys(nsBar, func(key Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
@@ -237,7 +233,7 @@ func (Def) TestStore(
 				}
 				n = 0
 				nss := make(map[key.Namespace]bool)
-				if err := store.IterAllKeys(ctx, func(key Key) error {
+				if err := store.IterAllKeys(func(key Key) error {
 					n++
 					nss[key.Namespace] = true
 					return nil
@@ -263,12 +259,11 @@ func (Def) TestStore(
 				withKeyOK := false
 				withResultOK := false
 				_, err := store.Write(
-					ctx,
 					ns, sb.Marshal(42),
-					opts.TapKey(func(_ Key) {
+					opts.TapKey(func(key Key) {
 						withKeyOK = true
 					}),
-					TapWriteResult(func(_ WriteResult) {
+					TapWriteResult(func(res WriteResult) {
 						withResultOK = true
 					}),
 				)
@@ -284,31 +279,31 @@ func (Def) TestStore(
 			t.Run("delete", func(t *testing.T) {
 				defer he(nil, e5.TestingFatal(t))
 				res1, err := store.Write(
-					ctx, ns, sb.Marshal(rand.Int63()),
+					ns, sb.Marshal(rand.Int63()),
 				)
 				ce(err)
 				res2, err := store.Write(
-					ctx, ns, sb.Marshal(rand.Int63()),
+					ns, sb.Marshal(rand.Int63()),
 				)
 				ce(err)
-				ok, err := store.Exists(ctx, res1.Key)
+				ok, err := store.Exists(res1.Key)
 				ce(err)
 				if !ok {
 					t.Fatal()
 				}
-				ok, err = store.Exists(ctx, res2.Key)
+				ok, err = store.Exists(res2.Key)
 				ce(err)
 				if !ok {
 					t.Fatal()
 				}
-				err = store.Delete(ctx, []Key{res1.Key, res2.Key})
+				err = store.Delete([]Key{res1.Key, res2.Key})
 				ce(err)
-				ok, err = store.Exists(ctx, res1.Key)
+				ok, err = store.Exists(res1.Key)
 				ce(err)
 				if ok {
 					t.Fatal()
 				}
-				ok, err = store.Exists(ctx, res2.Key)
+				ok, err = store.Exists(res2.Key)
 				ce(err)
 				if ok {
 					t.Fatal()
@@ -351,15 +346,15 @@ func (Def) TestStore(
 			func(
 				store Store,
 			) {
-				_, err := store.Write(ctx, ns, sb.Marshal(42))
+				_, err := store.Write(ns, sb.Marshal(42))
 				ce(err)
-				if err := store.IterAllKeys(ctx, func(_ Key) (err error) {
+				if err := store.IterAllKeys(func(key Key) (err error) {
 					done := make(chan struct{})
 					go func() {
 						defer func() {
 							close(done)
 						}()
-						_, err = store.Write(ctx, ns, sb.Marshal(rand.Int63()))
+						_, err = store.Write(ns, sb.Marshal(rand.Int63()))
 					}()
 					select {
 					case <-done:

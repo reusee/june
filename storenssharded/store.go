@@ -5,7 +5,6 @@
 package storenssharded
 
 import (
-	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -27,14 +26,12 @@ type Store struct {
 }
 
 type New func(
-	ctx context.Context,
 	shards map[key.Namespace]store.Store,
 	def store.Store,
 ) (*Store, error)
 
 func (_ Def) New() New {
 	return func(
-		ctx context.Context,
 		shards map[key.Namespace]store.Store,
 		def store.Store,
 	) (_ *Store, err error) {
@@ -48,7 +45,7 @@ func (_ Def) New() New {
 
 		var ids []StoreID
 		for s := range set {
-			id, err := s.ID(ctx)
+			id, err := s.ID()
 			ce(err)
 			ids = append(ids, id)
 		}
@@ -94,22 +91,22 @@ func (s *Store) Name() string {
 	return s.name
 }
 
-func (s *Store) ID(ctx context.Context) (StoreID, error) {
+func (s *Store) ID() (StoreID, error) {
 	return s.id, nil
 }
 
-func (s *Store) Exists(ctx context.Context, key Key) (bool, error) {
+func (s *Store) Exists(key Key) (bool, error) {
 	if store, ok := s.shards[key.Namespace]; ok {
-		return store.Exists(ctx, key)
+		return store.Exists(key)
 	}
-	return s.defaultStore.Exists(ctx, key)
+	return s.defaultStore.Exists(key)
 }
 
-func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) (err error) {
+func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 	defer he(&err)
 	var nsSet sync.Map
 	var stop int64
-	if err := s.defaultStore.IterAllKeys(ctx, func(key Key) (err error) {
+	if err := s.defaultStore.IterAllKeys(func(key Key) (err error) {
 		defer he(&err)
 		if _, ok := nsSet.Load(key.Namespace); !ok {
 			nsSet.Store(key.Namespace, true)
@@ -136,7 +133,7 @@ func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) (err error)
 		if _, ok := nsSet.Load(ns); ok {
 			continue
 		}
-		if err := shard.IterKeys(ctx, ns, func(key Key) error {
+		if err := shard.IterKeys(ns, func(key Key) error {
 			if err := fn(key); err != nil {
 				return err
 			}
@@ -148,39 +145,39 @@ func (s *Store) IterAllKeys(ctx context.Context, fn func(Key) error) (err error)
 	return nil
 }
 
-func (s *Store) IterKeys(ctx context.Context, ns key.Namespace, fn func(Key) error) error {
+func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) error {
 	if store, ok := s.shards[ns]; ok {
-		return store.IterKeys(ctx, ns, fn)
+		return store.IterKeys(ns, fn)
 	}
-	return s.defaultStore.IterKeys(ctx, ns, fn)
+	return s.defaultStore.IterKeys(ns, fn)
 }
 
-func (s *Store) Read(ctx context.Context, key Key, fn func(sb.Stream) error) error {
+func (s *Store) Read(key Key, fn func(sb.Stream) error) error {
 	if store, ok := s.shards[key.Namespace]; ok {
-		return store.Read(ctx, key, fn)
+		return store.Read(key, fn)
 	}
-	return s.defaultStore.Read(ctx, key, fn)
+	return s.defaultStore.Read(key, fn)
 }
 
-func (s *Store) Write(ctx context.Context, ns key.Namespace, stream sb.Stream, options ...WriteOption) (WriteResult, error) {
+func (s *Store) Write(ns key.Namespace, stream sb.Stream, options ...WriteOption) (WriteResult, error) {
 	if store, ok := s.shards[ns]; ok {
-		return store.Write(ctx, ns, stream, options...)
+		return store.Write(ns, stream, options...)
 	}
-	return s.defaultStore.Write(ctx, ns, stream, options...)
+	return s.defaultStore.Write(ns, stream, options...)
 }
 
-func (s *Store) Delete(ctx context.Context, keys []Key) error {
+func (s *Store) Delete(keys []Key) error {
 	byNS := make(map[key.Namespace][]Key)
 	for _, key := range keys {
 		byNS[key.Namespace] = append(byNS[key.Namespace], key)
 	}
 	for ns, keys := range byNS {
 		if store, ok := s.shards[ns]; ok {
-			if err := store.Delete(ctx, keys); err != nil {
+			if err := store.Delete(keys); err != nil {
 				return err
 			}
 		}
-		if err := s.defaultStore.Delete(ctx, keys); err != nil {
+		if err := s.defaultStore.Delete(keys); err != nil {
 			return err
 		}
 	}

@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 
@@ -15,14 +14,14 @@ import (
 	"github.com/reusee/sb"
 )
 
-type Fetch func(ctx context.Context, key any, targets ...any) error
+type Fetch func(key any, targets ...any) error
 
-func (Def) Fetch(
+func (_ Def) Fetch(
 	store store.Store,
 	newHashState key.NewHashState,
 ) Fetch {
 
-	return func(ctx context.Context, arg any, targets ...any) (err error) {
+	return func(arg any, targets ...any) (err error) {
 		defer he(&err)
 
 		var path []Key
@@ -35,15 +34,15 @@ func (Def) Fetch(
 			panic(fmt.Errorf("not key type: %T", arg))
 		}
 
-		sbCtx := sb.DefaultCtx.Strict()
+		ctx := sb.DefaultCtx.Strict()
 
 		var sink sb.Sink
 		if len(targets) == 1 {
-			sink = sb.UnmarshalValue(sbCtx, reflect.ValueOf(targets[0]), nil)
+			sink = sb.UnmarshalValue(ctx, reflect.ValueOf(targets[0]), nil)
 		} else {
 			var sinks []sb.Sink
 			for _, target := range targets {
-				sinks = append(sinks, sb.UnmarshalValue(sbCtx, reflect.ValueOf(target), nil))
+				sinks = append(sinks, sb.UnmarshalValue(ctx, reflect.ValueOf(target), nil))
 			}
 			sink = sb.AltSink(sinks...)
 		}
@@ -60,7 +59,7 @@ func (Def) Fetch(
 				path = path[1:]
 			}
 			checkTail = !checkTail
-			err := store.Read(ctx, keyToCheck, func(s sb.Stream) (err error) {
+			err := store.Read(keyToCheck, func(s sb.Stream) (err error) {
 				defer he(&err)
 
 				if keyToCheck == key {
