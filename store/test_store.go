@@ -31,7 +31,7 @@ type TestStore func(
 	t *testing.T,
 )
 
-func (_ Def) TestStore(
+func (Def) TestStore(
 	scrub Scrub,
 ) TestStore {
 
@@ -138,7 +138,7 @@ func (_ Def) TestStore(
 
 			t.Run("iter", func(t *testing.T) {
 				var n int64
-				if err := store.IterKeys(ns, func(key Key) error {
+				if err := store.IterKeys(ns, func(_ Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
@@ -151,7 +151,7 @@ func (_ Def) TestStore(
 
 			t.Run("iter all", func(t *testing.T) {
 				var n int64
-				if err := store.IterAllKeys(func(key Key) error {
+				if err := store.IterAllKeys(func(_ Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
@@ -164,7 +164,7 @@ func (_ Def) TestStore(
 
 			t.Run("iter break", func(t *testing.T) {
 				var n int64
-				if err := store.IterKeys(ns, func(key Key) error {
+				if err := store.IterKeys(ns, func(_ Key) error {
 					if atomic.AddInt64(&n, 1) == num/2 {
 						return Break
 					}
@@ -180,7 +180,7 @@ func (_ Def) TestStore(
 			e := errors.New("foo")
 			t.Run("iter err", func(t *testing.T) {
 				var n int64
-				if err := store.IterKeys(ns, func(key Key) error {
+				if err := store.IterKeys(ns, func(_ Key) error {
 					if atomic.AddInt64(&n, 1) == num/2 {
 						return e
 					}
@@ -197,10 +197,10 @@ func (_ Def) TestStore(
 				var n int64
 				if err := scrub(
 					store,
-					opts.TapKey(func(key Key) {
+					opts.TapKey(func(_ Key) {
 						atomic.AddInt64(&n, 1)
 					}),
-					opts.TapBadKey(func(key Key) {
+					opts.TapBadKey(func(_ Key) {
 						t.Fatal("bad store")
 					}),
 				); err != nil {
@@ -222,7 +222,7 @@ func (_ Def) TestStore(
 					t.Fatal()
 				}
 				var n int64
-				if err := store.IterKeys(nsBar, func(key Key) error {
+				if err := store.IterKeys(nsBar, func(_ Key) error {
 					atomic.AddInt64(&n, 1)
 					return nil
 				}); err != nil {
@@ -260,10 +260,10 @@ func (_ Def) TestStore(
 				withResultOK := false
 				_, err := store.Write(
 					ns, sb.Marshal(42),
-					opts.TapKey(func(key Key) {
+					opts.TapKey(func(_ Key) {
 						withKeyOK = true
 					}),
-					TapWriteResult(func(res WriteResult) {
+					TapWriteResult(func(_ WriteResult) {
 						withResultOK = true
 					}),
 				)
@@ -348,7 +348,7 @@ func (_ Def) TestStore(
 			) {
 				_, err := store.Write(ns, sb.Marshal(42))
 				ce(err)
-				if err := store.IterAllKeys(func(key Key) (err error) {
+				if err := store.IterAllKeys(func(_ Key) (err error) {
 					done := make(chan struct{})
 					go func() {
 						defer func() {

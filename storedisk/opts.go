@@ -6,4 +6,4 @@ package storedisk
 
 type SoftDelete bool
 
-func (_ SoftDelete) IsNewOption() {}
+func (SoftDelete) IsNewOption() {}

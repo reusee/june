@@ -22,7 +22,7 @@ func (s *Store) CostInfo() storekv.CostInfo {
 }
 
 func (s *Store) KeyExists(key string) (ok bool, err error) {
-	return s.keyExists(s.Add, s.DB.Get, key)
+	return s.keyExists(s.wg.Add, s.DB.Get, key)
 }
 
 func (s *Store) keyExists(
@@ -46,7 +46,7 @@ func (s *Store) keyExists(
 }
 
 func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
-	return s.keyGet(s.Add, s.DB.Get, key, fn)
+	return s.keyGet(s.wg.Add, s.DB.Get, key, fn)
 }
 
 func (s *Store) keyGet(
@@ -79,7 +79,7 @@ func (s *Store) keyGet(
 }
 
 func (s *Store) KeyPut(key string, r io.Reader) (err error) {
-	return s.keyPut(s.Add, s.DB.Get, s.DB.Set, key, r)
+	return s.keyPut(s.wg.Add, s.DB.Get, s.DB.Set, key, r)
 }
 
 func (s *Store) keyPut(
@@ -120,7 +120,7 @@ func (s *Store) keyPut(
 
 func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 	return s.keyIter(
-		s.Add,
+		s.wg.Add,
 		s.DB.NewIter,
 		prefix,
 		func(fn func()) {
@@ -208,7 +208,7 @@ func (s *Store) keyIter(
 }
 
 func (s *Store) KeyDelete(keys ...string) (err error) {
-	return s.keyDelete(s.Add, s.DB.Delete, keys...)
+	return s.keyDelete(s.wg.Add, s.DB.Delete, keys...)
 }
 
 func (s *Store) keyDelete(

@@ -11,12 +11,14 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr2"
 )
 
 func TestBuild(
 	t *testing.T,
 	scope Scope,
 	shuffleDir fsys.ShuffleDir,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -39,7 +41,7 @@ func TestBuild(
 			iterVirtual(Virtual{
 				Name: "foo",
 			}, nil),
-			build(&root, nil),
+			build(wg, &root, nil),
 		))
 		if len(root.Subs) != 1 {
 			t.Fatal()
@@ -56,7 +58,7 @@ func TestBuild(
 			iterVirtual(Virtual{
 				Name: "foo",
 			}, nil),
-			build(&root, nil),
+			build(wg, &root, nil),
 		))
 		if len(root.Subs) != 1 {
 			t.Fatal()
@@ -80,8 +82,9 @@ func TestBuild(
 		ce(pp.Copy(
 			iterDisk(dir, nil),
 			build(
+				wg,
 				&root, nil,
-				TapBuildFile(func(info FileInfo, file *File) {
+				TapBuildFile(func(_ FileInfo, _ *File) {
 					atomic.AddInt64(&numFile, 1)
 				}),
 			),
@@ -105,7 +108,7 @@ func TestBuild(
 		var root2 File
 		ce(pp.Copy(
 			iterFile(root.Subs[0].File, nil),
-			build(&root2, nil),
+			build(wg, &root2, nil),
 		))
 		ok, err = equal(
 			iterFile(root2.Subs[0].File, nil),
@@ -135,6 +138,7 @@ func TestBuildMerge(
 		iterVirtual IterVirtual,
 		equal Equal,
 		iterFile IterFile,
+		wg *pr2.WaitGroup,
 	) {
 		defer he(nil, e5.TestingFatal(t))
 
@@ -159,7 +163,7 @@ func TestBuildMerge(
 		check := func() {
 			ce(pp.Copy(
 				iterVirtual(vRoot, nil, NoSubsSort(true)),
-				build(&root, nil),
+				build(wg, &root, nil),
 			))
 			ok, err := equal(
 				iterFile(root.Subs[0].File, nil),

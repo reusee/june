@@ -8,12 +8,14 @@ import (
 	"testing"
 
 	"github.com/reusee/e5"
+	"github.com/reusee/pr2"
 )
 
 func TestIntegrity(
 	t *testing.T,
 	saveEntity SaveEntity,
 	store Store,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -21,9 +23,9 @@ func TestIntegrity(
 	type Bar struct {
 		Key Key
 	}
-	s, err := saveEntity(Foo(42))
+	s, err := saveEntity(wg, Foo(42))
 	ce(err)
-	s2, err := saveEntity(Bar{
+	s2, err := saveEntity(wg, Bar{
 		Key: s.Key,
 	})
 	ce(err)

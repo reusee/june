@@ -15,7 +15,7 @@ import (
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestGC(
@@ -27,6 +27,7 @@ func TestGC(
 	checkRef CheckRef,
 	index Index,
 	deleteSummary DeleteSummary,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -44,7 +45,7 @@ func TestGC(
 
 		// plain object
 		func() Key {
-			s, err := saveEntity(Foo{
+			s, err := saveEntity(wg, Foo{
 				Content: fmt.Sprintf("%d", rand.Int63()),
 			})
 			ce(err)
@@ -55,7 +56,7 @@ func TestGC(
 		// nested
 		func() Key {
 			key := fns[rand.Intn(len(fns))]()
-			s, err := saveEntity(Foo{
+			s, err := saveEntity(wg, Foo{
 				Content: key,
 			})
 			ce(err)
@@ -71,7 +72,7 @@ func TestGC(
 			} else {
 				key = fns[rand.Intn(len(fns))]()
 			}
-			s, err := saveEntity(Foo{
+			s, err := saveEntity(wg, Foo{
 				Content: key,
 			})
 			ce(err)
@@ -82,7 +83,7 @@ func TestGC(
 
 	rootKeys := make(map[Key]bool)
 	for i := 0; i < 50; i++ {
-		s, err := saveEntity(Root{
+		s, err := saveEntity(wg, Root{
 			Key: fns[rand.Intn(len(fns))](),
 		})
 		ce(err)
@@ -105,7 +106,7 @@ func TestGC(
 		ce(Select(
 			index,
 			MatchEntry(IdxSummaryKey, key),
-			Tap(func(_key Key, summaryKey Key) {
+			Tap(func(_ Key, summaryKey Key) {
 				toDelete = append(toDelete, summaryKey)
 			}),
 		))
@@ -127,24 +128,25 @@ func TestGC(
 		}
 		var numMarked, numReachable, numItered, numDeadObjs, numSweeped int64
 		ce(gc(
+			wg,
 			keys,
-			TapMarkKey(func(key Key) {
+			TapMarkKey(func(_ Key) {
 				atomic.AddInt64(&numMarked, 1)
 			}),
 			TapReachableObjects(func(reachable *sync.Map) {
-				reachable.Range(func(k, v any) bool {
+				reachable.Range(func(_, _ any) bool {
 					numReachable++
 					return true
 				})
 			}),
-			TapIterKey(func(key Key) {
+			TapIterKey(func(_ Key) {
 				atomic.AddInt64(&numItered, 1)
 			}),
 			TapDeadObjects(func(deadObjs []DeadObject) {
 				numDeadObjs = int64(len(deadObjs))
 				numDead += len(deadObjs)
 			}),
-			TapSweepDeadObject(func(obj DeadObject) {
+			TapSweepDeadObject(func(_ DeadObject) {
 				atomic.AddInt64(&numSweeped, 1)
 			}),
 		))
@@ -152,7 +154,7 @@ func TestGC(
 		if numMarked == 0 {
 			t.Fatal()
 		}
-		if !(numReachable > 0 && numReachable <= numMarked) {
+		if numReachable <= 0 || numReachable > numMarked {
 			t.Fatal()
 		}
 		if numItered < numMarked {
@@ -163,7 +165,7 @@ func TestGC(
 		}
 
 		// check
-		ce(checkRef())
+		ce(checkRef(wg))
 
 	}
 
@@ -175,26 +177,26 @@ func TestGC(
 
 func TestGCWithEmptyIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	save Save,
 	newMemStore storemem.New,
 	scope Scope,
 	gc GC,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
-	res, err := save(NSEntity, 42)
+	res, err := save(wg, NSEntity, 42)
 	ce(err)
 	type Foo struct {
 		Key Key
 	}
-	res, err = save(NSEntity, Foo{
+	res, err = save(wg, NSEntity, Foo{
 		Key: res.Key,
 	})
 	ce(err)
 
 	n := 0
-	ce(gc([]Key{
+	ce(gc(wg, []Key{
 		res.Key,
 	}, TapSweepDeadObject(func(_ DeadObject) {
 		n++
@@ -203,14 +205,14 @@ func TestGCWithEmptyIndex(
 		t.Fatal()
 	}
 
-	indexManager := newMemStore(wt)
+	indexManager := newMemStore(wg)
 	scope.Fork(func() index.IndexManager {
 		return indexManager
 	}).Call(func(
 		gc GC,
 	) {
 		n := 0
-		ce(gc([]Key{
+		ce(gc(wg, []Key{
 			res.Key,
 		}, TapSweepDeadObject(func(_ DeadObject) {
 			n++

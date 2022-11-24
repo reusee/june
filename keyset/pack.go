@@ -5,6 +5,7 @@
 package keyset
 
 import (
+	"context"
 	"sort"
 
 	"github.com/reusee/june/entity"
@@ -12,18 +13,19 @@ import (
 
 type PackThreshold int
 
-func (_ Def) PackThreshold() PackThreshold {
+func (Def) PackThreshold() PackThreshold {
 	return 48
 }
 
 type PackSet func(
+	ctx context.Context,
 	set Set,
 ) (
 	Set,
 	error,
 )
 
-func (_ Def) PackSet(
+func (Def) PackSet(
 	threshold PackThreshold,
 	saveEntity entity.SaveEntity,
 ) PackSet {
@@ -31,6 +33,7 @@ func (_ Def) PackSet(
 	thresholdWeight := int(threshold)
 
 	return func(
+		ctx context.Context,
 		set Set,
 	) (
 		newSet Set,
@@ -124,7 +127,7 @@ func (_ Def) PackSet(
 		slice := set[partition.Begin : partition.End+1]
 
 		// pack
-		summary, err := saveEntity(slice)
+		summary, err := saveEntity(ctx, slice)
 		ce(err)
 		replace := SetItem{
 			Pack: &Pack{

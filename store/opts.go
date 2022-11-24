@@ -10,6 +10,6 @@ type WriteOption interface {
 
 type TapWriteResult func(WriteResult)
 
-func (_ TapWriteResult) IsSaveOption() {}
+func (TapWriteResult) IsSaveOption() {}
 
-func (_ TapWriteResult) IsWriteOption() {}
+func (TapWriteResult) IsWriteOption() {}

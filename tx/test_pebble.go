@@ -16,6 +16,7 @@ import (
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storepebble"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestPebbleTx(
@@ -24,6 +25,7 @@ func TestPebbleTx(
 	newPeb storepebble.New,
 	newKV storekv.New,
 	scope Scope,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -41,20 +43,19 @@ func TestPebbleTx(
 		&peb,
 	).Call(func(
 		tx PebbleTx,
-		scope Scope,
 	) {
 
 		// commit tx
 		var key1 Key
-		ce(tx(wt, func(
+		ce(tx(wg, func(
 			save entity.Save,
 		) {
-			summary, err := save(entity.NSEntity, 42)
+			summary, err := save(wg, entity.NSEntity, 42)
 			ce(err)
 			key1 = summary.Key
 		}))
 
-		ce(tx(wt, func(
+		ce(tx(wg, func(
 			fetch entity.Fetch,
 			selIndex index.SelectIndex,
 		) {
@@ -76,10 +77,10 @@ func TestPebbleTx(
 		// error, no commit
 		errFoo := fmt.Errorf("foo")
 		var key2 Key
-		err = tx(wt, func(
+		err = tx(wg, func(
 			save entity.Save,
 		) {
-			summary, err := save(entity.NSEntity, 1)
+			summary, err := save(wg, entity.NSEntity, 1)
 			ce(err)
 			key2 = summary.Key
 			ce(errFoo)
@@ -88,7 +89,7 @@ func TestPebbleTx(
 			t.Fatal()
 		}
 
-		ce(tx(wt, func(
+		ce(tx(wg, func(
 			fetch entity.Fetch,
 			selIndex index.SelectIndex,
 		) {
@@ -116,14 +117,14 @@ func TestPebbleTx(
 
 		// tx inside tx, partial commit
 		var key3, key4 Key
-		err = tx(wt, func(
+		err = tx(wg, func(
 			save entity.Save,
 			store store.Store,
 		) {
-			ce(tx(wt, func(
+			ce(tx(wg, func(
 				save entity.Save,
 			) {
-				summary, err := save(entity.NSEntity, 99)
+				summary, err := save(wg, entity.NSEntity, 99)
 				ce(err)
 				key3 = summary.Key
 			}))
@@ -135,7 +136,7 @@ func TestPebbleTx(
 				t.Fatal()
 			}
 
-			summary, err := save(entity.NSEntity, 1)
+			summary, err := save(wg, entity.NSEntity, 1)
 			ce(err)
 			key4 = summary.Key
 			ce(errFoo)
@@ -144,7 +145,7 @@ func TestPebbleTx(
 			t.Fatal()
 		}
 
-		ce(tx(wt, func(
+		ce(tx(wg, func(
 			fetch entity.Fetch,
 			selIndex index.SelectIndex,
 		) {
@@ -186,6 +187,7 @@ func TestPebbleTxEntityDelete(
 	newPeb storepebble.New,
 	newKV storekv.New,
 	scope Scope,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -203,16 +205,15 @@ func TestPebbleTxEntityDelete(
 		&peb,
 	).Call(func(
 		tx PebbleTx,
-		scope Scope,
 	) {
 
-		ce(tx(wt, func(
+		ce(tx(wg, func(
 			save entity.SaveEntity,
 			sel index.SelectIndex,
 			del entity.Delete,
 		) {
 
-			s, err := save(42)
+			s, err := save(wg, 42)
 			ce(err)
 			_ = s
 

@@ -13,48 +13,48 @@ import (
 // OnMark is called when key is marked, may call more than once for the same key
 type TapMarkKey func(Key)
 
-func (_ TapMarkKey) IsGCOption() {}
+func (TapMarkKey) IsGCOption() {}
 
 type TapReachableObjects func(*sync.Map)
 
-func (_ TapReachableObjects) IsGCOption() {}
+func (TapReachableObjects) IsGCOption() {}
 
 type TapIterKey func(Key)
 
-func (_ TapIterKey) IsGCOption() {}
+func (TapIterKey) IsGCOption() {}
 
 type TapDeadObjects func([]DeadObject)
 
-func (_ TapDeadObjects) IsGCOption() {}
+func (TapDeadObjects) IsGCOption() {}
 
 type TapSweepDeadObject func(DeadObject)
 
-func (_ TapSweepDeadObject) IsGCOption() {}
+func (TapSweepDeadObject) IsGCOption() {}
 
 type TapSummary func(*Summary)
 
-func (_ TapSummary) IsSaveOption() {}
+func (TapSummary) IsSaveOption() {}
 
-func (_ TapSummary) IsSyncOption() {}
+func (TapSummary) IsSyncOption() {}
 
 type TapDeleteIndex func(IndexEntry)
 
-func (_ TapDeleteIndex) IsDeleteIndexOption() {}
+func (TapDeleteIndex) IsDeleteIndexOption() {}
 
-func (_ TapDeleteIndex) IsCleanIndexOption() {}
+func (TapDeleteIndex) IsCleanIndexOption() {}
 
-func (_ TapDeleteIndex) IsIndexGCOption() {}
+func (TapDeleteIndex) IsIndexGCOption() {}
 
 type TapBadSummary func(*Summary)
 
-func (_ TapBadSummary) IsSyncOption() {}
+func (TapBadSummary) IsSyncOption() {}
 
 type TapWriteResult = store.TapWriteResult
 
 type Parallel int
 
-func (_ Parallel) IsPushOption() {}
+func (Parallel) IsPushOption() {}
 
 type IgnoreSummary func(Summary) bool
 
-func (_ IgnoreSummary) IsPushOption() {}
+func (IgnoreSummary) IsPushOption() {}

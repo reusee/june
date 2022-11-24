@@ -50,7 +50,7 @@ func (s *Store) pathToKey(path string) string {
 
 func (s *Store) KeyExists(key string) (ok bool, err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -68,7 +68,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 
 func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -88,7 +88,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 
 func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -140,7 +140,7 @@ func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 
 func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -185,7 +185,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 	if atomic.CompareAndSwapInt32(&s.syncPending, 0, 1) {
 
-		done := s.Add()
+		done := s.wg.Add()
 		timer := time.AfterFunc(time.Second, func() {
 			defer done()
 			atomic.StoreInt32(&s.syncPending, 0)
@@ -203,7 +203,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 		go func() {
 			select {
-			case <-s.Ctx.Done():
+			case <-s.wg.Done():
 				// cancel timer
 				if !timer.Stop() {
 					// func started
@@ -222,7 +222,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 func (s *Store) KeyDelete(keys ...string) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}

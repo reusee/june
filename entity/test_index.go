@@ -12,6 +12,7 @@ import (
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/store"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -24,13 +25,14 @@ func TestIndex(
 	cleanIndex CleanIndex,
 	index Index,
 	indexGC IndexGC,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
 	// save
 	var keys []Key
 	for i := 0; i < 8; i++ {
-		if summary, err := save(testIndex(i)); err != nil {
+		if summary, err := save(wg, testIndex(i)); err != nil {
 			t.Fatal(err)
 		} else {
 			keys = append(keys, summary.Key)
@@ -59,7 +61,7 @@ func TestIndex(
 		IndexTapEntry(func(e IndexEntry) {
 			lenTuple = len(e.Tuple)
 		}),
-		TapKey(func(key Key) {
+		TapKey(func(_ Key) {
 			nKey++
 		}),
 	))
@@ -77,7 +79,7 @@ func TestIndex(
 	}
 
 	// check
-	ce(checkRef())
+	ce(checkRef(wg))
 
 	// delete
 	ce(store.Delete(keys[:1]))
@@ -87,6 +89,7 @@ func TestIndex(
 	m := 0
 	nKeys := 0
 	ce(cleanIndex(
+		wg,
 		TapDeleteIndex(func(e IndexEntry) {
 			n++
 		}),
@@ -114,6 +117,7 @@ func TestIndex(
 	var summaryKeys []Key
 	for i := 0; i < 8; i++ {
 		if _, err := save(
+			wg,
 			testIndex(i),
 			SaveSummaryOptions([]SaveSummaryOption{
 				TapKey(func(key Key) {
@@ -129,6 +133,7 @@ func TestIndex(
 	// gc
 	n = 0
 	ce(indexGC(
+		wg,
 		TapDeleteIndex(func(_ IndexEntry) {
 			atomic.AddInt64(&n, 1)
 		}),
@@ -165,6 +170,7 @@ func TestEmbeddingSameObject(
 	del Delete,
 	updateIndex UpdateIndex,
 	sel index.SelectIndex,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -177,7 +183,7 @@ func TestEmbeddingSameObject(
 		N: 1,
 		I: testIndex(42),
 	}
-	s, err := save(a)
+	s, err := save(wg, a)
 	ce(err)
 	key1 := s.Key
 
@@ -185,7 +191,7 @@ func TestEmbeddingSameObject(
 		N: 2,
 		I: testIndex(42),
 	}
-	s, err = save(b)
+	s, err = save(wg, b)
 	ce(err)
 	key2 := s.Key
 

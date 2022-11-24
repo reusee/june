@@ -16,6 +16,7 @@ import (
 	"github.com/reusee/june/filebase"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr2"
 )
 
 func TestFileFS(
@@ -24,6 +25,7 @@ func TestFileFS(
 	iterDisk IterDiskFile,
 	newFileFS filebase.NewFileFS,
 	shuffleDir fsys.ShuffleDir,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -34,7 +36,7 @@ func TestFileFS(
 	}
 	var expectes []string
 	var numFiles int
-	ce(filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
+	ce(filepath.WalkDir(dir, func(path string, _ fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -54,7 +56,7 @@ func TestFileFS(
 	var root File
 	ce(pp.Copy(
 		iterDisk(dir, nil),
-		build(&root, nil),
+		build(wg, &root, nil),
 	))
 
 	f, err := newFileFS(root.Subs[0].File)
@@ -64,7 +66,7 @@ func TestFileFS(
 	))
 
 	n := 0
-	ce(fs.WalkDir(f, ".", func(path string, entry fs.DirEntry, err error) error {
+	ce(fs.WalkDir(f, ".", func(_ string, _ fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

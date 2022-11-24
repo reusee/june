@@ -20,7 +20,7 @@ func init() {
 	index.Register(IdxReferTo)
 }
 
-func (_ Def) IdxReferToFuncs() (
+func (Def) IdxReferToFuncs() (
 	add OnSummaryIndexAdd,
 	del OnSummaryIndexDelete,
 ) {

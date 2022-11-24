@@ -12,14 +12,14 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestStore(
 	t *testing.T,
 	testStore store.TestStore,
 	scope dscope.Scope,
-	wt *pr.WaitTree,
+	wg *pr2.WaitGroup,
 ) {
 	for _, readPolicy := range []ReadPolicy{
 		ReadThrough,
@@ -38,15 +38,15 @@ func TestStore(
 						newKV storekv.New,
 						newStore New,
 					) {
-						backing, err := newKV(newMem(wt), "foo")
+						backing, err := newKV(newMem(wg), "foo")
 						if err != nil {
 							t.Fatal(err)
 						}
-						upstream, err := newKV(newMem(wt), "foo")
+						upstream, err := newKV(newMem(wg), "foo")
 						if err != nil {
 							t.Fatal(err)
 						}
-						store, err := newStore(wt, upstream, backing, readPolicy, writePolicy)
+						store, err := newStore(wg, upstream, backing, readPolicy, writePolicy)
 						ce(err)
 						fn(store)
 					})

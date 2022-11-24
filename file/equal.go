@@ -19,7 +19,7 @@ type Equal func(
 	fn func(any, any, string),
 ) (bool, error)
 
-func (_ Def) Equal(
+func (Def) Equal(
 	scope Scope,
 	newHashState key.NewHashState,
 ) (equal Equal) {

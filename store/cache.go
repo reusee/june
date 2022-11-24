@@ -21,4 +21,4 @@ type CachePutOption interface {
 
 type EncodedLen int
 
-func (_ EncodedLen) IsCachePutOption() {}
+func (EncodedLen) IsCachePutOption() {}

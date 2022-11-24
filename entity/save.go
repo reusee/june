@@ -6,6 +6,7 @@ package entity
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -19,6 +20,7 @@ import (
 
 // save entity
 type Save func(
+	ctx context.Context,
 	ns key.Namespace,
 	value any,
 	options ...SaveOption,
@@ -33,11 +35,11 @@ type SaveOption interface {
 
 type SaveSummaryOptions []SaveSummaryOption
 
-func (_ SaveSummaryOptions) IsSaveOption() {}
+func (SaveSummaryOptions) IsSaveOption() {}
 
 type SaveValue any
 
-func (_ Def) Save(
+func (Def) Save(
 	store store.Store,
 	scope dscope.Scope,
 	newHashState key.NewHashState,
@@ -49,6 +51,7 @@ func (_ Def) Save(
 	keyType := reflect.TypeOf((*Key)(nil)).Elem()
 
 	save = func(
+		_ context.Context,
 		ns key.Namespace,
 		value any,
 		options ...SaveOption,
@@ -152,7 +155,7 @@ func (_ Def) Save(
 			sb.HashFunc(
 				newHashState,
 				&sum,
-				func(hash []byte, token *sb.Token) error {
+				func(hash []byte, _ *sb.Token) error {
 
 					// must maintain stack here
 					if len(hash) > 0 {
@@ -217,12 +220,19 @@ func (_ Def) Save(
 	return
 }
 
-type SaveEntity func(value any, options ...SaveOption) (summary *Summary, err error)
+type SaveEntity func(
+	ctx context.Context,
+	value any,
+	options ...SaveOption,
+) (
+	summary *Summary,
+	err error,
+)
 
-func (_ Def) SaveEntity(
+func (Def) SaveEntity(
 	save Save,
 ) SaveEntity {
-	return func(value any, options ...SaveOption) (*Summary, error) {
-		return save(NSEntity, value, options...)
+	return func(ctx context.Context, value any, options ...SaveOption) (*Summary, error) {
+		return save(ctx, NSEntity, value, options...)
 	}
 }

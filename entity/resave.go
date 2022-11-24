@@ -55,10 +55,10 @@ func (Def) Resave(
 			}
 		}
 
-		ctx, wg := pr2.NewWaitGroup(ctx)
+		wg := pr2.NewWaitGroup(ctx)
 		defer wg.Cancel()
 		put, wait := pr2.Consume(
-			ctx,
+			wg,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()
@@ -83,6 +83,7 @@ func (Def) Resave(
 						ptr := reflect.New(objType)
 						ce(fetch(key, ptr.Interface()))
 						_, err = save(
+							ctx,
 							key.Namespace, ptr.Elem().Interface(),
 							saveOptions...,
 						)

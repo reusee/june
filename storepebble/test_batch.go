@@ -12,6 +12,7 @@ import (
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestBatchKV(
@@ -20,6 +21,7 @@ func TestBatchKV(
 	test storekv.TestKV,
 	newStore New,
 	newBatch NewBatch,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 	with := func(fn func(storekv.KV, string)) {
@@ -27,7 +29,7 @@ func TestBatchKV(
 		ce(err)
 		s, err := newStore(wt, nil, dir)
 		ce(err)
-		batch, err := newBatch(wt, s)
+		batch, err := newBatch(wg, s)
 		ce(err)
 		fn(batch, "foo")
 	}
@@ -40,13 +42,14 @@ func TestBatchIndex(
 	newStore New,
 	newBatch NewBatch,
 	test index.TestIndex,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 	dir, err := os.MkdirTemp(t.TempDir(), "")
 	ce(err)
 	s, err := newStore(wt, nil, dir)
 	ce(err)
-	batch, err := newBatch(wt, s)
+	batch, err := newBatch(wg, s)
 	ce(err)
 	with := func(fn func(index.IndexManager)) {
 		fn(batch)

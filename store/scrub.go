@@ -12,6 +12,7 @@ import (
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -24,7 +25,7 @@ type Scrub func(
 	options ...ScrubOption,
 ) error
 
-func (_ Def) Scrub(
+func (Def) Scrub(
 	newHashState key.NewHashState,
 	wt *pr.WaitTree,
 	parallel sys.Parallel,
@@ -49,9 +50,9 @@ func (_ Def) Scrub(
 			}
 		}
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) error {
+		wg := pr2.NewWaitGroup(wt.Ctx)
+		defer wg.Cancel()
+		put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) error {
 			key := v.(Key)
 			if tapKey != nil {
 				tapKey(key)

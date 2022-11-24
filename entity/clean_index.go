@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -14,6 +15,7 @@ import (
 )
 
 type CleanIndex func(
+	ctx context.Context,
 	options ...CleanIndexOption,
 ) error
 
@@ -21,11 +23,12 @@ type CleanIndexOption interface {
 	IsCleanIndexOption()
 }
 
-func (_ Def) CleanIndex(
+func (Def) CleanIndex(
 	deleteIndex DeleteIndex,
 	store store.Store,
 ) CleanIndex {
 	return func(
+		ctx context.Context,
 		options ...CleanIndexOption,
 	) (err error) {
 		defer he(&err)
@@ -58,6 +61,7 @@ func (_ Def) CleanIndex(
 		}))
 
 		ce(deleteIndex(
+			ctx,
 			func(stream sb.Stream) (_ *IndexEntry, err error) {
 				defer he(&err)
 

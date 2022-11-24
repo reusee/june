@@ -5,6 +5,7 @@
 package june
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -26,6 +27,7 @@ import (
 	"github.com/reusee/june/sys"
 	"github.com/reusee/june/vars"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func init() {
@@ -122,6 +124,9 @@ func runTest(
 			func() *pr.WaitTree {
 				return waitTree
 			},
+			func() *pr2.WaitGroup {
+				return pr2.NewWaitGroup(context.Background())
+			},
 		)
 		scope := dscope.New(spec.Defs...).Fork(
 			func() sys.Testing {
@@ -151,6 +156,9 @@ func runTest(
 						},
 						func() *pr.WaitTree {
 							return waitTree
+						},
+						func() *pr2.WaitGroup {
+							return pr2.NewWaitGroup(context.Background())
 						},
 					)
 					scope := dscope.New(spec.Defs...).Fork(
@@ -192,9 +200,10 @@ var indexManagerDefs = []any{
 		newBatch storepebble.NewBatch,
 	) index.IndexManager {
 		defer he(nil, e5.TestingFatal(t))
+		ctx := pr2.NewWaitGroup(context.TODO())
 		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
-		batch, err := newBatch(wt, peb)
+		batch, err := newBatch(ctx, peb)
 		ce(err)
 		return batch
 	},
@@ -202,9 +211,9 @@ var indexManagerDefs = []any{
 
 var memIndexManager = func(
 	newMemStore storemem.New,
-	wt *pr.WaitTree,
 ) index.IndexManager {
-	return newMemStore(wt)
+	ctx := pr2.NewWaitGroup(context.TODO())
+	return newMemStore(ctx)
 }
 
 var storeDefs = []any{
@@ -228,11 +237,11 @@ var storeDefs = []any{
 		t *testing.T,
 		newDiskStore storedisk.New,
 		newKV storekv.New,
-		wt *pr.WaitTree,
 	) store.Store {
 		defer he(nil, e5.TestingFatal(t))
 		dir := t.TempDir()
-		s, err := newDiskStore(wt, dir)
+		ctx := pr2.NewWaitGroup(context.TODO())
+		s, err := newDiskStore(ctx, dir)
 		ce(err)
 		kv, err := newKV(s, "foo")
 		ce(err)
@@ -251,9 +260,10 @@ var storeDefs = []any{
 		newKV storekv.New,
 	) store.Store {
 		defer he(nil, e5.TestingFatal(t))
+		ctx := pr2.NewWaitGroup(context.TODO())
 		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
 		ce(err)
-		batch, err := newBatch(wt, peb)
+		batch, err := newBatch(ctx, peb)
 		ce(err)
 		kv, err := newKV(batch, "foo")
 		ce(err)
@@ -264,9 +274,9 @@ var storeDefs = []any{
 var memStore = func(
 	newMem storemem.New,
 	newKV storekv.New,
-	wt *pr.WaitTree,
 ) store.Store {
-	s, err := newKV(newMem(wt), "foo")
+	ctx := pr2.NewWaitGroup(context.TODO())
+	s, err := newKV(newMem(ctx), "foo")
 	ce(err)
 	return s
 }

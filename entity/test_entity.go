@@ -18,6 +18,7 @@ import (
 	"github.com/reusee/june/storetap"
 	"github.com/reusee/pp"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -46,6 +47,7 @@ func TestSave(
 	index Index,
 	resave Resave,
 	indexGC IndexGC,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -70,7 +72,7 @@ func TestSave(
 	}).Call(func(
 		save SaveEntity,
 	) {
-		summary, err = save(testSaveFoo(42))
+		summary, err = save(wg, testSaveFoo(42))
 		ce(err)
 		if keysWritten != 2 {
 			t.Fatalf("got %d", keysWritten)
@@ -172,7 +174,7 @@ func TestSave(
 
 	t.Run("same data", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		summary, err = save(testSaveFoo(42))
+		summary, err = save(wg, testSaveFoo(42))
 		ce(err)
 
 		if !summary.Valid() {
@@ -240,7 +242,7 @@ func TestSave(
 
 	t.Run("new data", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		summary, err = save(testSaveFoo(43))
+		summary, err = save(wg, testSaveFoo(43))
 		ce(err)
 
 		if !summary.Valid() {
@@ -387,7 +389,7 @@ func TestSave(
 
 		newIndexes := make(map[Hash]IndexEntry)
 		var n2 int
-		manager := IndexManager(newMemStore(wt))
+		manager := IndexManager(newMemStore(wg))
 		storeID, err := store.ID()
 		ce(err)
 		scope.Fork(
@@ -452,12 +454,12 @@ func TestSave(
 
 	t.Run("index gc", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		ce(indexGC())
+		ce(indexGC(wg))
 	})
 
 	t.Run("index clean", func(t *testing.T) {
 		defer he(nil, e5.TestingFatal(t))
-		ce(cleanIndex())
+		ce(cleanIndex(wg))
 	})
 
 	t.Run("resave", func(t *testing.T) {
@@ -485,6 +487,6 @@ func TestSave(
 		}
 	})
 
-	ce(checkRef())
+	ce(checkRef(wg))
 
 }

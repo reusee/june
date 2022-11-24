@@ -5,12 +5,13 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -19,16 +20,16 @@ type CheckRefOption interface {
 }
 
 type CheckRef func(
+	ctx context.Context,
 	options ...CheckRefOption,
 ) error
 
-func (_ Def) CheckRef(
+func (Def) CheckRef(
 	store Store,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) CheckRef {
 
-	return func(options ...CheckRefOption) (err error) {
+	return func(ctx context.Context, options ...CheckRefOption) (err error) {
 		defer he(&err)
 
 		var tapKey opts.TapKey
@@ -41,9 +42,9 @@ func (_ Def) CheckRef(
 			}
 		}
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
+		wg := pr2.NewWaitGroup(ctx)
+		defer wg.Cancel()
+		put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)
 			key := v.(Key)
 			var summary Summary

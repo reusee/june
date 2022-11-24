@@ -5,15 +5,17 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 type DeleteIndex func(
+	ctx context.Context,
 	predict func(sb.Stream) (*IndexEntry, error),
 	options ...DeleteIndexOption,
 ) error
@@ -22,13 +24,13 @@ type DeleteIndexOption interface {
 	IsDeleteIndexOption()
 }
 
-func (_ Def) DeleteIndex(
+func (Def) DeleteIndex(
 	index Index,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) DeleteIndex {
 
 	return func(
+		ctx context.Context,
 		predict func(sb.Stream) (*IndexEntry, error),
 		options ...DeleteIndexOption,
 	) (err error) {
@@ -52,9 +54,9 @@ func (_ Def) DeleteIndex(
 		ce(err)
 		defer closer.Close()
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(wt, int(parallel), func(_ int, v any) (err error) {
+		wg := pr2.NewWaitGroup(ctx)
+		defer wg.Cancel()
+		put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)
 			entry := v.(IndexEntry)
 			ce(index.Delete(entry))

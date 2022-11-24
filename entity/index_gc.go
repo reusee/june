@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/reusee/dscope"
@@ -13,10 +14,12 @@ import (
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 type IndexGC func(
+	ctx context.Context,
 	options ...IndexGCOption,
 ) error
 
@@ -28,19 +31,19 @@ type blackholeCodec struct{}
 
 var _ codec.Codec = blackholeCodec{}
 
-func (_ blackholeCodec) Encode(sink sb.Sink, options ...codec.Option) sb.Sink {
+func (blackholeCodec) Encode(sink sb.Sink, options ...codec.Option) sb.Sink {
 	return sb.Discard
 }
 
-func (_ blackholeCodec) Decode(str sb.Stream, options ...codec.Option) sb.Stream {
+func (blackholeCodec) Decode(str sb.Stream, options ...codec.Option) sb.Stream {
 	panic("should not be called")
 }
 
-func (_ blackholeCodec) ID() string {
+func (blackholeCodec) ID() string {
 	return "blackhole"
 }
 
-func (_ Def) IndexGC(
+func (Def) IndexGC(
 	store Store,
 	newMem storemem.New,
 	scope dscope.Scope,
@@ -51,6 +54,7 @@ func (_ Def) IndexGC(
 	wt *pr.WaitTree,
 ) IndexGC {
 	return func(
+		ctx context.Context,
 		options ...IndexGCOption,
 	) (err error) {
 		defer he(&err)
@@ -66,7 +70,7 @@ func (_ Def) IndexGC(
 		}
 
 		// rebuild summary in mem store
-		memStore := newMem(wt)
+		memStore := newMem(ctx)
 		memScope := scope.Fork(func() (Store, IndexManager) {
 			kv, err := newKV(memStore, "index-gc", storekv.WithCodec(
 				blackholeCodec{},
@@ -135,9 +139,9 @@ func (_ Def) IndexGC(
 				return
 			}
 
-			wt := pr.NewWaitTree(wt)
-			defer wt.Cancel()
-			put, wait := pr.Consume(wt, int(parallel), func(_ int, v any) (err error) {
+			wg := pr2.NewWaitGroup(wt.Ctx)
+			defer wg.Cancel()
+			put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) (err error) {
 				defer he(&err)
 				tokens := v.(sb.Tokens)
 				if tokens[1].Kind != sb.KindString {
@@ -158,11 +162,7 @@ func (_ Def) IndexGC(
 
 			tokens := next()
 			memTokens := memNext()
-			for {
-				if tokens == nil || memTokens == nil {
-					break
-				}
-
+			for tokens != nil && memTokens != nil {
 				res, err := sb.Compare(tokens.Iter(), memTokens.Iter())
 				ce(err)
 				switch res {

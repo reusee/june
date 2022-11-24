@@ -18,11 +18,12 @@ import (
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 type Store struct {
-	*pr.WaitTree
+	wg      *pr2.WaitGroup
 	name    string
 	storeID string
 	DB      *pebble.DB
@@ -81,6 +82,7 @@ func (Def) New(
 		ce(err)
 
 		s := &Store{
+			wg: pr2.NewWaitGroup(parentWt.Ctx),
 			name: fmt.Sprintf("pebble%d(%s)",
 				atomic.AddInt64(&storeSerial, 1),
 				filepath.Base(dir),
@@ -92,10 +94,9 @@ func (Def) New(
 			DB: db,
 		}
 
-		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("pebble "+s.storeID))
 		parentWt.Go(func() {
 			<-parentWt.Ctx.Done()
-			s.Wait()
+			s.wg.Wait()
 			ce(s.DB.Flush())
 			ce(s.DB.Close())
 		})

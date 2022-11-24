@@ -5,6 +5,7 @@
 package storedisk
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"runtime"
@@ -16,11 +17,11 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type Store struct {
-	*pr.WaitTree
+	wg          *pr2.WaitGroup
 	name        string
 	storeID     string
 	id          string
@@ -50,12 +51,12 @@ func (e NewOptions) Error() string {
 }
 
 type New func(
-	wt *pr.WaitTree,
+	ctx context.Context,
 	path string,
 	options ...NewOption,
 ) (*Store, error)
 
-func (_ Def) New(
+func (Def) New(
 	ensureDir fsys.EnsureDir,
 	setRestrictedPath fsys.SetRestrictedPath,
 	isTesting sys.Testing,
@@ -65,7 +66,7 @@ func (_ Def) New(
 	noSync := bool(isTesting && runtime.GOOS == "darwin")
 
 	return func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		dir string,
 		options ...NewOption,
 	) (_ *Store, err error) {
@@ -78,8 +79,9 @@ func (_ Def) New(
 		ce(err)
 		err = setRestrictedPath(dir)
 		ce(err)
+		wg := pr2.NewWaitGroup(ctx)
 		store := &Store{
-			WaitTree: parentWt,
+			wg: wg,
 			name: fmt.Sprintf("disk%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				filepath.Base(dir),

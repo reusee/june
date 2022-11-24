@@ -14,12 +14,11 @@ import (
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestPushFile(
 	t *testing.T,
-	wt *pr.WaitTree,
 	build Build,
 	iterDisk IterDiskFile,
 	newMem storemem.New,
@@ -30,6 +29,7 @@ func TestPushFile(
 	scope Scope,
 	iterFile IterFile,
 	shuffleDir fsys.ShuffleDir,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -42,17 +42,18 @@ func TestPushFile(
 	file := new(File)
 	ce(pp.Copy(
 		iterDisk(dir, nil),
-		build(file, nil),
+		build(wg, file, nil),
 	))
-	summary, err := save(file)
+	summary, err := save(wg, file)
 	ce(err)
 
-	mem := newMem(wt)
+	mem := newMem(wg)
 	kv, err := newKV(
 		mem, "foo",
 	)
 	ce(err)
 	ce(push(
+		wg,
 		kv,
 		indexManager,
 		[]Key{
@@ -70,9 +71,9 @@ func TestPushFile(
 		file3 := new(File)
 		ce(pp.Copy(
 			iterFile(file2.Subs[0].File, nil),
-			build(file3, nil),
+			build(wg, file3, nil),
 		))
-		s, err := save(file3)
+		s, err := save(wg, file3)
 		ce(err)
 		if s.Key != summary.Key {
 			t.Fatal()

@@ -22,15 +22,15 @@ import (
 var _ index.IndexManager = new(Store)
 
 func (s *Store) IndexFor(id StoreID) (index.Index, error) {
-	defer s.Add()()
+	defer s.wg.Add()()
 	return Index{
-		ctx: s.Ctx,
+		ctx: s.wg,
 		name: fmt.Sprintf("pebble-index%d(%v, %v)",
 			atomic.AddInt64(&indexSerial, 1),
 			s.Name(),
 			id,
 		),
-		begin: s.Add,
+		begin: s.wg.Add,
 		exists: func(key []byte) (bool, error) {
 			_, cl, err := s.DB.Get(key)
 			if is(err, pebble.ErrNotFound) {

@@ -24,7 +24,7 @@ type NewMemCache func(
 	maxSize int,
 ) (*MemCache, error)
 
-func (_ Def) NewMemCache(
+func (Def) NewMemCache(
 	newHashState key.NewHashState,
 ) NewMemCache {
 	return func(

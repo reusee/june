@@ -5,6 +5,7 @@
 package filebase
 
 import (
+	"context"
 	"io"
 	"reflect"
 
@@ -136,6 +137,7 @@ func (_ Def) ChunkArgs() (ChunkThreshold, MaxChunkSize) {
 }
 
 type ToContents func(
+	ctx context.Context,
 	r io.Reader,
 	size int64,
 ) (
@@ -153,6 +155,7 @@ func (_ Def) ToContents(
 	maxSize := int64(maxChunkSize)
 
 	return func(
+		ctx context.Context,
 		r io.Reader,
 		size int64,
 	) (
@@ -168,7 +171,7 @@ func (_ Def) ToContents(
 			data := make([]byte, size)
 			_, err := io.ReadFull(r, data)
 			ce(err)
-			summary, err := save(Content(data))
+			summary, err := save(ctx, Content(data))
 			ce(err)
 			return []Key{summary.Key}, []int64{size}, nil
 		}
@@ -191,7 +194,7 @@ func (_ Def) ToContents(
 		for {
 			chunk, err := chunker.Next()
 			if len(chunk.Data) > 0 {
-				summary, err := save(Content(chunk.Data))
+				summary, err := save(ctx, Content(chunk.Data))
 				ce(err)
 				keys = append(keys, summary.Key)
 				lengths = append(lengths, int64(len(chunk.Data)))

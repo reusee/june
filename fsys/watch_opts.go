@@ -8,22 +8,22 @@ import "time"
 
 type TapUpdatePaths func([]string)
 
-func (_ TapUpdatePaths) IsWatchOption() {}
+func (TapUpdatePaths) IsWatchOption() {}
 
 type SingleDevice bool
 
-func (_ SingleDevice) IsWatchOption() {}
+func (SingleDevice) IsWatchOption() {}
 
 type OnInitDone func()
 
-func (_ OnInitDone) IsWatchOption() {}
+func (OnInitDone) IsWatchOption() {}
 
 type OnUpdatedSpec struct {
 	MaxDelay time.Duration
 	Func     func()
 }
 
-func (_ OnUpdatedSpec) IsWatchOption() {}
+func (OnUpdatedSpec) IsWatchOption() {}
 
 func OnUpdated(maxDelay time.Duration, fn func()) OnUpdatedSpec {
 	return OnUpdatedSpec{
@@ -34,4 +34,4 @@ func OnUpdated(maxDelay time.Duration, fn func()) OnUpdatedSpec {
 
 type TrackFiles bool
 
-func (_ TrackFiles) IsWatchOption() {}
+func (TrackFiles) IsWatchOption() {}

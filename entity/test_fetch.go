@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/june/store"
+	"github.com/reusee/pr2"
 )
 
 type testFetch struct {
@@ -29,11 +29,11 @@ func TestFetch(
 	t *testing.T,
 	fetch Fetch,
 	save SaveEntity,
-	store store.Store,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
-	summary, err := save(testFetch{
+	summary, err := save(wg, testFetch{
 		Foo: testFetch1(42),
 	})
 	ce(err)

@@ -45,7 +45,7 @@ require (
 require (
 	github.com/reusee/e5 v0.0.0-20221121150545-535ad462f830
 	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
-	github.com/reusee/pr2 v0.0.0-20221124035126-ef49e79a5c86
+	github.com/reusee/pr2 v0.0.0-20221124075513-e1cb4081adb8
 )
 
 require (

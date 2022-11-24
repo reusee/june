@@ -20,7 +20,7 @@ func init() {
 	index.Register(IdxSummaryKey)
 }
 
-func (_ Def) IdxSummaryKeyFuncs() (
+func (Def) IdxSummaryKeyFuncs() (
 	add OnSummaryIndexAdd,
 	del OnSummaryIndexDelete,
 ) {

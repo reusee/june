@@ -9,21 +9,22 @@ import (
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
+	"github.com/reusee/pr2"
 )
 
 func TestDelete(
 	t *testing.T,
-	store Store,
 	save Save,
 	del Delete,
 	checkRef CheckRef,
 	sel index.SelectIndex,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
 	var summary1 *Summary
 	var summaryKey1 Key
-	res, err := save(NSEntity, 42,
+	res, err := save(wg, NSEntity, 42,
 		TapSummary(func(s *Summary) {
 			summary1 = s
 		}),
@@ -43,7 +44,7 @@ func TestDelete(
 	}
 	var summary2 *Summary
 	var summaryKey2 Key
-	res, err = save(NSEntity, Foo{Key: key1},
+	res, err = save(wg, NSEntity, Foo{Key: key1},
 		TapSummary(func(s *Summary) {
 			summary2 = s
 		}),
@@ -76,10 +77,10 @@ func TestDelete(
 	}
 
 	ce(del(summaryKey2))
-	ce(checkRef())
+	ce(checkRef(wg))
 
 	ce(del(key1))
-	ce(checkRef())
+	ce(checkRef(wg))
 
 	// check indexes
 	ce(sel(

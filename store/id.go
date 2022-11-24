@@ -4,7 +4,7 @@
 
 package store
 
-func (_ Def) StoreID(
+func (Def) StoreID(
 	store Store,
 ) ID {
 	id, err := store.ID()

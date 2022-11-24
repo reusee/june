@@ -5,6 +5,7 @@
 package fsys
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -17,7 +18,7 @@ import (
 	"time"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type WatchOption interface {
@@ -25,7 +26,7 @@ type WatchOption interface {
 }
 
 type Watch func(
-	wt *pr.WaitTree,
+	ctx context.Context,
 	path string,
 	options ...WatchOption,
 ) (
@@ -35,7 +36,7 @@ type Watch func(
 
 type Watcher struct {
 	sync.RWMutex
-	*pr.WaitTree
+	wg           *pr2.WaitGroup
 	path         string
 	pathParts    []string
 	root         *Node
@@ -47,12 +48,12 @@ type Watcher struct {
 	traceFiles   bool
 }
 
-func (_ Def) Watch() (
+func (Def) Watch() (
 	watch Watch,
 ) {
 
 	watch = func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		path string,
 		options ...WatchOption,
 	) (
@@ -95,8 +96,9 @@ func (_ Def) Watch() (
 		root := new(Node)
 		do := make(chan func())
 
+		wg := pr2.NewWaitGroup(ctx)
 		watcher := &Watcher{
-			WaitTree:     parentWt,
+			wg:           wg,
 			path:         path,
 			pathParts:    strings.Split(path, PathSeparator),
 			root:         root,
@@ -107,7 +109,7 @@ func (_ Def) Watch() (
 		}
 
 		add, err := sysWatcher(
-			parentWt.Ctx,
+			ctx,
 			path,
 			watcher,
 			tapUpdate,
@@ -125,7 +127,7 @@ func (_ Def) Watch() (
 				case fn := <-do:
 					fn()
 
-				case <-parentWt.Ctx.Done():
+				case <-ctx.Done():
 					return
 
 				}

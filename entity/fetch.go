@@ -16,7 +16,7 @@ import (
 
 type Fetch func(key any, targets ...any) error
 
-func (_ Def) Fetch(
+func (Def) Fetch(
 	store store.Store,
 	newHashState key.NewHashState,
 ) Fetch {

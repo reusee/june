@@ -5,6 +5,7 @@
 package file
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -13,7 +14,7 @@ import (
 
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type BuildOption interface {
@@ -21,6 +22,7 @@ type BuildOption interface {
 }
 
 type Build func(
+	ctx context.Context,
 	root *File,
 	cont Sink,
 	options ...BuildOption,
@@ -30,13 +32,12 @@ type SmallFileThreshold int64
 
 type PackThreshold int
 
-func (_ Def) Build(
+func (Def) Build(
 	toContents ToContents,
 	smallFileThreshold SmallFileThreshold,
 	fetchEntity entity.Fetch,
 	saveEntity entity.SaveEntity,
 	packThreshold PackThreshold,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 	scope Scope,
 	save entity.SaveEntity,
@@ -46,6 +47,7 @@ func (_ Def) Build(
 	threshold := int(packThreshold)
 
 	return func(
+		ctx context.Context,
 		root *File,
 		cont Sink,
 		options ...BuildOption,
@@ -83,14 +85,14 @@ func (_ Def) Build(
 		}
 
 		// async jobs
-		wt := pr.NewWaitTree(wt)
-		putFn, wait := pr.Consume(
-			wt,
+		wg := pr2.NewWaitGroup(ctx)
+		putFn, wait := pr2.Consume(
+			wg,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()
 			},
-			pr.BacklogSize(parallel*2),
+			pr2.BacklogSize(parallel*2),
 		)
 
 		// stack unwind
@@ -111,7 +113,7 @@ func (_ Def) Build(
 			topParent.File.Subs = subs
 			// pack parent subs
 			if topParent.File != root {
-				packed, err := pack(scope, topParent.File.Subs, threshold, save, wait)
+				packed, err := pack(ctx, scope, topParent.File.Subs, threshold, save, wait)
 				ce(err)
 				topParent.File.Subs = packed
 			}
@@ -136,7 +138,7 @@ func (_ Def) Build(
 					ce(unwind())
 				}
 
-				wt.Cancel()
+				wg.Cancel()
 
 				return cont, nil
 			}
@@ -196,7 +198,7 @@ func (_ Def) Build(
 									ce(err)
 									file.ContentBytes = bs
 								} else {
-									keys, lengths, err := toContents(r, file.Size)
+									keys, lengths, err := toContents(ctx, r, file.Size)
 									ce(err)
 									file.Contents = keys
 									file.ChunkLengths = lengths
@@ -226,7 +228,7 @@ func (_ Def) Build(
 
 					// pack parent
 					if parent != root {
-						packed, err := pack(scope, parent.Subs, threshold, save, wait)
+						packed, err := pack(ctx, scope, parent.Subs, threshold, save, wait)
 						ce(err)
 						parent.Subs = packed
 					}
@@ -255,7 +257,7 @@ func (_ Def) Build(
 
 				// pack parent
 				if parent != root {
-					packed, err := pack(scope, parent.Subs, threshold, save, wait)
+					packed, err := pack(ctx, scope, parent.Subs, threshold, save, wait)
 					ce(err)
 					parent.Subs = packed
 				}
@@ -432,6 +434,7 @@ type Partition struct {
 }
 
 func pack(
+	ctx context.Context,
 	scope Scope,
 	subs Subs,
 	threshold int,
@@ -526,7 +529,7 @@ l1:
 	ce(wait(false))
 
 	// pack
-	summary, err := saveEntity(slice)
+	summary, err := saveEntity(ctx, slice)
 	ce(err)
 	var size int64
 	for _, sub := range slice {

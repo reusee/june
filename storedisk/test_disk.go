@@ -10,20 +10,20 @@ import (
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestStore(
 	t *testing.T,
-	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(wt, dir)
+		s, err := newStore(wg, dir)
 		ce(err)
 		fn(s, "foo")
 	}
@@ -32,15 +32,15 @@ func TestStore(
 
 func TestStoreSoftDelete(
 	t *testing.T,
-	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(wt, dir, SoftDelete(true))
+		s, err := newStore(wg, dir, SoftDelete(true))
 		ce(err)
 		fn(s, "foo")
 	}

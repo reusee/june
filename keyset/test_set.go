@@ -7,6 +7,8 @@ package keyset
 import (
 	"crypto/rand"
 	"testing"
+
+	"github.com/reusee/pr2"
 )
 
 func TestSet(
@@ -21,6 +23,7 @@ func TestSet(
 		has Has,
 		pack PackSet,
 		del Delete,
+		wg *pr2.WaitGroup,
 	) {
 
 		// add and pack
@@ -34,7 +37,7 @@ func TestSet(
 		}
 		set, err := add(Set{}, keys...)
 		ce(err)
-		set, err = pack(set)
+		set, err = pack(wg, set)
 		ce(err)
 
 		if len(set) == 0 {
@@ -94,7 +97,7 @@ func TestSet(
 			set, err = del(set, key)
 			ce(err)
 			if i%128 == 0 {
-				set, err = pack(set)
+				set, err = pack(wg, set)
 				ce(err)
 			}
 		}

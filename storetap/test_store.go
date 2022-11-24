@@ -12,14 +12,14 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestStore(
 	t *testing.T,
-	wt *pr.WaitTree,
 	testStore store.TestStore,
 	scope dscope.Scope,
+	wg *pr2.WaitGroup,
 ) {
 	defer e5.Handle(nil, e5.TestingFatal(t))
 
@@ -32,7 +32,7 @@ func TestStore(
 			newKV storekv.New,
 			newStore New,
 		) {
-			upstream, err := newKV(newMem(wt), "foo")
+			upstream, err := newKV(newMem(wg), "foo")
 			ce(err)
 			store := newStore(upstream, Funcs{})
 			fn(store)

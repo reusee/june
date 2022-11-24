@@ -21,7 +21,7 @@ type ShuffleDir func(string) (
 	err error,
 )
 
-func (_ Def) ShuffleDir() ShuffleDir {
+func (Def) ShuffleDir() ShuffleDir {
 
 	return func(root string) (
 		op string,

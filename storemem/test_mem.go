@@ -9,17 +9,17 @@ import (
 
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestStore(
 	t *testing.T,
-	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
+	wg *pr2.WaitGroup,
 ) {
 	with := func(fn func(storekv.KV, string)) {
-		m := newStore(wt)
+		m := newStore(wg)
 		fn(m, "foo")
 	}
 	test(t, with)
@@ -27,11 +27,11 @@ func TestStore(
 
 func TestIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	test index.TestIndex,
 	newManager New,
+	wg *pr2.WaitGroup,
 ) {
-	manager := newManager(wt)
+	manager := newManager(wg)
 	with := func(fn func(index.IndexManager)) {
 		fn(manager)
 	}

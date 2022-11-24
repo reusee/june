@@ -14,6 +14,7 @@ import (
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -37,9 +38,9 @@ type IndexOption interface {
 
 type WithIndexSaveOptions []IndexSaveOption
 
-func (_ WithIndexSaveOptions) IsIndexOption() {}
+func (WithIndexSaveOptions) IsIndexOption() {}
 
-func (_ Def) IndexFuncs(
+func (Def) IndexFuncs(
 	store Store,
 	saveSummary SaveSummary,
 	sel index.SelectIndex,
@@ -66,9 +67,9 @@ func (_ Def) IndexFuncs(
 			}
 		}
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(wt, int(parallel), func(i int, v any) (err error) {
+		wg := pr2.NewWaitGroup(wt.Ctx)
+		defer wg.Cancel()
+		put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)
 
 			key := v.(Key)

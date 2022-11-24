@@ -19,16 +19,13 @@ import (
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/index"
-	"github.com/reusee/june/store"
 	"github.com/reusee/pp"
+	"github.com/reusee/pr2"
 )
 
 func TestSave(
 	t *testing.T,
 	walk Walk,
-	write WriteContents,
-	store store.Store,
-	fetch entity.Fetch,
 	scope Scope,
 ) {
 	defer he(nil, e5.TestingFatal(t))
@@ -47,14 +44,9 @@ func TestSave(
 		iterDiskFile IterDiskFile,
 		iterFile IterFile,
 		build Build,
-		iterKey IterKey,
 		equal Equal,
-		fetch entity.Fetch,
-		checkRef entity.CheckRef,
-		store Store,
-		gc entity.GC,
-		rebuildIndex entity.RebuildIndex,
 		index index.Index,
+		wg *pr2.WaitGroup,
 	) {
 
 		c := 0
@@ -65,6 +57,7 @@ func TestSave(
 		err := Copy(
 			iterDiskFile(".", nil, UseGitIgnore(false)),
 			build(
+				wg,
 				file, nil,
 				TapBuildFile(func(_ FileInfo, _ *File) {
 					c++
@@ -147,7 +140,7 @@ func TestSave(
 
 		// file numbers
 		m := 0
-		if err := filepath.WalkDir(".", func(path string, entry fs.DirEntry, e error) error {
+		if err := filepath.WalkDir(".", func(path string, _ fs.DirEntry, e error) error {
 			if path == ".git" || path == ".github" {
 				return fs.SkipDir
 			}
@@ -172,8 +165,9 @@ func TestSave(
 				iterFile(file, nil),
 			),
 			build(
+				wg,
 				file2, nil,
-				TapBuildFile(func(info FileInfo, file *File) {
+				TapBuildFile(func(info FileInfo, _ *File) {
 					paths = append(paths, info.Path)
 				}),
 			),
@@ -221,6 +215,7 @@ func TestSymlink(
 	t *testing.T,
 	build Build,
 	iterDiskfile IterDiskFile,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -235,7 +230,7 @@ func TestSymlink(
 	file := new(File)
 	err = Copy(
 		iterDiskfile(dir, nil),
-		build(file, nil),
+		build(wg, file, nil),
 	)
 	ce(err)
 }
@@ -254,6 +249,7 @@ func TestPack(
 		build Build,
 		iter IterVirtual,
 		fetch entity.Fetch,
+		wg *pr2.WaitGroup,
 	) {
 
 		var tap Sink
@@ -286,7 +282,7 @@ func TestPack(
 				}, nil),
 				tap,
 			),
-			build(file, nil),
+			build(wg, file, nil),
 		)
 		ce(err)
 

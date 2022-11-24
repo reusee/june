@@ -28,7 +28,7 @@ type IterDiskFileOption interface {
 	IsIterDiskFileOption()
 }
 
-func (_ Def) IterDiskFile(
+func (Def) IterDiskFile(
 	ignore Ignore,
 	isRestrictedPath fsys.IsRestrictedPath,
 	wt *pr.WaitTree,

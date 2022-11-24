@@ -15,20 +15,20 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestUpdate(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newKV storekv.New,
 	newMem storemem.New,
 	scope Scope,
 	shuffle fsys.ShuffleDir,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
-	store, err := newKV(newMem(wt), "test")
+	store, err := newKV(newMem(wg), "test")
 	ce(err)
 
 	scope.Fork(func() Store {
@@ -37,14 +37,13 @@ func TestUpdate(
 		build Build,
 		iterDisk IterDiskFile,
 		update Update,
-		iterKey IterKey,
 		equal Equal,
 		watch fsys.Watch,
 		iterFile IterFile,
 	) {
 
 		dir := t.TempDir()
-		watcher, err := watch(wt, dir)
+		watcher, err := watch(wg, dir)
 		ce(err)
 
 		// build
@@ -54,9 +53,10 @@ func TestUpdate(
 		err = Copy(
 			iterDisk(dir, nil),
 			build(
+				wg,
 				file,
 				nil,
-				TapBuildFile(func(info FileInfo, file *File) {
+				TapBuildFile(func(info FileInfo, _ *File) {
 					atomic.AddInt64(&numFile, 1)
 					if filepath.Base(dir) != info.Path {
 						t.Fatal()
@@ -81,7 +81,7 @@ func TestUpdate(
 				iterDisk(dir, nil),
 				watcher,
 			),
-			build(file2, nil),
+			build(wg, file2, nil),
 		)
 		ce(err)
 		file2 = file2.Subs[0].File
@@ -122,9 +122,10 @@ func TestUpdate(
 					watcher,
 				),
 				build(
+					wg,
 					file,
 					nil,
-					TapReadFile(func(info FileInfo) {
+					TapReadFile(func(_ FileInfo) {
 						atomic.AddInt64(&numRead, 1)
 					}),
 				),

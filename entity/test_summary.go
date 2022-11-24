@@ -11,16 +11,18 @@ import (
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/opts"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 func TestSummary(
 	t *testing.T,
 	save SaveEntity,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
-	summary, err := save(testSummary{
+	summary, err := save(wg, testSummary{
 		I:  42,
 		S:  "foo",
 		Is: []int{1, 2, 3},
@@ -83,11 +85,13 @@ func TestSummaryUpdate(
 	checkRef CheckRef,
 	cleanIndex CleanIndex,
 	indexGC IndexGC,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
 	var summaryKey1 Key
 	summary1, err := save(
+		wg,
 		NSEntity, testSummaryUpdateFoo{
 			I: 42,
 			indexes: func() IndexSet {
@@ -104,7 +108,7 @@ func TestSummaryUpdate(
 	)
 	ce(err)
 
-	summary2, err := save(NSEntity, testSummaryUpdateFoo{
+	summary2, err := save(wg, NSEntity, testSummaryUpdateFoo{
 		I: 42,
 		indexes: func() IndexSet {
 			return IndexSet{
@@ -127,11 +131,11 @@ func TestSummaryUpdate(
 	}
 
 	// check ref
-	ce(checkRef())
+	ce(checkRef(wg))
 
 	// no invalid index
 	n := 0
-	ce(cleanIndex(opts.TapInvalidKey(func(_ Key) {
+	ce(cleanIndex(wg, opts.TapInvalidKey(func(_ Key) {
 		n++
 	})))
 	if n > 0 {
@@ -140,7 +144,7 @@ func TestSummaryUpdate(
 
 	// no garbage index
 	n = 0
-	ce(indexGC(TapDeleteIndex(func(_ IndexEntry) {
+	ce(indexGC(wg, TapDeleteIndex(func(_ IndexEntry) {
 		n++
 	})))
 	if n > 0 {

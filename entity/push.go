@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -12,11 +13,12 @@ import (
 	"github.com/reusee/dscope"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 type Push func(
+	ctx context.Context,
 	to Store,
 	toIndex IndexManager,
 	keys []Key,
@@ -29,22 +31,22 @@ type PushOption interface {
 
 type TapPushCheckSummary func(summaryKey Key)
 
-func (_ TapPushCheckSummary) IsPushOption() {}
+func (TapPushCheckSummary) IsPushOption() {}
 
 type TapPushSave func(summaryKey Key, summary *Summary)
 
-func (_ TapPushSave) IsPushOption() {}
+func (TapPushSave) IsPushOption() {}
 
-func (_ Def) Push(
+func (Def) Push(
 	scope dscope.Scope,
 	selIndex index.SelectIndex,
 	store Store,
-	wt *pr.WaitTree,
 	fetch Fetch,
 	parallel sys.Parallel,
 ) Push {
 
 	return func(
+		ctx context.Context,
 		to Store,
 		toIndex IndexManager,
 		keys []Key,
@@ -192,9 +194,9 @@ func (_ Def) Push(
 		type Proc func() error
 
 		// workers
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(wt, p, func(_ int, v any) error {
+		wg := pr2.NewWaitGroup(ctx)
+		defer wg.Cancel()
+		put, wait := pr2.Consume(wg, p, func(_ int, v any) error {
 			proc := v.(Proc)
 			if proc == nil {
 				return nil

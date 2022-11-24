@@ -15,7 +15,7 @@ var _ store.Store = new(Store)
 
 func (s *Store) Exists(key Key) (bool, error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -39,7 +39,7 @@ func (s *Store) Exists(key Key) (bool, error) {
 
 func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -95,7 +95,7 @@ func (s *Store) IterAllKeys(fn func(Key) error) (err error) {
 
 func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -151,7 +151,7 @@ func (s *Store) IterKeys(ns key.Namespace, fn func(Key) error) (err error) {
 
 func (s *Store) Read(key Key, fn func(sb.Stream) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -203,7 +203,7 @@ func (s *Store) Write(
 	options ...WriteOption,
 ) (res store.WriteResult, err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		err = ErrClosed
 		return
 	default:
@@ -245,7 +245,7 @@ func (s *Store) Write(
 
 func (s *Store) Delete(keys []Key) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}

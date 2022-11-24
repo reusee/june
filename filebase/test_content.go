@@ -18,12 +18,14 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/index"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 func TestContent(
 	t *testing.T,
 	scope Scope,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -86,7 +88,7 @@ func TestContent(
 				ce(err)
 
 				numBytes += len(bs)
-				keys, lengths, err := to(bytes.NewReader(bs), int64(len(bs)))
+				keys, lengths, err := to(wg, bytes.NewReader(bs), int64(len(bs)))
 				ce(err)
 				testKeys(keys, lengths, bs)
 				var sum int64
@@ -99,13 +101,13 @@ func TestContent(
 
 				bs = append(bs, []byte("foo")...)
 				numBytes += len(bs)
-				keys, lengths, err = to(bytes.NewReader(bs), int64(len(bs)))
+				keys, lengths, err = to(wg, bytes.NewReader(bs), int64(len(bs)))
 				ce(err)
 				testKeys(keys, lengths, bs)
 
 				bs = append([]byte("foo"), bs...)
 				numBytes += len(bs)
-				keys, lengths, err = to(bytes.NewReader(bs), int64(len(bs)))
+				keys, lengths, err = to(wg, bytes.NewReader(bs), int64(len(bs)))
 				ce(err)
 				testKeys(keys, lengths, bs)
 
