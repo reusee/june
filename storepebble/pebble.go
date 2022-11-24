@@ -35,7 +35,7 @@ type New func(
 	dir string,
 ) (*Store, error)
 
-func (_ Def) New(
+func (Def) New(
 	ensureDir fsys.EnsureDir,
 	cacheSize CacheSize,
 	setRestrictedPath fsys.SetRestrictedPath,
@@ -95,7 +95,7 @@ func (_ Def) New(
 		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("pebble "+s.storeID))
 		parentWt.Go(func() {
 			<-parentWt.Ctx.Done()
-			s.WaitTree.Wait()
+			s.Wait()
 			ce(s.DB.Flush())
 			ce(s.DB.Close())
 		})

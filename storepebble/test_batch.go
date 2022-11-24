@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/reusee/dscope"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
@@ -19,7 +18,6 @@ func TestBatchKV(
 	t *testing.T,
 	wt *pr.WaitTree,
 	test storekv.TestKV,
-	scope dscope.Scope,
 	newStore New,
 	newBatch NewBatch,
 ) {

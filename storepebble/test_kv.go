@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/reusee/dscope"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/pr"
@@ -18,7 +17,6 @@ func TestKV(
 	t *testing.T,
 	wt *pr.WaitTree,
 	test storekv.TestKV,
-	scope dscope.Scope,
 	newStore New,
 ) {
 	defer he(nil, e5.TestingFatal(t))

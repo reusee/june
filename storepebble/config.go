@@ -6,7 +6,7 @@ package storepebble
 
 type CacheSize int64
 
-func (_ Def) CacheSize() (
+func (Def) CacheSize() (
 	cacheSize CacheSize,
 ) {
 
