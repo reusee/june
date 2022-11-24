@@ -115,7 +115,7 @@ func TestGC(
 			deleted = true
 			var summary Summary
 			ce((fetch(summaryKey, &summary)))
-			ce(deleteSummary(&summary, summaryKey))
+			ce(deleteSummary(wg, &summary, summaryKey))
 		}
 		if deleted {
 			ce(store.Delete([]Key{key}))

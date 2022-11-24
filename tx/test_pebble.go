@@ -15,13 +15,11 @@ import (
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storepebble"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 )
 
 func TestPebbleTx(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newPeb storepebble.New,
 	newKV storekv.New,
 	scope Scope,
@@ -30,13 +28,13 @@ func TestPebbleTx(
 	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
-	peb, err := newPeb(wt, nil, dir)
+	peb, err := newPeb(wg, nil, dir)
 	ce(err)
 
 	scope.Fork(
 		func() KVToStore {
 			return func(kv storekv.KV) (store.Store, error) {
-				return newKV(kv, "foo")
+				return newKV(wg, kv, "foo")
 			}
 		},
 		UsePebbleTx,
@@ -66,6 +64,7 @@ func TestPebbleTx(
 			}
 
 			ce(selIndex(
+				wg,
 				index.MatchEntry(entity.IdxSummaryKey, key1),
 				index.Count(&i),
 			))
@@ -100,6 +99,7 @@ func TestPebbleTx(
 			}
 
 			ce(selIndex(
+				wg,
 				index.MatchEntry(entity.IdxSummaryKey, key2),
 				index.Count(&i),
 			))
@@ -107,6 +107,7 @@ func TestPebbleTx(
 				t.Fatal()
 			}
 			ce(selIndex(
+				wg,
 				index.MatchEntry(entity.IdxSummaryKey, key1),
 				index.Count(&i),
 			))
@@ -162,6 +163,7 @@ func TestPebbleTx(
 			}
 
 			ce(selIndex(
+				wg,
 				index.MatchEntry(entity.IdxSummaryKey, key4),
 				index.Count(&i),
 			))
@@ -169,6 +171,7 @@ func TestPebbleTx(
 				t.Fatal()
 			}
 			ce(selIndex(
+				wg,
 				index.MatchEntry(entity.IdxSummaryKey, key3),
 				index.Count(&i),
 			))
@@ -183,7 +186,6 @@ func TestPebbleTx(
 
 func TestPebbleTxEntityDelete(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newPeb storepebble.New,
 	newKV storekv.New,
 	scope Scope,
@@ -192,13 +194,13 @@ func TestPebbleTxEntityDelete(
 	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
-	peb, err := newPeb(wt, nil, dir)
+	peb, err := newPeb(wg, nil, dir)
 	ce(err)
 
 	scope.Fork(
 		func() KVToStore {
 			return func(kv storekv.KV) (store.Store, error) {
-				return newKV(kv, "foo")
+				return newKV(wg, kv, "foo")
 			}
 		},
 		UsePebbleTx,
@@ -219,6 +221,7 @@ func TestPebbleTxEntityDelete(
 
 			var c int
 			ce(sel(
+				wg,
 				index.MatchEntry(entity.IdxPairObjectSummary, s.Key),
 				index.Count(&c),
 			))
@@ -226,9 +229,10 @@ func TestPebbleTxEntityDelete(
 				t.Fatal()
 			}
 
-			ce(del(s.Key))
+			ce(del(wg, s.Key))
 
 			ce(sel(
+				wg,
 				index.MatchEntry(entity.IdxPairObjectSummary, s.Key),
 				index.Count(&c),
 			))

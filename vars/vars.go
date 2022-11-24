@@ -14,27 +14,27 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/storepebble"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 type VarsSpec func() (
 	dir string,
-	wt *pr.WaitTree,
+	wg *pr2.WaitGroup,
 )
 
 type VarsStore struct {
-	*pr.WaitTree
+	wg *pr2.WaitGroup
 	db *pebble.DB
 }
 
-func (_ Def) VarsStore(
+func (Def) VarsStore(
 	ensureDir fsys.EnsureDir,
 	spec VarsSpec,
 	setRestrictedPath fsys.SetRestrictedPath,
 ) *VarsStore {
 
-	dir, parentWt := spec()
+	dir, parentWG := spec()
 
 	ce(ensureDir(string(dir)))
 	ce(setRestrictedPath(string(dir)))
@@ -47,19 +47,19 @@ func (_ Def) VarsStore(
 	})
 	ce(err)
 
-	wt := pr.NewWaitTree(parentWt, pr.ID("vars"))
+	wg := pr2.NewWaitGroup(parentWG)
 
-	parentWt.Go(func() {
-		<-parentWt.Ctx.Done()
-		wt.Wait()
+	parentWG.Go(func() {
+		<-parentWG.Done()
+		wg.Wait()
 		var err error
 		defer catchErr(&err, pebble.ErrClosed)
 		ce(db.Close())
 	})
 
 	return &VarsStore{
-		WaitTree: wt,
-		db:       db,
+		wg: wg,
+		db: db,
 	}
 }
 
@@ -90,17 +90,17 @@ func catchErr(errp *error, errs ...error) {
 
 type Get func(key string, target any) error
 
-func (_ Def) Get(
+func (Def) Get(
 	store *VarsStore,
 ) Get {
 
 	return func(key string, target any) (err error) {
 		select {
-		case <-store.Ctx.Done():
-			return store.Ctx.Err()
+		case <-store.wg.Done():
+			return store.wg.Err()
 		default:
 		}
-		defer store.Add()()
+		defer store.wg.Add()()
 
 		defer catchErr(&err, pebble.ErrClosed)
 		bs, c, err := store.db.Get([]byte(key))
@@ -136,17 +136,17 @@ var ErrNotFound = errors.New("not found")
 
 type Set func(key string, value any) error
 
-func (_ Def) Set(
+func (Def) Set(
 	store *VarsStore,
 ) Set {
 
 	return func(key string, value any) (err error) {
 		select {
-		case <-store.Ctx.Done():
-			return store.Ctx.Err()
+		case <-store.wg.Done():
+			return store.wg.Err()
 		default:
 		}
-		defer store.Add()()
+		defer store.wg.Add()()
 
 		defer catchErr(&err, pebble.ErrClosed)
 		buf := new(bytes.Buffer)

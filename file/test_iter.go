@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestIterIgnore(
@@ -65,24 +65,18 @@ func TestIterIgnore(
 
 }
 
-func TestIterDiskCancelWaitTree(
+func TestIterDiskCancelWaitGroup(
 	t *testing.T,
-	scope Scope,
-	parentWt *pr.WaitTree,
+	wg *pr2.WaitGroup,
+	iterDisk IterDiskFile,
 ) {
-	wt := pr.NewWaitTree(parentWt)
-	wt.Cancel()
-	scope.Fork(func() *pr.WaitTree {
-		return wt
-	}).Call(func(
-		iterDisk IterDiskFile,
-	) {
-		err := pp.Copy(
-			iterDisk(".", nil),
-			pp.Discard,
-		)
-		if !is(err, context.Canceled) {
-			t.Fatal()
-		}
-	})
+	wg = pr2.NewWaitGroup(wg)
+	wg.Cancel()
+	err := pp.Copy(
+		iterDisk(wg, ".", nil),
+		pp.Discard,
+	)
+	if !is(err, context.Canceled) {
+		t.Fatal()
+	}
 }

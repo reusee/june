@@ -55,7 +55,7 @@ func TestFileFS(
 
 	var root File
 	ce(pp.Copy(
-		iterDisk(dir, nil),
+		iterDisk(wg, dir, nil),
 		build(wg, &root, nil),
 	))
 

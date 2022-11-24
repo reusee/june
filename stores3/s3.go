@@ -5,6 +5,7 @@
 package stores3
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -14,11 +15,11 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type KV struct {
-	*pr.WaitTree
+	wg      *pr2.WaitGroup
 	name    string
 	storeID string
 
@@ -57,7 +58,7 @@ func (kv *KV) CostInfo() storekv.CostInfo {
 }
 
 type New func(
-	wt *pr.WaitTree,
+	ctx context.Context,
 	endpoint string,
 	key string,
 	secret string,
@@ -70,17 +71,17 @@ type NewOption interface {
 	IsNewOption()
 }
 
-func (_ Def) New(
+func (Def) New(
 	timeout Timeout,
 ) New {
 	return func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		endpoint string,
 		key string,
 		secret string,
-		useSSL bool,
+		_ bool,
 		bucket string,
-		options ...NewOption,
+		_ ...NewOption,
 	) (_ *KV, err error) {
 		defer he(&err)
 
@@ -97,7 +98,7 @@ func (_ Def) New(
 		ce(err)
 
 		kv := &KV{
-			WaitTree: parentWt,
+			wg: pr2.NewWaitGroup(ctx),
 			name: fmt.Sprintf("s3%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				bucket,

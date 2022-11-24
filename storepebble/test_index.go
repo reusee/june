@@ -9,20 +9,20 @@ import (
 
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	test index.TestIndex,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
 	dir := t.TempDir()
 
-	s, err := newStore(wt, nil, dir)
+	s, err := newStore(wg, nil, dir)
 	ce(err)
 	with := func(fn func(index.IndexManager)) {
 		fn(s)

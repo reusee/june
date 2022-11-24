@@ -15,7 +15,7 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/key"
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -44,9 +44,8 @@ func init() {
 	Register(TestingIndex2)
 }
 
-func (_ Def) TestIndex(
+func (Def) TestIndex(
 	scope Scope,
-	wt *pr.WaitTree,
 ) TestIndex {
 	return func(
 		withIndexManager func(func(IndexManager)),
@@ -71,6 +70,7 @@ func (_ Def) TestIndex(
 					scope.Fork(&id, &indexManager).Call(func(
 						index Index,
 						selIndex SelectIndex,
+						wg *pr2.WaitGroup,
 					) {
 
 						k, err := key.KeyFromString("foo:beef")
@@ -99,11 +99,12 @@ func (_ Def) TestIndex(
 						// select
 						n := 0
 						err = selIndex(
+							wg,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
 									// Entry
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(name string, i int, _ Key) {
 										if name != "index.testingIndex" {
 											t.Fatalf("got %s", name)
 										}
@@ -113,7 +114,7 @@ func (_ Def) TestIndex(
 										}
 									}),
 									// PreEntry
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, name string, i int) {
 										if name != "index.testingIndex" {
 											t.Fatalf("got %s", name)
 										}
@@ -133,6 +134,7 @@ func (_ Def) TestIndex(
 						// exact
 						n = 0
 						ce(selIndex(
+							wg,
 							Exact(entry),
 							Count(&n),
 						))
@@ -147,11 +149,12 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = selIndex(
+							wg,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
 									// Entry
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(name string, i int, _ Key) {
 										if name != "index.testingIndex" {
 											t.Fatal()
 										}
@@ -161,7 +164,7 @@ func (_ Def) TestIndex(
 										}
 									}),
 									// PreEntry
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, name string, i int) {
 										if name != "index.testingIndex" {
 											t.Fatal()
 										}
@@ -180,16 +183,17 @@ func (_ Def) TestIndex(
 
 						n = 0
 						err = selIndex(
+							wg,
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										n++
 										if i != num {
 											t.Fatal()
 										}
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										n++
 										if i != num {
 											t.Fatal()
@@ -209,13 +213,13 @@ func (_ Def) TestIndex(
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										n++
 										if i != num {
 											t.Fatal()
 										}
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										n++
 										if i != num {
 											t.Fatal()
@@ -235,13 +239,13 @@ func (_ Def) TestIndex(
 							Asc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										n++
 										if i != num {
 											t.Fatal()
 										}
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										n++
 										if i != num {
 											t.Fatal()
@@ -261,7 +265,7 @@ func (_ Def) TestIndex(
 							Lower(NewEntry(TestingIndex, 1)),
 							Upper(NewEntry(TestingIndex, num+1)),
 							Asc,
-							Unmarshal(func(name string, i int, key Key) {
+							Unmarshal(func(_ string, i int, _ Key) {
 								n++
 								if i != num {
 									t.Fatal()
@@ -279,7 +283,7 @@ func (_ Def) TestIndex(
 							Lower(NewEntry(TestingIndex, num+1)),
 							Upper(NewEntry(TestingIndex, 1)),
 							Asc,
-							Unmarshal(func(i int, key Key) {
+							Unmarshal(func(_ int, _ Key) {
 								n++
 							}),
 						)
@@ -332,7 +336,7 @@ func (_ Def) TestIndex(
 							Desc,
 							Sink(func() sb.Sink {
 								return sb.AltSink(
-									sb.Unmarshal(func(name string, i int, key Key) {
+									sb.Unmarshal(func(_ string, i int, _ Key) {
 										if n == 0 {
 											if i != num+1 {
 												t.Fatal()
@@ -344,7 +348,7 @@ func (_ Def) TestIndex(
 										}
 										n++
 									}),
-									sb.Unmarshal(func(key Key, name string, i int) {
+									sb.Unmarshal(func(_ Key, _ string, i int) {
 										if n == 0 {
 											if i != num+1 {
 												t.Fatal()
@@ -606,7 +610,7 @@ func (_ Def) TestIndex(
 						}
 
 						// context
-						ctx, cancel := context.WithCancel(wt.Ctx)
+						ctx, cancel := context.WithCancel(wg)
 						cancel()
 						err = Select(
 							index,
@@ -652,7 +656,7 @@ func (_ Def) TestIndex(
 							Asc,
 						)
 						ce(err)
-						ce(pp.Copy(iter, pp.Tap(func(v any) error {
+						ce(pp.Copy(iter, pp.Tap(func(_ any) error {
 							// should all be deleted
 							t.Fatal()
 							return nil

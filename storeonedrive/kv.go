@@ -67,14 +67,14 @@ func (s *Store) shardedRelPathToKey(p string) string {
 
 func (s *Store) KeyDelete(keys ...string) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
 	defer he(&err)
 	for _, key := range keys {
 		path := s.keyToDrivePath(key, "")
-		ctx, cancel := context.WithTimeout(s.Ctx, defaultTimeout)
+		ctx, cancel := context.WithTimeout(s.wg, defaultTimeout)
 		err := s.req(ctx, "DELETE", path, nil, "", nil)
 		cancel()
 		ce(err, e5.Info("delete %s %s", key, path))
@@ -84,7 +84,7 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 
 func (s *Store) KeyExists(key string) (ok bool, err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return false, ErrClosed
 	default:
 	}
@@ -92,7 +92,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 		e5.With(storekv.StringKey(key)),
 	)
 	path := s.keyToDrivePath(key, "")
-	ctx, cancel := context.WithTimeout(s.Ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(s.wg, defaultTimeout)
 	defer cancel()
 	err = s.req(ctx, "GET", path, nil, "", nil)
 	if is(err, ErrNotFound) {
@@ -104,7 +104,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 
 func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -112,7 +112,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 		e5.With(storekv.StringKey(key)),
 	)
 	path := s.keyToDrivePath(key, "content")
-	resp, err := s.request(s.Ctx, "GET", path, nil, "")
+	resp, err := s.request(s.wg, "GET", path, nil, "")
 	ce(err, e5.Info("path %s", path))
 	defer resp.Body.Close()
 	if resp.StatusCode == 404 {
@@ -126,7 +126,7 @@ func (s *Store) iterFiles(
 	fn func(path string, isDir bool) error,
 ) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -142,7 +142,7 @@ do:
 			Name   string
 		}
 	}
-	ctx, cancel := context.WithTimeout(s.Ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(s.wg, defaultTimeout)
 	err = s.req(ctx, "GET", p, nil, "", &data)
 	cancel()
 	if is(err, ErrNotFound) {
@@ -175,7 +175,7 @@ do:
 
 func (s *Store) KeyIter(prefix string, fn func(string) error) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -200,7 +200,7 @@ func (s *Store) ensureDir(dir string) (err error) {
 	if _, ok := s.dirOK.Load(dir); ok {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(s.Ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(s.wg, defaultTimeout)
 	err = s.req(ctx, "GET", s.relToDrivePath(dir, ""), nil, "", nil)
 	cancel()
 	if err == nil {
@@ -225,7 +225,7 @@ func (s *Store) ensureDir(dir string) (err error) {
 	var data struct {
 		ID string
 	}
-	ctx, cancel = context.WithTimeout(s.Ctx, defaultTimeout)
+	ctx, cancel = context.WithTimeout(s.wg, defaultTimeout)
 	err = s.req(
 		ctx,
 		"POST", addr,
@@ -250,7 +250,7 @@ func (s *Store) ensureDir(dir string) (err error) {
 
 func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -263,7 +263,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 		return err
 	}
 	if err := s.req(
-		s.Ctx,
+		s.wg,
 		"PUT", s.keyToDrivePath(key, "content"),
 		r, "application/octet-stream",
 		nil,

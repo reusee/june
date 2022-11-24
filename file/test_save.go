@@ -55,7 +55,7 @@ func TestSave(
 		// save
 		file := new(File)
 		err := Copy(
-			iterDiskFile(".", nil, UseGitIgnore(false)),
+			iterDiskFile(wg, ".", nil, UseGitIgnore(false)),
 			build(
 				wg,
 				file, nil,
@@ -78,8 +78,8 @@ func TestSave(
 
 		// equal
 		ok, err := equal(
-			iterDiskFile(".", nil, UseGitIgnore(false)),
-			iterFile(file, nil),
+			iterDiskFile(wg, ".", nil, UseGitIgnore(false)),
+			iterFile(wg, file, nil),
 			func(a, b any, reason string) {
 				pt("NOT EQUAL: %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -106,7 +106,7 @@ func TestSave(
 		dir := filepath.Dir(abs)
 		n = 0
 		if err := Copy(
-			iterFile(file, nil),
+			iterFile(wg, file, nil),
 			walk(func(path string, file FileLike) (err error) {
 				defer he(&err)
 				n++
@@ -162,7 +162,7 @@ func TestSave(
 		file2 := new(File)
 		err = Copy(
 			pp.Tee(
-				iterFile(file, nil),
+				iterFile(wg, file, nil),
 			),
 			build(
 				wg,
@@ -180,8 +180,8 @@ func TestSave(
 
 		// equal
 		ok, err = equal(
-			iterFile(file, nil),
-			iterFile(file2, nil),
+			iterFile(wg, file, nil),
+			iterFile(wg, file2, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -191,8 +191,8 @@ func TestSave(
 			t.Fatal()
 		}
 		ok, err = equal(
-			iterDiskFile(".", nil, UseGitIgnore(false)),
-			iterFile(file2, nil),
+			iterDiskFile(wg, ".", nil, UseGitIgnore(false)),
+			iterFile(wg, file2, nil),
 			func(a, b any, reason string) {
 				pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 			},
@@ -229,7 +229,7 @@ func TestSymlink(
 	ce(err)
 	file := new(File)
 	err = Copy(
-		iterDiskfile(dir, nil),
+		iterDiskfile(wg, dir, nil),
 		build(wg, file, nil),
 	)
 	ce(err)

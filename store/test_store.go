@@ -5,6 +5,7 @@
 package store
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"errors"
@@ -24,6 +25,7 @@ import (
 
 // test Store implementation
 type TestStore func(
+	ctx context.Context,
 	withStore func(
 		fn func(Store),
 		provides ...any,
@@ -36,6 +38,7 @@ func (Def) TestStore(
 ) TestStore {
 
 	return func(
+		ctx context.Context,
 		withStore func(
 			fn func(Store),
 			provides ...any,
@@ -196,6 +199,7 @@ func (Def) TestStore(
 			t.Run("scrub", func(t *testing.T) {
 				var n int64
 				if err := scrub(
+					ctx,
 					store,
 					opts.TapKey(func(_ Key) {
 						atomic.AddInt64(&n, 1)

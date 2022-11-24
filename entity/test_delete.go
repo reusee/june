@@ -58,7 +58,7 @@ func TestDelete(
 	key2 := res.Key
 	_ = summary2
 
-	err = del(key1)
+	err = del(wg, key1)
 	var beingRefered *BeingRefered
 	if !as(err, &beingRefered) {
 		t.Fatal()
@@ -76,14 +76,15 @@ func TestDelete(
 		t.Fatal()
 	}
 
-	ce(del(summaryKey2))
+	ce(del(wg, summaryKey2))
 	ce(checkRef(wg))
 
-	ce(del(key1))
+	ce(del(wg, key1))
 	ce(checkRef(wg))
 
 	// check indexes
 	ce(sel(
+		wg,
 		MatchType(int(0)),
 		Tap(func(_ string, key Key) {
 			if key == key1 {

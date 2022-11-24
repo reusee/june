@@ -10,12 +10,10 @@ import (
 	"github.com/reusee/june/entity"
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/tx"
-	"github.com/reusee/pr"
 )
 
 func EntitySave(
 	tx tx.PebbleTx,
-	wt *pr.WaitTree,
 ) entity.Save {
 	return func(
 		ctx context.Context,

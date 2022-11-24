@@ -12,21 +12,21 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 func TestMixedIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	testIndex index.TestIndex,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
 	withIndex := func(fn func(index.IndexManager)) {
 		dir := t.TempDir()
-		s, err := newStore(wt, nil, dir)
+		s, err := newStore(wg, nil, dir)
 		ce(err)
 
 		buf := new(bytes.Buffer)
@@ -50,15 +50,15 @@ func TestMixedIndex(
 
 func TestMixedKV(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	testKV storekv.TestKV,
+	wg *pr2.WaitGroup,
 ) {
 
 	withKV := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(wt, nil, dir)
+		s, err := newStore(wg, nil, dir)
 		ce(err)
 
 		entry := index.NewEntry(TestingIndex, 42)
@@ -71,7 +71,7 @@ func TestMixedKV(
 
 		fn(s, "foo")
 	}
-	testKV(t, withKV)
+	testKV(wg, t, withKV)
 
 }
 

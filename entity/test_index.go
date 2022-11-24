@@ -197,6 +197,7 @@ func TestEmbeddingSameObject(
 
 	var n int
 	ce(sel(
+		wg,
 		MatchEntry(idxTest{}, 42),
 		Count(&n),
 	))
@@ -204,9 +205,10 @@ func TestEmbeddingSameObject(
 		t.Fatal()
 	}
 
-	ce(del(key1))
+	ce(del(wg, key1))
 
 	ce(sel(
+		wg,
 		MatchEntry(idxTest{}, 42),
 		Count(&n),
 	))
@@ -214,9 +216,10 @@ func TestEmbeddingSameObject(
 		t.Fatalf("got %d\n", n)
 	}
 
-	ce(del(key2))
+	ce(del(wg, key2))
 
 	ce(sel(
+		wg,
 		MatchEntry(idxTest{}, 42),
 		Count(&n),
 	))

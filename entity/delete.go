@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/reusee/june/index"
@@ -20,6 +21,7 @@ TODO
 */
 
 type Delete func(
+	ctx context.Context,
 	key Key,
 ) (
 	err error,
@@ -40,7 +42,7 @@ func (e *BeingRefered) Error() string {
 	)
 }
 
-func (_ Def) Delete(
+func (Def) Delete(
 	fetch Fetch,
 	store Store,
 	index Index,
@@ -51,6 +53,7 @@ func (_ Def) Delete(
 	//TODO entity lock
 
 	return func(
+		ctx context.Context,
 		key Key,
 	) (
 		err error,
@@ -62,12 +65,14 @@ func (_ Def) Delete(
 		if key.Namespace == NSSummary {
 			summaryKeys[key] = struct{}{}
 			ce(sel(
+				ctx,
 				MatchEntry(IdxSummaryOf, key),
 				TapKey(func(key Key) {
 					entityKey = key
 				}),
 			))
 			ce(sel(
+				ctx,
 				MatchEntry(IdxSummaryKey, entityKey),
 				TapKey(func(key Key) {
 					summaryKeys[key] = struct{}{}
@@ -76,6 +81,7 @@ func (_ Def) Delete(
 		} else {
 			entityKey = key
 			ce(sel(
+				ctx,
 				MatchEntry(IdxSummaryKey, entityKey),
 				TapKey(func(key Key) {
 					summaryKeys[key] = struct{}{}
@@ -106,7 +112,7 @@ func (_ Def) Delete(
 		for summaryKey := range summaryKeys {
 			var summary Summary
 			ce(fetch(summaryKey, &summary))
-			ce(deleteSummary(&summary, summaryKey))
+			ce(deleteSummary(ctx, &summary, summaryKey))
 		}
 
 		// delete entity

@@ -44,7 +44,6 @@ require (
 
 require (
 	github.com/reusee/e5 v0.0.0-20221121150545-535ad462f830
-	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b
 	github.com/reusee/pr2 v0.0.0-20221124075513-e1cb4081adb8
 )
 
@@ -69,6 +68,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

@@ -15,9 +15,9 @@ import (
 )
 
 func (k *KV) KeyExists(key string) (_ bool, err error) {
-	defer k.Add()()
+	defer k.wg.Add()()
 	defer he(&err)
-	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+	ctx, cancel := context.WithTimeout(k.wg, k.timeout)
 	defer cancel()
 	_, err = k.client.StatObject(ctx, k.bucket, key, minio.StatObjectOptions{})
 	if err != nil {
@@ -31,11 +31,11 @@ func (k *KV) KeyExists(key string) (_ bool, err error) {
 }
 
 func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
-	defer k.Add()()
+	defer k.wg.Add()()
 	defer he(&err,
 		e5.With(storekv.StringKey(key)),
 	)
-	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+	ctx, cancel := context.WithTimeout(k.wg, k.timeout)
 	defer cancel()
 	obj, err := k.client.GetObject(ctx, k.bucket, key, minio.GetObjectOptions{})
 	var resp minio.ErrorResponse
@@ -55,11 +55,11 @@ func (k *KV) KeyGet(key string, fn func(io.Reader) error) (err error) {
 }
 
 func (k *KV) KeyPut(key string, r io.Reader) (err error) {
-	defer k.Add()()
+	defer k.wg.Add()()
 	defer he(&err,
 		e5.With(storekv.StringKey(key)),
 	)
-	ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+	ctx, cancel := context.WithTimeout(k.wg, k.timeout)
 	defer cancel()
 	var content []byte
 	if b, ok := r.(interface {
@@ -82,14 +82,14 @@ func (k *KV) KeyPut(key string, r io.Reader) (err error) {
 }
 
 func (k *KV) KeyIter(prefix string, fn func(string) error) (err error) {
-	defer k.Add()()
+	defer k.wg.Add()()
 	defer he(&err, e5.Info("prefix %s", prefix))
 
 	marker := ""
 loop:
 	for {
 		select {
-		case <-k.Ctx.Done():
+		case <-k.wg.Done():
 			break loop
 		default:
 		}
@@ -117,12 +117,12 @@ loop:
 }
 
 func (k *KV) KeyDelete(keys ...string) (err error) {
-	defer k.Add()()
+	defer k.wg.Add()()
 	defer he(&err)
 	for len(keys) > 0 {
 		i := 0
 
-		ctx, cancel := context.WithTimeout(k.Ctx, k.timeout)
+		ctx, cancel := context.WithTimeout(k.wg, k.timeout)
 		defer cancel()
 		ch := make(chan minio.ObjectInfo)
 		errChan := k.client.RemoveObjects(

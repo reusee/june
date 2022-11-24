@@ -5,6 +5,8 @@
 package entity
 
 import (
+	"context"
+
 	"github.com/reusee/june/index"
 )
 
@@ -26,6 +28,7 @@ func (Def) IdxSummaryKeyFuncs() (
 ) {
 
 	add = func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -40,6 +43,7 @@ func (Def) IdxSummaryKeyFuncs() (
 	}
 
 	del = func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (

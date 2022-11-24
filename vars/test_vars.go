@@ -8,19 +8,19 @@ import (
 	"testing"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestVars(
 	t *testing.T,
 	scope Scope,
-	wt *pr.WaitTree,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
 	scope.Fork(func() VarsSpec {
-		return func() (string, *pr.WaitTree) {
-			return t.TempDir(), wt
+		return func() (string, *pr2.WaitGroup) {
+			return t.TempDir(), wg
 		}
 	}).Call(func(
 		get Get,

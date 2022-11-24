@@ -28,7 +28,7 @@ func TestUpdate(
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
-	store, err := newKV(newMem(wg), "test")
+	store, err := newKV(wg, newMem(wg), "test")
 	ce(err)
 
 	scope.Fork(func() Store {
@@ -40,6 +40,7 @@ func TestUpdate(
 		equal Equal,
 		watch fsys.Watch,
 		iterFile IterFile,
+		wg *pr2.WaitGroup,
 	) {
 
 		dir := t.TempDir()
@@ -51,7 +52,7 @@ func TestUpdate(
 		file := new(File)
 		var numFile int64
 		err = Copy(
-			iterDisk(dir, nil),
+			iterDisk(wg, dir, nil),
 			build(
 				wg,
 				file,
@@ -76,9 +77,9 @@ func TestUpdate(
 		err = Copy(
 			update(
 				dir,
-				iterFile(file, nil),
+				iterFile(wg, file, nil),
 				t0,
-				iterDisk(dir, nil),
+				iterDisk(wg, dir, nil),
 				watcher,
 			),
 			build(wg, file2, nil),
@@ -86,8 +87,8 @@ func TestUpdate(
 		ce(err)
 		file2 = file2.Subs[0].File
 		if ok, err := equal(
-			iterFile(file, nil),
-			iterFile(file2, nil),
+			iterFile(wg, file, nil),
+			iterFile(wg, file2, nil),
 			nil,
 		); err != nil {
 			t.Fatal(err)
@@ -116,9 +117,9 @@ func TestUpdate(
 			err = Copy(
 				update(
 					dir,
-					iterFile(lastFile, nil),
+					iterFile(wg, lastFile, nil),
 					lastTime,
-					iterDisk(dir, nil),
+					iterDisk(wg, dir, nil),
 					watcher,
 				),
 				build(
@@ -135,8 +136,8 @@ func TestUpdate(
 
 			// verify
 			ok, err := equal(
-				iterDisk(dir, nil),
-				iterFile(file, nil),
+				iterDisk(wg, dir, nil),
+				iterFile(wg, file, nil),
 				func(a, b any, reason string) {
 					pt("DIFF %s\n\t%#v\n\t%#v\n\n", reason, a, b)
 				},

@@ -14,14 +14,14 @@ import (
 	"github.com/pelletier/go-toml"
 	"github.com/reusee/e5"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 func TestKV(
 	t *testing.T,
-	wt *pr.WaitTree,
 	testKV storekv.TestKV,
 	newKV New,
+	wg *pr2.WaitGroup,
 ) {
 	defer he(nil, e5.TestingFatal(t))
 
@@ -43,7 +43,7 @@ func TestKV(
 
 	with := func(fn func(storekv.KV, string)) {
 		kv, err := newKV(
-			wt,
+			wg,
 			config.Endpoint,
 			config.Key,
 			config.Secret,
@@ -53,5 +53,5 @@ func TestKV(
 		ce(err)
 		fn(kv, strconv.FormatInt(rand.Int63(), 10))
 	}
-	testKV(t, with)
+	testKV(wg, t, with)
 }

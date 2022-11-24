@@ -17,7 +17,6 @@ import (
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/storetap"
 	"github.com/reusee/pp"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
@@ -34,7 +33,6 @@ func (t testSaveFoo) EntityIndexes() (IndexSet, int64, error) {
 
 func TestSave(
 	t *testing.T,
-	wt *pr.WaitTree,
 	save SaveEntity,
 	store store.Store,
 	rebuildIndex RebuildIndex,
@@ -320,6 +318,7 @@ func TestSave(
 
 		var num int64
 		if n, err := rebuildIndex(
+			wg,
 			WithIndexSaveOptions([]IndexSaveOption{
 				IndexTapEntry(func(_ IndexEntry) {
 					atomic.AddInt64(&num, 1)
@@ -344,7 +343,7 @@ func TestSave(
 			t.Fatal()
 		}
 
-		if n, err := updateIndex(); err != nil {
+		if n, err := updateIndex(wg); err != nil {
 			t.Fatal(err)
 		} else if n != 0 {
 			t.Fatalf("got %d\n", n)
@@ -406,7 +405,7 @@ func TestSave(
 				defer he(&err)
 				var summary Summary
 				ce(fetch(key, &summary))
-				ce(saveSummary(&summary, false))
+				ce(saveSummary(wg, &summary, false))
 				return nil
 			}))
 
@@ -466,7 +465,7 @@ func TestSave(
 		var n int64
 		var m int64
 		ce(resave(
-			wt.Ctx,
+			wg,
 			[]any{
 				testSaveFoo(0),
 			},

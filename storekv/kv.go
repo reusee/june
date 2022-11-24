@@ -6,6 +6,7 @@ package storekv
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -15,7 +16,7 @@ import (
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/store"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
@@ -45,7 +46,7 @@ type CostInfo struct {
 }
 
 type Store struct {
-	*pr.WaitTree
+	wg            *pr2.WaitGroup
 	name          string
 	kv            KV
 	codec         Codec
@@ -64,6 +65,7 @@ type Store struct {
 var _ store.Store = new(Store)
 
 type New func(
+	ctx context.Context,
 	kv KV,
 	prefix string,
 	options ...NewOption,
@@ -75,15 +77,15 @@ type NewOption interface {
 
 var serial int64
 
-func (_ Def) New(
+func (Def) New(
 	newHashState key.NewHashState,
 	parallel sys.Parallel,
-	wt *pr.WaitTree,
 ) (
 	newStore New,
 ) {
 
 	newStore = func(
+		ctx context.Context,
 		kv KV,
 		prefix string,
 		options ...NewOption,
@@ -113,7 +115,7 @@ func (_ Def) New(
 		}
 
 		store := &Store{
-			WaitTree: wt,
+			wg: pr2.NewWaitGroup(ctx),
 			name: fmt.Sprintf("kv%d(%s, %s)",
 				atomic.AddInt64(&serial, 1),
 				kv.Name(),

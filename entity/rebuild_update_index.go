@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sync"
@@ -13,12 +14,12 @@ import (
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
 
 type RebuildIndex func(
+	ctx context.Context,
 	options ...IndexOption,
 ) (
 	n int64,
@@ -26,6 +27,7 @@ type RebuildIndex func(
 )
 
 type UpdateIndex func(
+	ctx context.Context,
 	options ...IndexOption,
 ) (
 	n int64,
@@ -44,11 +46,11 @@ func (Def) IndexFuncs(
 	store Store,
 	saveSummary SaveSummary,
 	sel index.SelectIndex,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) (rebuild RebuildIndex, update UpdateIndex) {
 
 	resave := func(
+		ctx context.Context,
 		ignore func(summaryKey Key) (bool, error),
 		options ...IndexOption,
 	) (n int64, err error) {
@@ -67,7 +69,7 @@ func (Def) IndexFuncs(
 			}
 		}
 
-		wg := pr2.NewWaitGroup(wt.Ctx)
+		wg := pr2.NewWaitGroup(ctx)
 		defer wg.Cancel()
 		put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) (err error) {
 			defer he(&err)
@@ -106,7 +108,7 @@ func (Def) IndexFuncs(
 			}
 
 			// save
-			ce(saveSummary(&summary, false, WithIndexSaveOptions(saveOptions)))
+			ce(saveSummary(ctx, &summary, false, WithIndexSaveOptions(saveOptions)))
 			atomic.AddInt64(&n, 1)
 
 			return nil
@@ -122,21 +124,24 @@ func (Def) IndexFuncs(
 	}
 
 	rebuild = func(
+		ctx context.Context,
 		options ...IndexOption,
 	) (n int64, err error) {
-		return resave(nil, options...)
+		return resave(ctx, nil, options...)
 	}
 
 	update = func(
+		ctx context.Context,
 		options ...IndexOption,
 	) (n int64, err error) {
-		return resave(func(summaryKey Key) (_ bool, err error) {
+		return resave(ctx, func(summaryKey Key) (_ bool, err error) {
 			defer he(&err)
 
 			// check existence
 			var c int
 			var key Key
 			ce(sel(
+				ctx,
 				MatchEntry(IdxSummaryOf, summaryKey),
 				Count(&c),
 				Limit(1),
@@ -151,6 +156,7 @@ func (Def) IndexFuncs(
 			// check version
 			var typeName string
 			ce(sel(
+				ctx,
 				MatchPreEntry(key, IdxType),
 				TapPre(func(t string) {
 					typeName = t
@@ -163,6 +169,7 @@ func (Def) IndexFuncs(
 				var savedVersion int64
 				var c int
 				ce(sel(
+					ctx,
 					MatchPreEntry(key, IdxVersion),
 					TapPre(func(v int64) {
 						savedVersion = v

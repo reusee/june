@@ -31,12 +31,12 @@ func TestStore(
 			newKV storekv.New,
 			newTree New,
 		) {
-			upstream, err := newKV(newMem(wg), "foo")
+			upstream, err := newKV(wg, newMem(wg), "foo")
 			ce(err)
 			tree, err := newTree(upstream)
 			ce(err)
 			fn(tree)
 		})
 	}
-	testStore(with, t)
+	testStore(wg, with, t)
 }

@@ -72,6 +72,7 @@ func (Def) Resave(
 			obj := obj
 			objType := reflect.TypeOf(obj)
 			ce(sel(
+				ctx,
 				MatchType(obj),
 				TapKey(func(key Key) {
 

@@ -13,7 +13,6 @@ import (
 	"github.com/reusee/june/storekv"
 	"github.com/reusee/june/storemem"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
@@ -51,7 +50,6 @@ func (Def) IndexGC(
 	fetch Fetch,
 	index Index,
 	parallel sys.Parallel,
-	wt *pr.WaitTree,
 ) IndexGC {
 	return func(
 		ctx context.Context,
@@ -72,7 +70,7 @@ func (Def) IndexGC(
 		// rebuild summary in mem store
 		memStore := newMem(ctx)
 		memScope := scope.Fork(func() (Store, IndexManager) {
-			kv, err := newKV(memStore, "index-gc", storekv.WithCodec(
+			kv, err := newKV(ctx, memStore, "index-gc", storekv.WithCodec(
 				blackholeCodec{},
 			))
 			ce(err)
@@ -89,7 +87,7 @@ func (Def) IndexGC(
 				defer he(&err)
 				var summary Summary
 				ce(fetch(key, &summary))
-				ce(memSaveSummary(&summary, true))
+				ce(memSaveSummary(ctx, &summary, true))
 				return nil
 			}))
 
@@ -139,7 +137,7 @@ func (Def) IndexGC(
 				return
 			}
 
-			wg := pr2.NewWaitGroup(wt.Ctx)
+			wg := pr2.NewWaitGroup(ctx)
 			defer wg.Cancel()
 			put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) (err error) {
 				defer he(&err)

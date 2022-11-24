@@ -31,7 +31,7 @@ func (s *Store) CostInfo() storekv.CostInfo {
 
 func (s *Store) KeyExists(key string) (ok bool, err error) {
 	defer he(&err)
-	done := s.Add()
+	done := s.wg.Add()
 	defer done()
 
 	defer s.lockRead()()
@@ -62,7 +62,7 @@ func (s *Store) KeyExists(key string) (ok bool, err error) {
 
 func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 	defer he(&err)
-	done := s.Add()
+	done := s.wg.Add()
 	defer done()
 
 	defer s.lockRead()()
@@ -104,7 +104,7 @@ func (s *Store) KeyGet(key string, fn func(io.Reader) error) (err error) {
 
 func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 	defer he(&err)
-	done := s.Add()
+	done := s.wg.Add()
 	defer done()
 
 	if unlock := s.tryLockWrite(); unlock != nil {
@@ -149,7 +149,7 @@ func (s *Store) KeyPut(key string, r io.Reader) (err error) {
 
 func (s *Store) KeyDelete(keys ...string) (err error) {
 	defer he(&err)
-	done := s.Add()
+	done := s.wg.Add()
 	defer done()
 
 	if unlock := s.tryLockWrite(); unlock != nil {
@@ -183,7 +183,7 @@ func (s *Store) KeyDelete(keys ...string) (err error) {
 
 func (s *Store) KeyIter(prefix string, fn func(key string) error) (err error) {
 	defer he(&err)
-	done := s.Add()
+	done := s.wg.Add()
 	defer done()
 
 	defer s.lockRead()()

@@ -51,7 +51,7 @@ func (Def) Save(
 	keyType := reflect.TypeOf((*Key)(nil)).Elem()
 
 	save = func(
-		_ context.Context,
+		ctx context.Context,
 		ns key.Namespace,
 		value any,
 		options ...SaveOption,
@@ -208,7 +208,7 @@ func (Def) Save(
 		ce(rootSummary.addIndex(IdxType(typeName)))
 
 		// save summary
-		ce(saveSummary(rootSummary, true, saveSummaryOptions...))
+		ce(saveSummary(ctx, rootSummary, true, saveSummaryOptions...))
 
 		if tapSummary != nil {
 			tapSummary(rootSummary)

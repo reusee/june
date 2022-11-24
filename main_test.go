@@ -26,7 +26,6 @@ import (
 	"github.com/reusee/june/storepebble"
 	"github.com/reusee/june/sys"
 	"github.com/reusee/june/vars"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 )
 
@@ -111,21 +110,18 @@ func runTest(
 	// run
 	if len(specs) == 1 {
 		spec := specs[0]
-		waitTree := pr.NewRootWaitTree(pr.ID("test root"))
+		wg := pr2.NewWaitGroup(context.Background())
 		spec.Defs = append(spec.Defs,
 			func() *testing.T {
 				return t
 			},
 			func() vars.VarsSpec {
-				return func() (string, *pr.WaitTree) {
-					return t.TempDir(), waitTree
+				return func() (string, *pr2.WaitGroup) {
+					return t.TempDir(), wg
 				}
 			},
-			func() *pr.WaitTree {
-				return waitTree
-			},
 			func() *pr2.WaitGroup {
-				return pr2.NewWaitGroup(context.Background())
+				return wg
 			},
 		)
 		scope := dscope.New(spec.Defs...).Fork(
@@ -134,8 +130,8 @@ func runTest(
 			},
 		)
 		scope.Call(fn)
-		waitTree.Cancel()
-		waitTree.Wait()
+		wg.Cancel()
+		wg.Wait()
 
 	} else {
 		for _, spec := range specs {
@@ -144,21 +140,18 @@ func runTest(
 				strings.Join(spec.Desc, ":"),
 				func(t *testing.T) {
 					t.Parallel()
-					waitTree := pr.NewRootWaitTree(pr.ID("test root"))
+					wg := pr2.NewWaitGroup(context.Background())
 					spec.Defs = append(spec.Defs,
 						func() *testing.T {
 							return t
 						},
 						func() vars.VarsSpec {
-							return func() (string, *pr.WaitTree) {
-								return t.TempDir(), waitTree
+							return func() (string, *pr2.WaitGroup) {
+								return t.TempDir(), wg
 							}
 						},
-						func() *pr.WaitTree {
-							return waitTree
-						},
 						func() *pr2.WaitGroup {
-							return pr2.NewWaitGroup(context.Background())
+							return wg
 						},
 					)
 					scope := dscope.New(spec.Defs...).Fork(
@@ -167,8 +160,8 @@ func runTest(
 						},
 					)
 					scope.Call(fn)
-					waitTree.Cancel()
-					waitTree.Wait()
+					wg.Cancel()
+					wg.Wait()
 				},
 			)
 		}
@@ -184,10 +177,10 @@ var indexManagerDefs = []any{
 	1: func(
 		t *testing.T,
 		newPebble storepebble.New,
-		wt *pr.WaitTree,
+		wg *pr2.WaitGroup,
 	) index.IndexManager {
 		defer he(nil, e5.TestingFatal(t))
-		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
+		peb, err := newPebble(wg, storepebble.NewMemFS(), "foo")
 		ce(err)
 		return peb
 	},
@@ -196,12 +189,12 @@ var indexManagerDefs = []any{
 	2: func(
 		t *testing.T,
 		newPebble storepebble.New,
-		wt *pr.WaitTree,
+		wg *pr2.WaitGroup,
 		newBatch storepebble.NewBatch,
 	) index.IndexManager {
 		defer he(nil, e5.TestingFatal(t))
 		ctx := pr2.NewWaitGroup(context.TODO())
-		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
+		peb, err := newPebble(wg, storepebble.NewMemFS(), "foo")
 		ce(err)
 		batch, err := newBatch(ctx, peb)
 		ce(err)
@@ -222,12 +215,12 @@ var storeDefs = []any{
 		t *testing.T,
 		newPebble storepebble.New,
 		newKV storekv.New,
-		wt *pr.WaitTree,
+		wg *pr2.WaitGroup,
 	) store.Store {
 		defer he(nil, e5.TestingFatal(t))
-		peb, err := newPebble(wt, storepebble.NewMemFS(), "peb")
+		peb, err := newPebble(wg, storepebble.NewMemFS(), "peb")
 		ce(err)
-		s, err := newKV(peb, "foo")
+		s, err := newKV(wg, peb, "foo")
 		ce(err)
 		return s
 	},
@@ -237,13 +230,13 @@ var storeDefs = []any{
 		t *testing.T,
 		newDiskStore storedisk.New,
 		newKV storekv.New,
+		wg *pr2.WaitGroup,
 	) store.Store {
 		defer he(nil, e5.TestingFatal(t))
 		dir := t.TempDir()
-		ctx := pr2.NewWaitGroup(context.TODO())
-		s, err := newDiskStore(ctx, dir)
+		s, err := newDiskStore(wg, dir)
 		ce(err)
-		kv, err := newKV(s, "foo")
+		kv, err := newKV(wg, s, "foo")
 		ce(err)
 		return kv
 	},
@@ -255,17 +248,16 @@ var storeDefs = []any{
 	3: func(
 		t *testing.T,
 		newPebble storepebble.New,
-		wt *pr.WaitTree,
 		newBatch storepebble.NewBatch,
 		newKV storekv.New,
+		wg *pr2.WaitGroup,
 	) store.Store {
 		defer he(nil, e5.TestingFatal(t))
-		ctx := pr2.NewWaitGroup(context.TODO())
-		peb, err := newPebble(wt, storepebble.NewMemFS(), "foo")
+		peb, err := newPebble(wg, storepebble.NewMemFS(), "foo")
 		ce(err)
-		batch, err := newBatch(ctx, peb)
+		batch, err := newBatch(wg, peb)
 		ce(err)
-		kv, err := newKV(batch, "foo")
+		kv, err := newKV(wg, batch, "foo")
 		ce(err)
 		return kv
 	},
@@ -274,9 +266,9 @@ var storeDefs = []any{
 var memStore = func(
 	newMem storemem.New,
 	newKV storekv.New,
+	wg *pr2.WaitGroup,
 ) store.Store {
-	ctx := pr2.NewWaitGroup(context.TODO())
-	s, err := newKV(newMem(ctx), "foo")
+	s, err := newKV(wg, newMem(wg), "foo")
 	ce(err)
 	return s
 }

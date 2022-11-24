@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -80,6 +81,7 @@ func (s *Summary) clean() (ok bool) {
 }
 
 type OnSummaryIndexAdd func(
+	ctx context.Context,
 	summary *Summary,
 	summaryKey Key,
 ) (
@@ -95,6 +97,7 @@ func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Va
 		fns = append(fns, v.Interface().(OnSummaryIndexAdd))
 	}
 	fn := OnSummaryIndexAdd(func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -102,7 +105,7 @@ func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Va
 		err error,
 	) {
 		for _, f := range fns {
-			if es, err := f(summary, summaryKey); err != nil {
+			if es, err := f(ctx, summary, summaryKey); err != nil {
 				return nil, err
 			} else {
 				entries = append(entries, es...)
@@ -114,6 +117,7 @@ func (o OnSummaryIndexAdd) Reduce(_ dscope.Scope, vs []reflect.Value) reflect.Va
 }
 
 type OnSummaryIndexDelete func(
+	ctx context.Context,
 	summary *Summary,
 	summaryKey Key,
 ) (
@@ -129,6 +133,7 @@ func (o OnSummaryIndexDelete) Reduce(_ dscope.Scope, vs []reflect.Value) reflect
 		fns = append(fns, v.Interface().(OnSummaryIndexDelete))
 	}
 	fn := OnSummaryIndexDelete(func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -136,7 +141,7 @@ func (o OnSummaryIndexDelete) Reduce(_ dscope.Scope, vs []reflect.Value) reflect
 		err error,
 	) {
 		for _, f := range fns {
-			if es, err := f(summary, summaryKey); err != nil {
+			if es, err := f(ctx, summary, summaryKey); err != nil {
 				return nil, err
 			} else {
 				entris = append(entris, es...)
@@ -165,6 +170,7 @@ func (_ Def) SummaryIndexFuncs(
 ) {
 
 	add = func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -194,6 +200,7 @@ func (_ Def) SummaryIndexFuncs(
 	}
 
 	del = func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -216,6 +223,7 @@ func (_ Def) SummaryIndexFuncs(
 					//  check ref
 					var n int
 					ce(sel(
+						ctx,
 						MatchEntry(IdxEmbeddedBy, key),
 						Count(&n),
 					))
@@ -248,6 +256,7 @@ func (_ WithIndexSaveOptions) IsSaveSummaryOption() {}
 
 // SaveSummary
 type SaveSummary func(
+	ctx context.Context,
 	summary *Summary,
 	isLatest bool,
 	options ...SaveSummaryOption,
@@ -264,6 +273,7 @@ func (_ Def) SaveSummary(
 ) SaveSummary {
 
 	return func(
+		ctx context.Context,
 		s *Summary,
 		isLatest bool,
 		options ...SaveSummaryOption,
@@ -312,6 +322,7 @@ func (_ Def) SaveSummary(
 		var oldSummaries []Summary
 		if isLatest {
 			ce(sel(
+				ctx,
 				MatchEntry(IdxSummaryKey, s.Key),
 				TapKey(func(k Key) {
 					if k == summaryKey {
@@ -337,7 +348,7 @@ func (_ Def) SaveSummary(
 		if len(oldSummaryKeys) > 0 {
 			deletingIndexes := make(map[Hash]IndexEntry)
 			for i, oldKey := range oldSummaryKeys {
-				entries, err := onDel(&oldSummaries[i], oldKey)
+				entries, err := onDel(ctx, &oldSummaries[i], oldKey)
 				ce(err)
 				for _, entry := range entries {
 					h, err := key.HashValue(entry)
@@ -345,7 +356,7 @@ func (_ Def) SaveSummary(
 					deletingIndexes[h] = entry
 				}
 			}
-			entries, err := onAdd(s, summaryKey)
+			entries, err := onAdd(ctx, s, summaryKey)
 			ce(err)
 			for _, entry := range entries {
 				h, err := key.HashValue(entry)
@@ -361,7 +372,7 @@ func (_ Def) SaveSummary(
 			}
 
 		} else {
-			entries, err := onAdd(s, summaryKey)
+			entries, err := onAdd(ctx, s, summaryKey)
 			ce(err)
 			for _, entry := range entries {
 				ce(index.Save(entry, indexSaveOptions...))
@@ -395,6 +406,7 @@ func (s *Summary) addIndex(entry IndexEntry) error {
 }
 
 type DeleteSummary func(
+	ctx context.Context,
 	summary *Summary,
 	summaryKey Key,
 ) (
@@ -408,6 +420,7 @@ func (_ Def) DeleteSummary(
 	onDel OnSummaryIndexDelete,
 ) DeleteSummary {
 	return func(
+		ctx context.Context,
 		summary *Summary,
 		summaryKey Key,
 	) (
@@ -421,7 +434,7 @@ func (_ Def) DeleteSummary(
 		//TODO lock slot
 
 		// indexes
-		tuples, err := onDel(summary, summaryKey)
+		tuples, err := onDel(ctx, summary, summaryKey)
 		ce(err)
 		for _, tuple := range tuples {
 			ce(index.Delete(tuple))

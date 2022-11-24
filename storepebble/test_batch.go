@@ -11,13 +11,11 @@ import (
 	"github.com/reusee/e5"
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 )
 
 func TestBatchKV(
 	t *testing.T,
-	wt *pr.WaitTree,
 	test storekv.TestKV,
 	newStore New,
 	newBatch NewBatch,
@@ -27,18 +25,17 @@ func TestBatchKV(
 	with := func(fn func(storekv.KV, string)) {
 		dir, err := os.MkdirTemp(t.TempDir(), "")
 		ce(err)
-		s, err := newStore(wt, nil, dir)
+		s, err := newStore(wg, nil, dir)
 		ce(err)
 		batch, err := newBatch(wg, s)
 		ce(err)
 		fn(batch, "foo")
 	}
-	test(t, with)
+	test(wg, t, with)
 }
 
 func TestBatchIndex(
 	t *testing.T,
-	wt *pr.WaitTree,
 	newStore New,
 	newBatch NewBatch,
 	test index.TestIndex,
@@ -47,7 +44,7 @@ func TestBatchIndex(
 	defer he(nil, e5.TestingFatal(t))
 	dir, err := os.MkdirTemp(t.TempDir(), "")
 	ce(err)
-	s, err := newStore(wt, nil, dir)
+	s, err := newStore(wg, nil, dir)
 	ce(err)
 	batch, err := newBatch(wg, s)
 	ce(err)

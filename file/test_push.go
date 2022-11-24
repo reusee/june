@@ -41,7 +41,7 @@ func TestPushFile(
 
 	file := new(File)
 	ce(pp.Copy(
-		iterDisk(dir, nil),
+		iterDisk(wg, dir, nil),
 		build(wg, file, nil),
 	))
 	summary, err := save(wg, file)
@@ -49,7 +49,7 @@ func TestPushFile(
 
 	mem := newMem(wg)
 	kv, err := newKV(
-		mem, "foo",
+		wg, mem, "foo",
 	)
 	ce(err)
 	ce(push(
@@ -70,7 +70,7 @@ func TestPushFile(
 		ce(fetch(summary.Key, &file2))
 		file3 := new(File)
 		ce(pp.Copy(
-			iterFile(file2.Subs[0].File, nil),
+			iterFile(wg, file2.Subs[0].File, nil),
 			build(wg, file3, nil),
 		))
 		s, err := save(wg, file3)

@@ -117,6 +117,7 @@ func TestContent(
 
 			var contentKeys []Key
 			selIndex(
+				wg,
 				entity.MatchType(Content{}),
 				index.TapKey(func(key Key) {
 					var content Content
@@ -126,7 +127,7 @@ func TestContent(
 				}),
 			)
 			for _, key := range contentKeys {
-				ce(del(key))
+				ce(del(wg, key))
 			}
 
 			compactRatio := float64(contentBytes) / float64(numBytes)

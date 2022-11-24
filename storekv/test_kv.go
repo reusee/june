@@ -5,6 +5,7 @@
 package storekv
 
 import (
+	"context"
 	"io"
 	"testing"
 
@@ -14,17 +15,19 @@ import (
 )
 
 type TestKV func(
+	ctx context.Context,
 	t *testing.T,
 	with func(
 		fn func(kv KV, prefix string),
 	),
 )
 
-func (_ Def) TestKV(
+func (Def) TestKV(
 	scope dscope.Scope,
 	testStore store.TestStore,
 ) TestKV {
 	return func(
+		ctx context.Context,
 		t *testing.T,
 		with func(
 			kvFunc func(kv KV, prefix string),
@@ -39,6 +42,7 @@ func (_ Def) TestKV(
 					codec Codec,
 				) {
 					store, err := newStore(
+						ctx,
 						kv, prefix,
 						WithCodec(codec),
 					)
@@ -47,7 +51,7 @@ func (_ Def) TestKV(
 				})
 			})
 		}
-		testStore(withStore, t)
+		testStore(ctx, withStore, t)
 
 		// cache
 		withStore = func(storeFunc func(store.Store), provides ...any) {
@@ -60,6 +64,7 @@ func (_ Def) TestKV(
 					cache, err := newMemCache(1024, 8192)
 					ce(err)
 					store, err := newStore(
+						ctx,
 						kv, prefix,
 						WithCodec(codec),
 						WithCache(cache),
@@ -69,15 +74,15 @@ func (_ Def) TestKV(
 				})
 			})
 		}
-		testStore(withStore, t)
+		testStore(ctx, withStore, t)
 
 		// offload
 		withStore = func(storeFunc func(store.Store), provides ...any) {
-			with(func(offloadKV KV, prefix string) {
+			with(func(offloadKV KV, _ string) {
 				scope.Call(func(
 					newStore New,
 				) {
-					offloadStore, err := newStore(offloadKV, "offload")
+					offloadStore, err := newStore(ctx, offloadKV, "offload")
 					ce(err)
 					with(func(kv KV, prefix string) {
 						scope.Fork(provides...).Call(func(
@@ -85,6 +90,7 @@ func (_ Def) TestKV(
 							codec Codec,
 						) {
 							store, err := newStore(
+								ctx,
 								kv,
 								prefix,
 								WithCodec(codec),
@@ -99,10 +105,10 @@ func (_ Def) TestKV(
 				})
 			})
 		}
-		testStore(withStore, t)
+		testStore(ctx, withStore, t)
 
 		// errors
-		with(func(kv KV, prefix string) {
+		with(func(kv KV, _ string) {
 			key := "foo"
 			err := kv.KeyGet(key, func(r io.Reader) error {
 				_, err := io.Copy(io.Discard, r)

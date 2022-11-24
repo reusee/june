@@ -80,7 +80,7 @@ func TestBuild(
 		// disk file
 		var numFile int64
 		ce(pp.Copy(
-			iterDisk(dir, nil),
+			iterDisk(wg, dir, nil),
 			build(
 				wg,
 				&root, nil,
@@ -95,8 +95,8 @@ func TestBuild(
 
 		// compare
 		ok, err := equal(
-			iterDisk(dir, nil),
-			iterFile(root.Subs[0].File, nil),
+			iterDisk(wg, dir, nil),
+			iterFile(wg, root.Subs[0].File, nil),
 			nil,
 		)
 		ce(err)
@@ -107,12 +107,12 @@ func TestBuild(
 		// build from file
 		var root2 File
 		ce(pp.Copy(
-			iterFile(root.Subs[0].File, nil),
+			iterFile(wg, root.Subs[0].File, nil),
 			build(wg, &root2, nil),
 		))
 		ok, err = equal(
-			iterFile(root2.Subs[0].File, nil),
-			iterFile(root.Subs[0].File, nil),
+			iterFile(wg, root2.Subs[0].File, nil),
+			iterFile(wg, root.Subs[0].File, nil),
 			nil,
 		)
 		ce(err)
@@ -166,7 +166,7 @@ func TestBuildMerge(
 				build(wg, &root, nil),
 			))
 			ok, err := equal(
-				iterFile(root.Subs[0].File, nil),
+				iterFile(wg, root.Subs[0].File, nil),
 				iterVirtual(vRoot, nil),
 				nil,
 			)

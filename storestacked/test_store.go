@@ -38,11 +38,11 @@ func TestStore(
 						newKV storekv.New,
 						newStore New,
 					) {
-						backing, err := newKV(newMem(wg), "foo")
+						backing, err := newKV(wg, newMem(wg), "foo")
 						if err != nil {
 							t.Fatal(err)
 						}
-						upstream, err := newKV(newMem(wg), "foo")
+						upstream, err := newKV(wg, newMem(wg), "foo")
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -51,7 +51,7 @@ func TestStore(
 						fn(store)
 					})
 				}
-				testStore(with, t)
+				testStore(wg, with, t)
 			})
 
 		}

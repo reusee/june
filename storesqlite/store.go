@@ -5,6 +5,7 @@
 package storesqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -16,11 +17,11 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storemem"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type Store struct {
-	*pr.WaitTree
+	wg      *pr2.WaitGroup
 	name    string
 	storeID string
 
@@ -33,17 +34,17 @@ type Store struct {
 }
 
 type New func(
-	wt *pr.WaitTree,
+	ctx context.Context,
 	path string,
 ) (*Store, error)
 
-func (_ Def) New(
+func (Def) New(
 	machine naming.MachineName,
 	newMem storemem.New,
 	setRestrictedPath fsys.SetRestrictedPath,
 ) New {
 	return func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		path string,
 	) (_ *Store, err error) {
 		defer he(&err)
@@ -63,6 +64,7 @@ func (_ Def) New(
 		ce(err)
 
 		s := &Store{
+			wg:   pr2.NewWaitGroup(ctx),
 			cond: sync.NewCond(new(sync.Mutex)),
 			name: fmt.Sprintf("sqlite%d(%s)",
 				time.Now().UnixNano(),
@@ -76,14 +78,17 @@ func (_ Def) New(
 			dirty: make(chan struct{}, 1),
 		}
 
-		s.WaitTree = pr.NewWaitTree(parentWt, pr.ID("sqlite "+s.storeID))
-		parentWt.Go(func() {
-			<-parentWt.Ctx.Done()
-			s.WaitTree.Wait()
+		wg := pr2.GetWaitGroup(ctx)
+		if wg == nil {
+			panic("no wait group")
+		}
+		wg.Go(func() {
+			<-wg.Done()
+			s.wg.Wait()
 			ce(db.Close())
 		})
 
-		s.WaitTree.Go(s.sync)
+		s.wg.Go(s.sync)
 
 		return s, nil
 	}
@@ -181,7 +186,7 @@ func (s *Store) sync() {
 		select {
 		case <-s.dirty:
 			ce(sync())
-		case <-s.Ctx.Done():
+		case <-s.wg.Done():
 			ce(sync())
 			return
 		}

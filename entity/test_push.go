@@ -24,7 +24,7 @@ func TestPush(
 	defer he(nil, e5.TestingFatal(t))
 
 	mem1 := newMem(wg)
-	store1, err := newKV(mem1, "foo")
+	store1, err := newKV(wg, mem1, "foo")
 	ce(err)
 	scope.Fork(func() Store {
 		return store1
@@ -51,7 +51,7 @@ func TestPush(
 
 		{
 			mem2 := newMem(wg)
-			store2, err := newKV(mem2, "foo")
+			store2, err := newKV(wg, mem2, "foo")
 			ce(err)
 
 			var numCheck int64
@@ -99,7 +99,7 @@ func TestPush(
 		// keys not specified
 		{
 			mem2 := newMem(wg)
-			store2, err := newKV(mem2, "foo")
+			store2, err := newKV(wg, mem2, "foo")
 			ce(err)
 
 			var numCheck int64
@@ -147,7 +147,7 @@ func TestPush(
 		// index manager not specified
 		{
 			mem2 := newMem(wg)
-			store2, err := newKV(mem2, "foo")
+			store2, err := newKV(wg, mem2, "foo")
 			ce(err)
 
 			var numCheck int64
@@ -195,7 +195,7 @@ func TestPush(
 		// ignore
 		{
 			mem2 := newMem(wg)
-			store2, err := newKV(mem2, "foo")
+			store2, err := newKV(wg, mem2, "foo")
 			ce(err)
 
 			var numCheck int64

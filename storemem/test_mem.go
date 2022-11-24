@@ -22,7 +22,7 @@ func TestStore(
 		m := newStore(wg)
 		fn(m, "foo")
 	}
-	test(t, with)
+	test(wg, t, with)
 }
 
 func TestIndex(

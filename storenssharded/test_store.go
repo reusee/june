@@ -30,9 +30,9 @@ func TestStore(
 			newKV storekv.New,
 			newStore New,
 		) {
-			s1, err := newKV(newMem(wg), "foo")
+			s1, err := newKV(wg, newMem(wg), "foo")
 			ce(err)
-			s2, err := newKV(newMem(wg), "foo")
+			s2, err := newKV(wg, newMem(wg), "foo")
 			ce(err)
 			s, err := newStore(
 				map[key.Namespace]store.Store{
@@ -45,5 +45,5 @@ func TestStore(
 			fn(s)
 		})
 	}
-	testStore(with, t)
+	testStore(wg, with, t)
 }

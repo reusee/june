@@ -10,6 +10,6 @@ import (
 
 type Timeout time.Duration
 
-func (_ Def) Timeout() Timeout {
+func (Def) Timeout() Timeout {
 	return Timeout(time.Minute * 8)
 }

@@ -6,12 +6,12 @@ package store
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"github.com/reusee/june/key"
 	"github.com/reusee/june/opts"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
@@ -21,17 +21,18 @@ type ScrubOption interface {
 }
 
 type Scrub func(
+	ctx context.Context,
 	store Store,
 	options ...ScrubOption,
 ) error
 
 func (Def) Scrub(
 	newHashState key.NewHashState,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) Scrub {
 
 	return func(
+		ctx context.Context,
 		store Store,
 		options ...ScrubOption,
 	) (err error) {
@@ -50,7 +51,7 @@ func (Def) Scrub(
 			}
 		}
 
-		wg := pr2.NewWaitGroup(wt.Ctx)
+		wg := pr2.NewWaitGroup(ctx)
 		defer wg.Cancel()
 		put, wait := pr2.Consume(wg, int(parallel), func(_ int, v any) error {
 			key := v.(Key)

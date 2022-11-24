@@ -18,18 +18,18 @@ import (
 	"time"
 
 	"github.com/reusee/e5"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type New func(
-	parentWt *pr.WaitTree,
+	ctx context.Context,
 	client *http.Client,
 	drivePath string,
 	dir string,
 ) (*Store, error)
 
 type Store struct {
-	*pr.WaitTree
+	wg        *pr2.WaitGroup
 	name      string
 	storeID   string
 	dirOK     sync.Map
@@ -39,9 +39,9 @@ type Store struct {
 	idByPath  sync.Map
 }
 
-func (_ Def) New() New {
+func (Def) New() New {
 	return func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		client *http.Client,
 		drivePath string,
 		dir string,
@@ -50,8 +50,9 @@ func (_ Def) New() New {
 		err error,
 	) {
 
+		wg := pr2.NewWaitGroup(ctx)
 		return &Store{
-			WaitTree: parentWt,
+			wg: wg,
 			name: fmt.Sprintf("onedrive%d(%s)",
 				atomic.AddInt64(&serial, 1),
 				dir,
@@ -90,7 +91,7 @@ func (s *Store) req(
 	target any,
 ) (err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return ErrClosed
 	default:
 	}
@@ -138,7 +139,7 @@ func (s *Store) request(
 	contentType string,
 ) (_ *http.Response, err error) {
 	select {
-	case <-s.Ctx.Done():
+	case <-s.wg.Done():
 		return nil, ErrClosed
 	default:
 	}

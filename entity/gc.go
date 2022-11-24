@@ -149,6 +149,7 @@ func (Def) GC(
 
 		// must use index, to avoid empty index causing all objects to be deleted
 		ce(selIndex(
+			ctx,
 			MatchEntry(IdxSummaryKey),
 			Tap(func(key Key, summaryKey Key) {
 				put(key)
@@ -172,7 +173,7 @@ func (Def) GC(
 			defer he(&err)
 
 			if obj.Key.Namespace == NSSummary {
-				ce(deleteSummary(obj.Summary, obj.Key))
+				ce(deleteSummary(ctx, obj.Summary, obj.Key))
 			} else {
 				if len(batchKeys[proc]) > 500 {
 					ce(store.Delete(batchKeys[proc]))

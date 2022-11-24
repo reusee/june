@@ -108,6 +108,7 @@ func (Def) Push(
 			var toSelectIndex index.SelectIndex
 			toScope.Assign(&toSelectIndex)
 			ce(toSelectIndex(
+				ctx,
 				MatchEntry(IdxPairSummaryObject),
 				Tap(func(summaryKey Key, _ Key) {
 					keySet[summaryKey] = struct{}{}
@@ -134,6 +135,7 @@ func (Def) Push(
 						ce(fn(key))
 					} else {
 						ce(selIndex(
+							ctx,
 							MatchEntry(IdxPairObjectSummary, key),
 							Tap(func(_ Key, summaryKey Key) {
 								ce(fn(summaryKey))
@@ -178,6 +180,7 @@ func (Def) Push(
 			// save summary
 			var retKey Key
 			ce(toSaveSummary(
+				ctx,
 				summary,
 				false,
 				TapKey(func(k Key) {
@@ -265,6 +268,7 @@ func (Def) Push(
 					for _, key := range summary.ReferedKeys {
 						var c int
 						ce(selIndex(
+							ctx,
 							MatchEntry(IdxPairObjectSummary, key),
 							Count(&c),
 							Tap(func(_ Key, sKey Key) {

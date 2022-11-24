@@ -32,13 +32,13 @@ func TestStore(
 			newKV storekv.New,
 			newStore New,
 		) {
-			upstream, err := newKV(newMem(wg), "foo")
+			upstream, err := newKV(wg, newMem(wg), "foo")
 			ce(err)
 			store := newStore(upstream, Funcs{})
 			fn(store)
 		})
 	}
 
-	testStore(with, t)
+	testStore(wg, with, t)
 
 }

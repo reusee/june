@@ -6,6 +6,7 @@ package storepebble
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -17,7 +18,6 @@ import (
 	"github.com/reusee/june/fsys"
 	"github.com/reusee/june/naming"
 	"github.com/reusee/june/storekv"
-	"github.com/reusee/pr"
 	"github.com/reusee/pr2"
 	"github.com/reusee/sb"
 )
@@ -31,7 +31,7 @@ type Store struct {
 
 // create new pebble store
 type New func(
-	wt *pr.WaitTree,
+	ctx context.Context,
 	fs vfs.FS,
 	dir string,
 ) (*Store, error)
@@ -43,7 +43,7 @@ func (Def) New(
 	machine naming.MachineName,
 ) New {
 	return func(
-		parentWt *pr.WaitTree,
+		ctx context.Context,
 		fs vfs.FS,
 		dir string,
 	) (_ *Store, err error) {
@@ -82,7 +82,7 @@ func (Def) New(
 		ce(err)
 
 		s := &Store{
-			wg: pr2.NewWaitGroup(parentWt.Ctx),
+			wg: pr2.NewWaitGroup(ctx),
 			name: fmt.Sprintf("pebble%d(%s)",
 				atomic.AddInt64(&storeSerial, 1),
 				filepath.Base(dir),
@@ -94,8 +94,12 @@ func (Def) New(
 			DB: db,
 		}
 
-		parentWt.Go(func() {
-			<-parentWt.Ctx.Done()
+		wg := pr2.GetWaitGroup(ctx)
+		if wg == nil {
+			panic("no wait group")
+		}
+		wg.Go(func() {
+			<-wg.Done()
 			s.wg.Wait()
 			ce(s.DB.Flush())
 			ce(s.DB.Close())

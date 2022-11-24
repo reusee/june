@@ -27,7 +27,7 @@ func TestStore(
 		ce(err)
 		fn(s, "foo")
 	}
-	test(t, with)
+	test(wg, t, with)
 }
 
 func TestStoreSoftDelete(
@@ -44,5 +44,5 @@ func TestStoreSoftDelete(
 		ce(err)
 		fn(s, "foo")
 	}
-	test(t, with)
+	test(wg, t, with)
 }
