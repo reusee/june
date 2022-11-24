@@ -61,7 +61,7 @@ func TestSave(
 				_ sb.Stream,
 				_ []WriteOption,
 				res WriteResult,
-				err error,
+				_ error,
 			) {
 				keysWritten++
 				bytesWritten += res.BytesWritten
@@ -88,7 +88,7 @@ func TestSave(
 	}
 	n := 0
 	ce(summary.iterAll(
-		func(path []Key, s Summary) error {
+		func(path []Key, _ Summary) error {
 			n++
 			if len(path) != 1 {
 				t.Fatal()
@@ -183,7 +183,7 @@ func TestSave(
 		}
 		n := 0
 		ce(summary.iterAll(
-			func(path []Key, s Summary) error {
+			func(path []Key, _ Summary) error {
 				n++
 				if len(path) != 1 {
 					t.Fatal()
@@ -251,7 +251,7 @@ func TestSave(
 		}
 		n := 0
 		ce(summary.iterAll(
-			func(path []Key, s Summary) error {
+			func(path []Key, _ Summary) error {
 				n++
 				if len(path) != 1 {
 					t.Fatal()
@@ -319,7 +319,7 @@ func TestSave(
 		var num int64
 		if n, err := rebuildIndex(
 			WithIndexSaveOptions([]IndexSaveOption{
-				IndexTapEntry(func(entry IndexEntry) {
+				IndexTapEntry(func(_ IndexEntry) {
 					atomic.AddInt64(&num, 1)
 				}),
 			}),
@@ -464,6 +464,7 @@ func TestSave(
 		var n int64
 		var m int64
 		ce(resave(
+			wt.Ctx,
 			[]any{
 				testSaveFoo(0),
 			},

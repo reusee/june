@@ -5,15 +5,17 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
 	"github.com/reusee/june/index"
 	"github.com/reusee/june/sys"
-	"github.com/reusee/pr"
+	"github.com/reusee/pr2"
 )
 
 type Resave func(
+	ctx context.Context,
 	objs []any,
 	options ...ResaveOption,
 ) error
@@ -24,17 +26,17 @@ type ResaveOption interface {
 
 type SaveOptions []SaveOption
 
-func (_ SaveOptions) IsResaveOption() {}
+func (SaveOptions) IsResaveOption() {}
 
-func (_ Def) Resave(
+func (Def) Resave(
 	sel index.SelectIndex,
 	fetch Fetch,
 	save Save,
-	wt *pr.WaitTree,
 	parallel sys.Parallel,
 ) Resave {
 
 	return func(
+		ctx context.Context,
 		objs []any,
 		options ...ResaveOption,
 	) (err error) {
@@ -53,10 +55,10 @@ func (_ Def) Resave(
 			}
 		}
 
-		wt := pr.NewWaitTree(wt)
-		defer wt.Cancel()
-		put, wait := pr.Consume(
-			wt,
+		ctx, wg := pr2.NewWaitGroup(ctx)
+		defer wg.Cancel()
+		put, wait := pr2.Consume(
+			ctx,
 			int(parallel),
 			func(_ int, v any) error {
 				return v.(func() error)()
