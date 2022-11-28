@@ -25,11 +25,12 @@ import (
 	"context"
 	"math/rand"
 	"reflect"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
+
+	"github.com/reusee/pr2"
 )
 
 type FSEventsWatcher struct {
@@ -66,45 +67,31 @@ func sysWatcher(
 		C.kFSEventStreamCreateFlagFileEvents,
 	)
 
-	done := make(chan struct{})
-	var runLoop C.CFRunLoopRef
-	go func() {
-		runtime.LockOSThread()
-		cPath := C.CString(path)
-		stream := C.FSEventStreamCreate(
-			C.kCFAllocatorDefault,
-			C.FSEventStreamCallback(unsafe.Pointer(C.callbackC)),
-			&C.FSEventStreamContext{version: 0, info: unsafe.Pointer(uintptr(id))},
-			C.makePaths(cPath),
-			C.FSEventStreamEventId(C.kFSEventStreamEventIdSinceNow),
-			0,
-			watchFlags,
-		)
-		C.free(unsafe.Pointer(cPath))
-		runLoop = C.CFRunLoopGetCurrent()
-		C.FSEventStreamScheduleWithRunLoop(
-			stream,
-			runLoop,
-			C.kCFRunLoopDefaultMode,
-		)
-		C.FSEventStreamStart(stream)
-		close(done)
-		C.CFRunLoopRun()
+	cPath := C.CString(path)
+	stream := C.FSEventStreamCreate(
+		C.kCFAllocatorDefault,
+		C.FSEventStreamCallback(unsafe.Pointer(C.callbackC)),
+		&C.FSEventStreamContext{version: 0, info: unsafe.Pointer(uintptr(id))},
+		C.makePaths(cPath),
+		C.FSEventStreamEventId(C.kFSEventStreamEventIdSinceNow),
+		0,
+		watchFlags,
+	)
+	C.free(unsafe.Pointer(cPath))
+	queue := C.dispatch_get_global_queue(C.QOS_CLASS_USER_INTERACTIVE, 0)
+	C.FSEventStreamSetDispatchQueue(
+		stream,
+		queue,
+	)
+	C.FSEventStreamStart(stream)
+
+	wg := pr2.GetWaitGroup(ctx)
+	wg.Go(func() {
+		<-wg.Done()
 		C.FSEventStreamStop(stream)
-		C.FSEventStreamUnscheduleFromRunLoop(
-			stream,
-			runLoop,
-			C.kCFRunLoopDefaultMode,
-		)
 		C.FSEventStreamInvalidate(stream)
 		C.FSEventStreamRelease(stream)
-	}()
-	<-done
-
-	go func() {
-		<-ctx.Done()
-		C.CFRunLoopStop(runLoop)
-	}()
+	})
 
 	add = func(string) error {
 		return nil
