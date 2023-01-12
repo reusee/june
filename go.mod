@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/cockroachdb/errors v1.9.0 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20230109231519-f863370f0aab
+	github.com/cockroachdb/pebble v0.0.0-20230111225431-5bad2c1a77ab
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.5.2
 	github.com/golang/snappy v0.0.4
@@ -21,7 +21,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.46
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5
-	github.com/reusee/dscope v0.0.0-20221226123213-3d520e70e823
+	github.com/reusee/dscope v0.0.0-20230112100612-ed5526b6bc2c
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
@@ -31,7 +31,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230108222341-4b8118a2686a // indirect
+	golang.org/x/exp v0.0.0-20230111222715-75897c7a292a // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/sys v0.4.0
@@ -43,7 +43,7 @@ require (
 )
 
 require (
-	github.com/reusee/e5 v0.0.0-20221121150545-535ad462f830
+	github.com/reusee/e5 v0.0.0-20230112100829-c0e40705b667
 	github.com/reusee/pr2 v0.0.0-20221124075513-e1cb4081adb8
 )
 
