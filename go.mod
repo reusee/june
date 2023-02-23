@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
-	github.com/cockroachdb/errors v1.9.0 // indirect
-	github.com/cockroachdb/pebble v0.0.0-20230111225431-5bad2c1a77ab
+	github.com/cockroachdb/errors v1.9.1 // indirect
+	github.com/cockroachdb/pebble v0.0.0-20230223042143-79eb94777b28
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/go-git/go-git/v5 v5.5.2
 	github.com/golang/snappy v0.0.4
@@ -13,27 +13,27 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.14
-	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
+	github.com/klauspost/compress v1.15.15
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.46
+	github.com/minio/minio-go/v7 v7.0.49
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5
-	github.com/reusee/dscope v0.0.0-20230112100612-ed5526b6bc2c
+	github.com/reusee/dscope v0.0.0-20230221072941-3be2663fa528
 	github.com/reusee/fastcdc-go v0.2.1-0.20201121153712-1756352c2ae7
 	github.com/reusee/fsnotify v1.4.10-0.20210402100314-11b238df91c1
 	github.com/reusee/pa v0.0.0-20210520023210-223bb0bf8859
 	github.com/reusee/pp v0.0.0-20211111065340-3380cad016fa
 	github.com/reusee/qa v0.0.0-20220903101203-26c9396a6dd0
-	github.com/reusee/sb v0.0.0-20221121151007-c0a4f865a611
+	github.com/reusee/sb v0.0.0-20230221073108-a02c790e8a8a
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230111222715-75897c7a292a // indirect
+	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb // indirect
 	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/oauth2 v0.4.0
+	golang.org/x/oauth2 v0.5.0
 	golang.org/x/sys v0.5.0
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.2.0
@@ -43,19 +43,19 @@ require (
 )
 
 require (
-	github.com/reusee/e5 v0.0.0-20230112100829-c0e40705b667
-	github.com/reusee/pr2 v0.0.0-20221124075513-e1cb4081adb8
+	github.com/reusee/e5 v0.0.0-20230128094953-f2ff5c9c135a
+	github.com/reusee/pr2 v0.0.0-20230221022320-e074b9be574d
 )
 
 require (
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
-	github.com/getsentry/sentry-go v0.16.0 // indirect
+	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/getsentry/sentry-go v0.18.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
-	github.com/go-git/go-billy/v5 v5.4.0 // indirect
+	github.com/go-git/go-billy/v5 v5.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
@@ -66,7 +66,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/common v0.39.0 // indirect
+	github.com/prometheus/common v0.40.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
