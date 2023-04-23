@@ -55,8 +55,9 @@ func (Def) NewBatch() NewBatch {
 		if parentWaitGroup == nil {
 			panic("no wait group")
 		}
-		parentWaitGroup.Go(func() {
-			<-parentWaitGroup.Done()
+		done := parentWaitGroup.Add()
+		context.AfterFunc(parentWaitGroup, func() {
+			defer done()
 			b.wg.Wait()
 			ce(batch.Close())
 		})

@@ -98,8 +98,9 @@ func (Def) New(
 		if wg == nil {
 			panic("no wait group")
 		}
-		wg.Go(func() {
-			<-wg.Done()
+		done := wg.Add()
+		context.AfterFunc(wg, func() {
+			defer done()
 			s.wg.Wait()
 			ce(s.DB.Flush())
 			ce(s.DB.Close())

@@ -86,8 +86,9 @@ func sysWatcher(
 	C.FSEventStreamStart(stream)
 
 	wg := pr2.GetWaitGroup(ctx)
-	wg.Go(func() {
-		<-wg.Done()
+	done := wg.Add()
+	context.AfterFunc(wg, func() {
+		defer done()
 		C.FSEventStreamStop(stream)
 		C.FSEventStreamInvalidate(stream)
 		C.FSEventStreamRelease(stream)

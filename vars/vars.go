@@ -6,6 +6,7 @@ package vars
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"runtime"
@@ -49,8 +50,9 @@ func (Def) VarsStore(
 
 	wg := pr2.NewWaitGroup(parentWG)
 
-	parentWG.Go(func() {
-		<-parentWG.Done()
+	done := parentWG.Add()
+	context.AfterFunc(parentWG, func() {
+		defer done()
 		wg.Wait()
 		var err error
 		defer catchErr(&err, pebble.ErrClosed)
