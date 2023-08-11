@@ -1,6 +1,6 @@
 module github.com/reusee/june
 
-go 1.18
+go 1.21
 
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
@@ -68,7 +68,6 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	github.com/reusee/pr v0.0.0-20220902154654-adb0578fc28b // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
