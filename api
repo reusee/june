@@ -5,90 +5,90 @@
 	*vars.VarsStore
 
 entity.CheckRef
-	func(options ...entity.CheckRefOption) error
+	func(ctx context.Context, options ...entity.CheckRefOption) error
 
 entity.CleanIndex
-	func(options ...entity.CleanIndexOption) error
+	func(ctx context.Context, options ...entity.CleanIndexOption) error
 
 entity.Delete
-	func(key key.Key) (err error)
+	func(ctx context.Context, key key.Key) (err error)
 
 entity.DeleteIndex
-	func(predict func(*sb.Proc) (*index.Entry, error), options ...entity.DeleteIndexOption) error
+	func(ctx context.Context, predict func(*sb.Proc) (*index.Entry, error), options ...entity.DeleteIndexOption) error
 
 entity.DeleteSummary
-	func(summary *entity.Summary, summaryKey key.Key) (err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (err error)
 
 entity.Fetch
 	func(key interface{}, targets ...interface{}) error
 
 entity.GC
-	func(roots []key.Key, options ...entity.GCOption) error
+	func(ctx context.Context, roots []key.Key, options ...entity.GCOption) error
 
 entity.HashIndexSet
 	func(set entity.IndexSet) (key.Hash, error)
 
 entity.IndexGC
-	func(options ...entity.IndexGCOption) error
+	func(ctx context.Context, options ...entity.IndexGCOption) error
 
 entity.NewName
 	func(prefix string) entity.Name
 
 entity.OnSummaryIndexAdd
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexAdd
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexAdd
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexAdd
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexAdd
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexDelete
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexDelete
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexDelete
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexDelete
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.OnSummaryIndexDelete
-	func(summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
+	func(ctx context.Context, summary *entity.Summary, summaryKey key.Key) (entries []index.Entry, err error)
 
 entity.Push
-	func(to store.Store, toIndex index.IndexManager, keys []key.Key, options ...entity.PushOption) error
+	func(ctx context.Context, to store.Store, toIndex index.IndexManager, keys []key.Key, options ...entity.PushOption) error
 
 entity.RebuildIndex
-	func(options ...entity.IndexOption) (n int64, err error)
+	func(ctx context.Context, options ...entity.IndexOption) (n int64, err error)
 
 entity.Resave
-	func(objs []interface{}, options ...entity.ResaveOption) error
+	func(ctx context.Context, objs []interface{}, options ...entity.ResaveOption) error
 
 entity.Save
-	func(ns key.Namespace, value interface{}, options ...entity.SaveOption) (summary *entity.Summary, err error)
+	func(ctx context.Context, ns key.Namespace, value interface{}, options ...entity.SaveOption) (summary *entity.Summary, err error)
 	save entity
 
 entity.SaveEntity
-	func(value interface{}, options ...entity.SaveOption) (summary *entity.Summary, err error)
+	func(ctx context.Context, value interface{}, options ...entity.SaveOption) (summary *entity.Summary, err error)
 
 entity.SaveSummary
-	func(summary *entity.Summary, isLatest bool, options ...entity.SaveSummaryOption) error
+	func(ctx context.Context, summary *entity.Summary, isLatest bool, options ...entity.SaveSummaryOption) error
 	SaveSummary
 
 entity.UpdateIndex
-	func(options ...entity.IndexOption) (n int64, err error)
+	func(ctx context.Context, options ...entity.IndexOption) (n int64, err error)
 
 file.Build
-	func(root *filebase.File, cont pp.Sink, options ...file.BuildOption) pp.Sink
+	func(ctx context.Context, root *filebase.File, cont pp.Sink, options ...file.BuildOption) pp.Sink
 
 file.Equal
 	func(a pp.Src, b pp.Src, fn func(interface{}, interface{}, string)) (bool, error)
@@ -97,13 +97,13 @@ file.Ignore
 	func(path string, fileLike file.FileLike) bool
 
 file.IterDiskFile
-	func(path string, cont pp.Src, options ...file.IterDiskFileOption) pp.Src
+	func(ctx context.Context, path string, cont pp.Src, options ...file.IterDiskFileOption) pp.Src
 
 file.IterFile
-	func(file *filebase.File, cont pp.Src) pp.Src
+	func(ctx context.Context, file *filebase.File, cont pp.Src) pp.Src
 
 file.IterKey
-	func(key key.Key, cont pp.Src) pp.Src
+	func(ctx context.Context, key key.Key, cont pp.Src) pp.Src
 
 file.IterVirtual
 	func(file file.Virtual, cont pp.Src, options ...file.IterVirtualOption) pp.Src
@@ -148,7 +148,7 @@ filebase.NewFileFS
 	func(file *filebase.File) (fs.FS, error)
 
 filebase.ToContents
-	func(r io.Reader, size int64) (keys []key.Key, lengths []int64, err error)
+	func(ctx context.Context, r io.Reader, size int64) (keys []key.Key, lengths []int64, err error)
 
 filebase.WriteContents
 	func(keys []key.Key, w io.Writer) (err error)
@@ -166,13 +166,13 @@ fsys.ShuffleDir
 	func(string) (op string, path1 string, path2 string, err error)
 
 fsys.Watch
-	func(wt *pr.WaitTree, path string, options ...fsys.WatchOption) (watcher *fsys.Watcher, err error)
+	func(ctx context.Context, path string, options ...fsys.WatchOption) (watcher *fsys.Watcher, err error)
 
 index.Index
 	interface{Delete(entry index.Entry) error; Iter(lower *sb.Tokens, upper *sb.Tokens, order index.Order) (pp.Src, io.Closer, error); Name() string; Save(entry index.Entry, options ...index.SaveOption) error}
 
 index.SelectIndex
-	func(args ...index.SelectOption) error
+	func(ctx context.Context, args ...index.SelectOption) error
 
 index.TestIndex
 	func(withIndexManager func(func(index.IndexManager)), t *testing.T)
@@ -194,7 +194,7 @@ keyset.Iter
 	func(set keyset.Set, fn func(key key.Key) error) error
 
 keyset.PackSet
-	func(set keyset.Set) (keyset.Set, error)
+	func(ctx context.Context, set keyset.Set) (keyset.Set, error)
 
 keyset.PackThreshold
 	int
@@ -212,23 +212,23 @@ store.NewMemCache
 	func(maxKeys int, maxSize int) (*store.MemCache, error)
 
 store.Scrub
-	func(store store.Store, options ...store.ScrubOption) error
+	func(ctx context.Context, store store.Store, options ...store.ScrubOption) error
 
 store.TestStore
-	func(withStore func(fn func(store.Store), provides ...interface{}), t *testing.T)
+	func(ctx context.Context, withStore func(fn func(store.Store), provides ...interface{}), t *testing.T)
 	test Store implementation
 
 storedisk.New
-	func(wt *pr.WaitTree, path string, options ...storedisk.NewOption) (*storedisk.Store, error)
+	func(ctx context.Context, path string, options ...storedisk.NewOption) (*storedisk.Store, error)
 
 storekv.New
-	func(kv storekv.KV, prefix string, options ...storekv.NewOption) (*storekv.Store, error)
+	func(ctx context.Context, kv storekv.KV, prefix string, options ...storekv.NewOption) (*storekv.Store, error)
 
 storekv.TestKV
-	func(t *testing.T, with func(fn func(kv storekv.KV, prefix string)))
+	func(ctx context.Context, t *testing.T, with func(fn func(kv storekv.KV, prefix string)))
 
 storemem.New
-	func(parentWt *pr.WaitTree) *storemem.Store
+	func(ctx context.Context) *storemem.Store
 
 storemonotree.New
 	func(upstream store.Store) (tree *storemonotree.Tree, err error)
@@ -237,29 +237,29 @@ storenssharded.New
 	func(shards map[key.Namespace]store.Store, def store.Store) (*storenssharded.Store, error)
 
 storeonedrive.New
-	func(parentWt *pr.WaitTree, client *http.Client, drivePath string, dir string) (*storeonedrive.Store, error)
+	func(ctx context.Context, client *http.Client, drivePath string, dir string) (*storeonedrive.Store, error)
 
 storepebble.CacheSize
 	int64
 
 storepebble.New
-	func(wt *pr.WaitTree, fs vfs.FS, dir string) (*storepebble.Store, error)
+	func(ctx context.Context, fs vfs.FS, dir string) (*storepebble.Store, error)
 	create new pebble store
 
 storepebble.NewBatch
-	func(wt *pr.WaitTree, store *storepebble.Store) (*storepebble.Batch, error)
+	func(ctx context.Context, store *storepebble.Store) (*storepebble.Batch, error)
 
 stores3.New
-	func(wt *pr.WaitTree, endpoint string, key string, secret string, useSSL bool, bucket string, options ...stores3.NewOption) (*stores3.KV, error)
+	func(ctx context.Context, endpoint string, key string, secret string, useSSL bool, bucket string, options ...stores3.NewOption) (*stores3.KV, error)
 
 stores3.Timeout
 	int64
 
 storesqlite.New
-	func(wt *pr.WaitTree, path string) (*storesqlite.Store, error)
+	func(ctx context.Context, path string) (*storesqlite.Store, error)
 
 storestacked.New
-	func(*pr.WaitTree, store.Store, store.Store, storestacked.ReadPolicy, storestacked.WritePolicy) (*storestacked.Store, error)
+	func(context.Context, store.Store, store.Store, storestacked.ReadPolicy, storestacked.WritePolicy) (*storestacked.Store, error)
 
 storetap.New
 	func(upstream store.Store, funcs storetap.Funcs) *storetap.Store
@@ -277,5 +277,5 @@ vars.Set
 	func(key string, value interface{}) error
 
 virtualfs.TestFS
-	func(t *testing.T, with func(rootFS fs.FS, dir string, fn func()))
+	func(ctx context.Context, t *testing.T, with func(rootFS fs.FS, dir string, fn func()))
 

@@ -23,7 +23,7 @@ import (
 
 var (
 	pt = fmt.Printf
-	ce = e5.CheckWithStacktrace
+	ce = e5.Check.With(e5.WrapStacktrace)
 )
 
 //TODO generate Is*Option docs

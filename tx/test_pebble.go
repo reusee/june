@@ -143,7 +143,7 @@ func TestPebbleTx(
 			ce(errFoo)
 		})
 		if !errors.Is(err, errFoo) {
-			t.Fatal()
+			t.Fatalf("got %v", err)
 		}
 
 		ce(tx(wg, func(

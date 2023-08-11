@@ -17,7 +17,7 @@ var (
 	nameToType sync.Map
 )
 
-//TODO return migrated names
+// TODO return migrated names
 func Type(t reflect.Type) (name string) {
 	if v, ok := typeToName.Load(t); ok {
 		return v.(string)
