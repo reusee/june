@@ -30,12 +30,12 @@ require (
 	github.com/reusee/sb v0.0.0-20230401065353-d64e11ed6d5d
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.6.0
-	golang.org/x/sys v0.6.0
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.15.0
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.6.0
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
